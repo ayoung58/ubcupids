@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// NextAuth.js Required Models
+// ============================================
+
+// Initial Schema:
+// Includes NextAuth required tables (Account, Session, VerificationToken)
+// Uses cuid() for IDs (collision-resistant, URL-safe)
+// Indexes on foreign keys for query performance
+// Json fields for flexible data (questionnaire responses, preferences)
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  password      String
+  
+  // Profile Information
+  firstName     String?
+  lastName      String?
+  major         String?
+  yearOfStudy   Int?
+  interests     String[]
+  
+  // Preferences stored as JSONB
+  preferences   Json?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  questionnaire Questionnaire?
+  matchesGiven  Match[]   @relation("UserMatches")
+  matchesReceived Match[] @relation("MatchedUser")
+  uploads       Upload[]
+  cupidProfile  CupidProfile?
+
+  @@index([email])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// Application-Specific Models
+// ============================================
+
+model Questionnaire {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  responses Json
+  
+  completedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Match {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation("UserMatches", fields: [userId], references: [id], onDelete: Cascade)
+  
+  matchedUserId   String
+  matchedUser     User     @relation("MatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
+  
+  compatibilityScore Int
+  cupidType          String
+  cupidId            String?
+  batchNumber        Int
+  
+  revealedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, matchedUserId, batchNumber])
+  @@index([userId])
+  @@index([matchedUserId])
+}
+
+model Upload {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  cloudinaryId String   @unique
+  url          String
+  type         String
+  
+  fileSize     Int
+  mimeType     String
+  
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+}
+
+model CupidProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  approved        Boolean  @default(false)
+  matchesCreated  Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+}
