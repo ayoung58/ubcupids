@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     // ============================================
     if (!acceptedTerms) {
       return NextResponse.json(
-        { error: "You must accept the Terms and Conditions" },
+        { error: "Please accept the Terms and Conditions" },
         { status: 400 }
       );
     }
