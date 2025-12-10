@@ -1,77 +1,88 @@
-import NextAuth, { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { prisma } from '@/lib/prisma';
-import { verifyPassword } from '@/lib/auth';
+import NextAuth, { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { prisma } from "@/lib/prisma";
+import { verifyPassword } from "@/lib/auth";
 
 /**
  * NextAuth Configuration
- * 
+ *
+ * Using JWT session strategy (required for CredentialsProvider)
+ *
  * Architecture decisions:
- * 1. Prisma Adapter: Stores sessions in PostgreSQL (not JWT-only)
- *    - Pro: Can revoke sessions server-side
- *    - Pro: Works with Credentials provider
- *    - Con: Extra database queries (negligible for 500 users)
- * 
- * 2. Credentials Provider: Email + password authentication
- *    - Pro: Full control over authentication logic
- *    - Pro: Can enforce email verification before login
- *    - Con: No OAuth (not needed for UBC-only app)
- * 
- * 3. Database Session Strategy: Session stored in Session table
- *    - Pro: Secure (server controls session validity)
- *    - Con: Requires database lookup on each request (cached by NextAuth)
+ * 1. JWT Session Strategy: Session data stored in encrypted JWT cookie
+ *    - Pro: No database query on every request (faster)
+ *    - Pro: Works with CredentialsProvider (required)
+ *    - Con: Can't revoke sessions server-side (acceptable trade-off)
+ *    - Con: JWT size limit ~4KB (our user data fits easily)
+ *
+ * 2. Hybrid Approach: JWT sessions + Prisma for user data
+ *    - Sessions: Stored in JWT cookie (not database)
+ *    - User data: Still in PostgreSQL via Prisma
+ *    - Best of both worlds for credentials-based auth
+ *
+ * 3. Session stored in JWT but user verification on every authorize() call
+ *    - Each login checks: user exists, email verified, password correct
+ *    - Once logged in, session is valid until expiry
  */
 export const authOptions: NextAuthOptions = {
-  // ADAPTER: Connects NextAuth to Database
+  // ============================================
+  // ADAPTER: Still use Prisma for user/account data
+  // ============================================
+  // Note: Adapter is only used for OAuth providers (not Credentials)
+  // We keep it for future OAuth expansion (Google, etc.)
   adapter: PrismaAdapter(prisma),
 
-  // SESSION STRATEGY
+  // ============================================
+  // SESSION STRATEGY: JWT (REQUIRED FOR CREDENTIALS)
+  // ============================================
   session: {
-    strategy: 'database', // Store sessions in PostgreSQL (required for Credentials provider)
+    strategy: "jwt", // Changed from 'database' to 'jwt'
     maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-    updateAge: 24 * 60 * 60, // Update session expiry every 24 hours
+    updateAge: 24 * 60 * 60, // Update JWT expiry every 24 hours
   },
 
+  // ============================================
   // AUTHENTICATION PROVIDERS
+  // ============================================
   providers: [
     CredentialsProvider({
-      // Provider ID (used in signIn('credentials'))
-      id: 'credentials',
-      name: 'Email and Password',
+      id: "credentials",
+      name: "Email and Password",
 
-      // Form fields shown on default NextAuth sign-in page
       credentials: {
-        email: { 
-          label: 'Email', 
-          type: 'email', 
-          placeholder: 'you@student.ubc.ca' 
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "you@student.ubc.ca",
         },
-        password: { 
-          label: 'Password', 
-          type: 'password' 
+        password: {
+          label: "Password",
+          type: "password",
         },
       },
 
       /**
        * authorize() - Core authentication logic
-       * 
+       *
        * Called when user attempts to log in via signIn('credentials', {...})
-       * 
+       *
        * @param credentials - { email, password } from login form
        * @returns User object if valid, null if invalid
-       * 
+       *
        * Security checks performed:
        * 1. User exists in database
        * 2. Email has been verified
        * 3. Password matches hashed password in database
-       * 
-       * - NextAuth standard: null = invalid credentials
+       *
+       * IMPORTANT: This only runs during login
+       * - Subsequent requests validate JWT token (no database query)
+       * - JWT contains user.id, name, email (from jwt() callback)
        */
       async authorize(credentials) {
         // Validate that credentials exist
         if (!credentials?.email || !credentials?.password) {
-          console.log('[Auth] Missing email or password');
+          console.log("[Auth] Missing email or password");
           return null;
         }
 
@@ -101,7 +112,6 @@ export const authOptions: NextAuthOptions = {
         // Critical: Prevents unverified accounts from logging in
         if (!user.emailVerified) {
           console.log(`[Auth] Email not verified for: ${email}`);
-          // Return null with custom error (handle this in the client)
           return null;
         }
 
@@ -127,42 +137,70 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
-
-  // CUSTOM PAGES 
+  // ============================================
+  // CUSTOM PAGES (We'll build these in Phase 2)
+  // ============================================
   pages: {
-    signIn: '/login',     // Custom login page
-    error: '/login',      // Redirect errors to login page
-    // newUser: '/questionnaire', // Redirect after first sign-in (Phase 2)
+    signIn: "/login", // Custom login page
+    error: "/login", // Redirect errors to login page
   },
 
-  // CALLBACKS: Customize session/JWT behavior
+  // ============================================
+  // CALLBACKS: Customize JWT/session behavior
+  // ============================================
   callbacks: {
     /**
-     * session() callback - Adds user data to session object
-     * 
-     * Called whenever session is accessed (getServerSession, useSession)
-     * 
-     * @param session - Default session object { user: { name, email, image }, expires }
-     * @param user - User object from database (available with database strategy)
-     * @returns Enhanced session with user ID
-     * 
+     * jwt() callback - Runs when JWT is created or updated
+     *
+     * Called:
+     * - After successful authorize() (user object available)
+     * - On every request (to update/validate token)
+     *
+     * @param token - Existing JWT token
+     * @param user - User object from authorize() (only on sign-in)
+     * @returns Enhanced token with user.id
+     *
      * Why we need this:
-     * - Default session only has { name, email, image }
+     * - Default JWT only has { name, email, picture }
      * - We need user.id to query their matches, questionnaire, etc.
+     * - This adds id to JWT so it's available in session
      */
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      // On sign-in (user object exists), add user.id to token
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+
+    /**
+     * session() callback - Runs when session is accessed
+     *
+     * Called whenever:
+     * - useSession() is called (client-side)
+     * - getServerSession() is called (server-side)
+     *
+     * @param session - Default session object
+     * @param token - JWT token with our custom id field
+     * @returns Enhanced session with user.id
+     *
+     * This makes session.user.id available throughout the app
+     */
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
+        session.user.id = token.id as string;
       }
       return session;
     },
   },
 
+  // ============================================
   // SECURITY
+  // ============================================
   secret: process.env.NEXTAUTH_SECRET,
 
   // Enable debug logs in development
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NODE_ENV === "development",
 };
 
 // Export NextAuth handlers for App Router
