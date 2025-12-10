@@ -82,9 +82,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  // Relations
+  // NextAuth Relations
   accounts      Account[]
   sessions      Session[]
+
+  //Application Relations
   questionnaire Questionnaire?
   matchesGiven  Match[]   @relation("UserMatches")
   matchesReceived Match[] @relation("MatchedUser")
@@ -127,7 +129,7 @@ model Match {
   revealedAt      DateTime @default(now())
   createdAt       DateTime @default(now())
 
-  @@unique([userId, matchedUserId, batchNumber])
+  @@unique([userId, matchedUserId, batchNumber]) // Prevent duplicate matches in same batch
   @@index([userId])
   @@index([matchedUserId])
 }
