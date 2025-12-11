@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 
 /**
  * Registration Form Component
- * 
+ *
  * Features:
  * - Client-side validation (UBC email format, password strength)
  * - Real-time password strength indicator
  * - Terms & Conditions checkbox
  * - Error handling (duplicate email, validation errors)
  * - Success state with verification instructions
- * 
+ *
  * Security:
  * - Validates UBC email before submission
  * - Password never sent to client (hashed server-side)
@@ -31,12 +31,13 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [termsError, setTermsError] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    major: '',
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    major: "",
     acceptedTerms: false,
   });
 
@@ -51,9 +52,11 @@ export function RegisterForm() {
 
     const passedChecks = Object.values(checks).filter(Boolean).length;
 
-    if (passedChecks === 4) return { strength: 'Strong', color: 'text-green-600' };
-    if (passedChecks >= 2) return { strength: 'Medium', color: 'text-yellow-600' };
-    return { strength: 'Weak', color: 'text-red-600' };
+    if (passedChecks === 4)
+      return { strength: "Strong", color: "text-green-600" };
+    if (passedChecks >= 2)
+      return { strength: "Medium", color: "text-yellow-600" };
+    return { strength: "Weak", color: "text-red-600" };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,23 +66,25 @@ export function RegisterForm() {
 
     // Client-side validation
     if (!formData.acceptedTerms) {
-      setError('You must accept the Terms and Conditions');
+      setError("You must accept the Terms and Conditions");
+      setTermsError(true);
       setIsLoading(false);
       return;
     }
 
     // UBC email validation
-    const ubcEmailRegex = /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i;
+    const ubcEmailRegex =
+      /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i;
     if (!ubcEmailRegex.test(formData.email)) {
-      setError('Please use your @student.ubc.ca or @alumni.ubc.ca email');
+      setError("Please use your @student.ubc.ca or @alumni.ubc.ca email");
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
@@ -89,9 +94,9 @@ export function RegisterForm() {
         // Handle validation errors from server
         if (data.details) {
           // Password validation errors
-          setError(data.details.join(', '));
+          setError(data.details.join(", "));
         } else {
-          setError(data.error || 'Registration failed');
+          setError(data.error || "Registration failed");
         }
         setIsLoading(false);
         return;
@@ -99,15 +104,14 @@ export function RegisterForm() {
 
       // Success!
       setSuccess(true);
-      
+
       // Redirect to verification pending page after 2 seconds
       setTimeout(() => {
-        router.push('/verification-pending');
+        router.push("/verification-pending");
       }, 2000);
-
     } catch (err) {
-      console.error('Registration error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      console.error("Registration error:", err);
+      setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
   };
@@ -230,7 +234,7 @@ export function RegisterForm() {
             <Input
               id="major"
               type="text"
-              placeholder="Computer Science"
+              placeholder="Professional Cupid Studies"
               value={formData.major}
               onChange={(e) =>
                 setFormData({ ...formData, major: e.target.value })
@@ -244,16 +248,25 @@ export function RegisterForm() {
             <Checkbox
               id="terms"
               checked={formData.acceptedTerms}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, acceptedTerms: checked as boolean })
-              }
+              onCheckedChange={(checked) => {
+                setFormData({ ...formData, acceptedTerms: checked as boolean });
+                if (checked) {
+                  setTermsError(false);
+                }
+              }}
               disabled={isLoading}
+              className={termsError ? "border-red-500 border-2" : ""}
             />
-            <Label htmlFor="terms" className="text-sm leading-none cursor-pointer">
-              I accept the{' '}
+            <Label
+              htmlFor="terms"
+              className={`text-sm leading-none cursor-pointer ${
+                termsError ? "text-red-600" : ""
+              }`}
+            >
+              I accept the{" "}
               <a href="/terms" className="underline hover:text-slate-900">
                 Terms and Conditions
-              </a>{' '}
+              </a>{" "}
               (placeholder for now)
             </Label>
           </div>
@@ -266,7 +279,7 @@ export function RegisterForm() {
                 Creating account...
               </>
             ) : (
-              'Create Account'
+              "Create Account"
             )}
           </Button>
         </form>
