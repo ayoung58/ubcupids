@@ -1,4 +1,4 @@
-import { Metadata } from "next/metadata";
+import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/get-session";
 import { Button } from "@/components/ui/button";

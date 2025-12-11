@@ -144,7 +144,6 @@ export const authOptions: NextAuthOptions = {
   // ============================================
   pages: {
     signIn: "/login", // Custom login page
-    signOut: "/?signedout=true", // NEW: Redirect to home with param
     error: "/login", // Redirect errors to login page
   },
 
