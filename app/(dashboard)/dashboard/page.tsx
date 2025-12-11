@@ -1,16 +1,10 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/get-session";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LogOut } from "lucide-react"; // Import icon
 import Link from "next/link";
-
-/**
- * Dashboard Page (Protected)
- *
- * Requires authentication via middleware
- * Shows personalized greeting and navigation
- */
 
 export const metadata: Metadata = {
   title: "Dashboard | UBCupids",
@@ -18,10 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  // Get current user session (server-side)
   const session = await getCurrentUser();
 
-  // Double-check authentication (middleware should handle this)
   if (!session?.user) {
     redirect("/login");
   }
@@ -38,12 +30,13 @@ export default async function DashboardPage() {
             <p className="text-slate-600 mt-1">{session.user.email}</p>
           </div>
 
-          {/* Logout Button */}
-          <form action="/api/auth/signout" method="POST">
-            <Button variant="outline" type="submit">
+          {/* Logout Button - Updated */}
+          <Link href="/api/auth/signout">
+            <Button variant="outline" className="gap-2">
+              <LogOut className="h-4 w-4" />
               Logout
             </Button>
-          </form>
+          </Link>
         </div>
 
         {/* Quick Actions */}
@@ -101,9 +94,9 @@ export default async function DashboardPage() {
             <CardTitle>Next Steps</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-slate-600">
-            <p>Account created and verified</p>
-            <p>Complete your questionnaire (opens January 15)</p>
-            <p>Matches revealed February 1 & 7, 2026</p>
+            <p>✅ Account created and verified</p>
+            <p>⏳ Complete your questionnaire (opens January 15)</p>
+            <p>⏳ Matches revealed February 1 & 7, 2026</p>
           </CardContent>
         </Card>
       </div>
