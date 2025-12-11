@@ -31,17 +31,12 @@ export default async function DashboardPage() {
           </div>
 
           {/* Logout Button */}
-          <form action="/api/auth/signout" method="POST">
-            <input
-              type="hidden"
-              name="callbackUrl"
-              value="/login?signedout=true"
-            />
-            <Button type="submit" variant="outline" className="gap-2">
+          <Link href="/signout">
+            <Button variant="outline" className="gap-2">
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
-          </form>
+          </Link>
         </div>
 
         {/* Quick Actions */}
