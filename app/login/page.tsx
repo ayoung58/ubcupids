@@ -24,14 +24,14 @@ export const metadata: Metadata = {
 };
 
 interface LoginPageProps {
-  searchParams: {
+  searchParams: Promise<{
     verified?: string;
     error?: string;
-  };
+  }>;
 }
 
-export default function LoginPage({ searchParams }: LoginPageProps) {
-  const { verified, error } = searchParams;
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { verified, error } = await searchParams;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
