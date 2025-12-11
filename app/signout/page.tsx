@@ -64,7 +64,11 @@ export default function SignOutPage() {
 
           {/* Cancel / Back to Dashboard */}
           <Link href="/dashboard" className="block">
-            <Button variant="outline" className="w-full gap-2" disabled={isSigningOut}>
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              disabled={isSigningOut}
+            >
               <ArrowLeft className="h-4 w-4" />
               Back to Dashboard
             </Button>
