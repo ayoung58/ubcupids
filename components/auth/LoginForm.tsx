@@ -49,11 +49,16 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        // Login failed - could be wrong password, email not verified, or user doesn't exist
-        // NextAuth doesn't distinguish (security feature)
-        setError(
-          "Invalid email or password. If you haven't verified your email, please check your inbox."
-        );
+        // Check for specific error types
+        if (result.error === "EmailNotVerified") {
+          // Email is in database but not verified
+          setError("Please verify your email or resend the verification link");
+        } else {
+          // User doesn't exist or password is wrong (combined for security)
+          setError(
+            'Incorrect email or password. Please sign up or click "Forgot Your Password?" if you forgot your password'
+          );
+        }
         setIsLoading(false);
         return;
       }

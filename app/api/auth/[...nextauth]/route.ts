@@ -83,7 +83,7 @@ export const authOptions: NextAuthOptions = {
         // Validate that credentials exist
         if (!credentials?.email || !credentials?.password) {
           console.log("[Auth] Missing email or password");
-          return null;
+          throw new Error("CredentialsSignin");
         }
 
         // Normalize email to prevent case sensitivity issues
@@ -102,20 +102,14 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        // Check 1: User exists
+        // Check 1: User exists and password is correct (combined for security)
+        // We check both before revealing which is wrong to prevent user enumeration
         if (!user) {
           console.log(`[Auth] No user found for email: ${email}`);
-          return null;
+          throw new Error("CredentialsSignin");
         }
 
-        // Check 2: Email has been verified
-        // Critical: Prevents unverified accounts from logging in
-        if (!user.emailVerified) {
-          console.log(`[Auth] Email not verified for: ${email}`);
-          return null;
-        }
-
-        // Check 3: Password is correct
+        // Check password before checking verification status
         const isValidPassword = await verifyPassword(
           credentials.password,
           user.password
@@ -123,7 +117,15 @@ export const authOptions: NextAuthOptions = {
 
         if (!isValidPassword) {
           console.log(`[Auth] Invalid password for: ${email}`);
-          return null;
+          throw new Error("CredentialsSignin");
+        }
+
+        // Check 2: Email has been verified
+        // Critical: Prevents unverified accounts from logging in
+        // We only reveal this AFTER confirming credentials are correct
+        if (!user.emailVerified) {
+          console.log(`[Auth] Email not verified for: ${email}`);
+          throw new Error("EmailNotVerified");
         }
 
         // Success: Return user object (password excluded)
@@ -138,7 +140,7 @@ export const authOptions: NextAuthOptions = {
   ],
 
   // ============================================
-  // CUSTOM PAGES (We'll build these in Phase 2)
+  // CUSTOM PAGES 
   // ============================================
   pages: {
     signIn: "/login", // Custom login page
