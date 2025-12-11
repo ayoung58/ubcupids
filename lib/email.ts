@@ -140,7 +140,7 @@ export async function sendPasswordResetEmail(
   firstName: string,
   token: string
 ): Promise<void> {
-  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
 
   try {
     const { data, error } = await resend.emails.send({

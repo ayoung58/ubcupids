@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Reset Password | UBCupids",
@@ -12,15 +13,17 @@ export const metadata: Metadata = {
 };
 
 interface ResetPasswordPageProps {
-  searchParams: {
+  searchParams: Promise<{
     token?: string;
-  };
+  }>;
 }
 
-export default function ResetPasswordPage({
+export default async function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {
-  const { token } = searchParams;
+  const params = await searchParams;
+  const { token: rawToken } = params;
+  const token = rawToken ? decodeURIComponent(rawToken) : undefined;
 
   if (!token) {
     return (
@@ -37,6 +40,93 @@ export default function ResetPasswordPage({
               <div className="mt-4 text-center">
                 <Link href="/forgot-password">
                   <Button variant="outline">Request New Link</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================
+  // VALIDATE TOKEN STATUS
+  // ============================================
+  const resetToken = await prisma.passwordResetToken.findUnique({
+    where: { token },
+  });
+
+  if (!resetToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="pt-6">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Invalid reset link. Please request a new password reset.
+                </AlertDescription>
+              </Alert>
+              <div className="mt-4 text-center">
+                <Link href="/forgot-password">
+                  <Button variant="outline">Request New Link</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if token expired
+  if (resetToken.expires < new Date()) {
+    // Delete expired token
+    await prisma.passwordResetToken.delete({
+      where: { token },
+    });
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="pt-6">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Reset link has expired. Please request a new one.
+                </AlertDescription>
+              </Alert>
+              <div className="mt-4 text-center">
+                <Link href="/forgot-password">
+                  <Button variant="outline">Request New Link</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if token already used
+  if (resetToken.used) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="pt-6">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  The reset link has already been used. Please request a new
+                  one.
+                </AlertDescription>
+              </Alert>
+              <div className="mt-4 text-center">
+                <Link href="/login">
+                  <Button variant="outline">Go to Login</Button>
                 </Link>
               </div>
             </CardContent>

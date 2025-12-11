@@ -46,6 +46,19 @@ export async function POST(request: NextRequest) {
       console.log(
         `[ResetPassword] Invalid token: ${token.substring(0, 10)}...`
       );
+      console.log(`[ResetPassword] Token not found in database`);
+
+      // Let's also check what tokens do exist
+      const allTokens = await prisma.passwordResetToken.findMany({
+        select: { token: true, email: true, expires: true, used: true },
+      });
+      console.log(`[ResetPassword] Total tokens in DB: ${allTokens.length}`);
+      allTokens.slice(0, 5).forEach((t, i) => {
+        console.log(
+          `[ResetPassword] Token ${i}: ${t.token.substring(0, 10)}... Email: ${t.email} Used: ${t.used}`
+        );
+      });
+
       return NextResponse.json(
         { error: "Invalid or expired reset link. Please request a new one." },
         { status: 400 }
