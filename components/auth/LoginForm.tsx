@@ -51,14 +51,14 @@ export function LoginForm() {
       if (result?.error) {
         // Check for specific error types
         if (result.error === "EmailNotVerified") {
-          // Email is in database but not verified
+          // Email is in database but not verifieds
           setError("Please verify your email or resend the verification link");
         } else {
           // User doesn't exist or password is wrong (combined for security)
           setError(
-            'Incorrect email or password. Please sign up or click "Forgot Your Password?" if you forgot your password'
+            'Incorrect email or password. Please sign up or click "Forgot My Password" if you forgot your password'
           );
-        }
+        }s
         setIsLoading(false);
         return;
       }

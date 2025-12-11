@@ -162,3 +162,20 @@ model CupidProfile {
   
   createdAt       DateTime @default(now())
 }
+
+
+model RateLimit {
+  id         String   @id @default(cuid())
+  identifier String   // Email address or IP
+  action     String   // 'resend-verification', 'login-attempt', etc.
+  attempts   Int      @default(1)
+  windowStart DateTime @default(now())
+  expiresAt  DateTime
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@unique([identifier, action])
+  @@index([identifier, action])
+  @@index([expiresAt])
+}
