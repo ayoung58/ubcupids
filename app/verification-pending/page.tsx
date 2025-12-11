@@ -30,12 +30,12 @@ export default function VerificationPendingPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-center">
             <p className="text-slate-600">
-              We've sent a verification link to your UBC email address. Click
+              We&apos;ve sent a verification link to your UBC email address. Click
               the link in the email to activate your account.
             </p>
 
             <p className="text-sm text-slate-500">
-              Didn't receive the email? Check your spam folder or request a new
+              Didn&apos;t receive the email? Check your spam folder or request a new
               one.
             </p>
 
