@@ -51,14 +51,19 @@ export function LoginForm() {
       if (result?.error) {
         // Check for specific error types
         if (result.error === "EmailNotVerified") {
-          // Email is in database but not verifieds
+          // Email is in database but not verified
           setError("Please verify your email or resend the verification link");
+        } else if (result.error === "TooManyAttempts") {
+          // NEW: Handle rate limit error
+          setError(
+            "Too many failed login attempts. Please try again in 15 minutes or reset your password."
+          );
         } else {
           // User doesn't exist or password is wrong (combined for security)
           setError(
-            'Incorrect email or password. Please sign up or click "Forgot My Password" if you forgot your password'
+            'Incorrect email or password. Please sign up or click "Forgot Your Password?" if you forgot your password'
           );
-        }s
+        }
         setIsLoading(false);
         return;
       }
@@ -106,7 +111,16 @@ export function LoginForm() {
 
           {/* Password Field */}
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="password">Password</Label>
+              {/* NEW: Forgot Password Link */}
+              <Link
+                href="/forgot-password"
+                className="text-xs text-slate-600 hover:text-slate-900 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * NextAuth Configuration
@@ -89,6 +90,23 @@ export const authOptions: NextAuthOptions = {
         // Normalize email to prevent case sensitivity issues
         const email = credentials.email.toLowerCase().trim();
 
+        // ============================================
+        // RATE LIMITING: Check login attempts
+        // ============================================
+        const rateLimitResult = await checkRateLimit(email, "login-attempt", {
+          maxAttempts: 5, // 5 attempts
+          windowMinutes: 15, // per 15 minutes
+        });
+
+        if (!rateLimitResult.allowed) {
+          console.log(`[Auth] Rate limit exceeded for: ${email}`);
+          throw new Error("TooManyAttempts");
+        }
+
+        console.log(
+          `[Auth] Rate limit check passed. Remaining: ${rateLimitResult.remaining}`
+        );
+
         // Find user by email
         const user = await prisma.user.findUnique({
           where: { email },
@@ -127,6 +145,16 @@ export const authOptions: NextAuthOptions = {
           console.log(`[Auth] Email not verified for: ${email}`);
           throw new Error("EmailNotVerified");
         }
+
+        // ============================================
+        // SUCCESS: Reset rate limit on successful login
+        // ============================================
+        await prisma.rateLimit.deleteMany({
+          where: {
+            identifier: email,
+            action: "login-attempt",
+          },
+        });
 
         // Success: Return user object (password excluded)
         console.log(`[Auth] Login successful for: ${email}`);
