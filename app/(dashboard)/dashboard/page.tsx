@@ -30,13 +30,18 @@ export default async function DashboardPage() {
             <p className="text-slate-600 mt-1">{session.user.email}</p>
           </div>
 
-          {/* Logout Button - Updated */}
-          <Link href="/api/auth/signout">
-            <Button variant="outline" className="gap-2">
+          {/* Logout Button */}
+          <form action="/api/auth/signout" method="POST">
+            <input
+              type="hidden"
+              name="callbackUrl"
+              value="/login?signedout=true"
+            />
+            <Button type="submit" variant="outline" className="gap-2">
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
-          </Link>
+          </form>
         </div>
 
         {/* Quick Actions */}

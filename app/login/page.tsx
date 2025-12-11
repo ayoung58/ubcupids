@@ -27,22 +27,36 @@ interface LoginPageProps {
   searchParams: Promise<{
     verified?: string;
     error?: string;
+    signedout?: string;
   }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { verified, error } = await searchParams;
+  const { verified, error, signedout } = await searchParams;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900">💘 UBCupids</h1>
+          <Link href="/">
+            <h1 className="text-3xl font-bold text-slate-900 cursor-pointer hover:text-slate-700 transition-colors">
+              💘 UBCupids
+            </h1>
+          </Link>
           <p className="mt-2 text-sm text-slate-600">Sign in to your account</p>
         </div>
 
         {/* Success Messages */}
+        {signedout === "true" && (
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              You have successfully signed out.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {verified === "true" && (
           <Alert className="border-green-200 bg-green-50">
             <CheckCircle className="h-4 w-4 text-green-600" />
