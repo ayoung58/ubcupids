@@ -179,3 +179,16 @@ model RateLimit {
   @@index([identifier, action])
   @@index([expiresAt])
 }
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  email      String
+  token      String   @unique
+  expires    DateTime
+  used       Boolean  @default(false)
+  
+  createdAt  DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+}

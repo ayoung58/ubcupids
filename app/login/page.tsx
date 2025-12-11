@@ -28,11 +28,12 @@ interface LoginPageProps {
     verified?: string;
     error?: string;
     signedout?: string;
+    reset?: string;
   }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { verified, error, signedout } = await searchParams;
+  const { verified, error, signedout, reset } = await searchParams;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
@@ -71,6 +72,17 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <CheckCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
               Your email is already verified. You can log in below.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Password Reset Success */}
+        {reset === "success" && (
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              Password reset successfully! You can now log in with your new
+              password.
             </AlertDescription>
           </Alert>
         )}
