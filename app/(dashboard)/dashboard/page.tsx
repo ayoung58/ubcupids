@@ -16,7 +16,11 @@ async function getQuestionnaireStatus(userId: string) {
 
     if (!questionnaire) return "not-started";
     if (questionnaire.isSubmitted) return "completed";
-    if (questionnaire.responses && Object.keys(questionnaire.responses).length > 0) return "draft";
+    if (
+      questionnaire.responses &&
+      Object.keys(questionnaire.responses).length > 0
+    )
+      return "draft";
     return "not-started";
   } catch (error) {
     console.error("Error checking questionnaire status:", error);

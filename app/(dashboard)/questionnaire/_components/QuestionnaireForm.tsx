@@ -40,7 +40,9 @@ export function QuestionnaireForm({
   // State
   // Skip agreement if already submitted OR if user has existing responses (continuing questionnaire)
   const hasExistingResponses = Object.keys(initialResponses).length > 0;
-  const [hasAgreed, setHasAgreed] = useState(isSubmitted || hasExistingResponses);
+  const [hasAgreed, setHasAgreed] = useState(
+    isSubmitted || hasExistingResponses
+  );
   const [responses, setResponses] = useState<Responses>(initialResponses);
   const [importance] = useState<Record<string, string>>(
     initialImportance || {}
@@ -212,7 +214,10 @@ export function QuestionnaireForm({
         answeredQuestions={answeredQuestions}
       />
 
-      <main id="main-content" className="container max-w-4xl py-6 md:py-8 px-4 mx-auto">
+      <main
+        id="main-content"
+        className="container max-w-4xl py-6 md:py-8 px-4 mx-auto"
+      >
         {/* Header */}
         <div className="mb-6 md:mb-8">
           <div className="flex items-start justify-between gap-4 mb-2">
