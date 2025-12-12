@@ -88,6 +88,7 @@ model User {
 
   //Application Relations
   questionnaire Questionnaire?
+  questionnaireResponse QuestionnaireResponse?
   matchesGiven  Match[]   @relation("UserMatches")
   matchesReceived Match[] @relation("MatchedUser")
   uploads       Upload[]
@@ -111,6 +112,24 @@ model Questionnaire {
   updatedAt   DateTime @updatedAt
 
   @@index([userId])
+}
+
+model QuestionnaireResponse {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  responses   Json     // Stores all answers: { "q0.1": "man", "q1": "pizza", ... }
+  importance  Json?    // Stores importance ratings: { "q1": "dealbreaker", "q5": "very-important", ... }
+  
+  isSubmitted Boolean  @default(false)  // false = draft, true = locked
+  submittedAt DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([isSubmitted])
 }
 
 model Match {
