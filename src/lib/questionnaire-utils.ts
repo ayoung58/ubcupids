@@ -66,16 +66,19 @@ export function validateResponses(responses: Responses): string[] {
     if (question.type === "text" || question.type === "textarea") {
       const textResponse = response as string;
 
-      if (question.minLength && textResponse.length < question.minLength) {
-        errors.push(
-          `"${question.text}" must be at least ${question.minLength} characters`
-        );
-      }
+      // Only validate length if we have a string response
+      if (typeof textResponse === "string") {
+        if (question.minLength && textResponse.length < question.minLength) {
+          errors.push(
+            `"${question.text}" must be at least ${question.minLength} characters`
+          );
+        }
 
-      if (question.maxLength && textResponse.length > question.maxLength) {
-        errors.push(
-          `"${question.text}" must be no more than ${question.maxLength} characters`
-        );
+        if (question.maxLength && textResponse.length > question.maxLength) {
+          errors.push(
+            `"${question.text}" must be no more than ${question.maxLength} characters`
+          );
+        }
       }
     }
   });

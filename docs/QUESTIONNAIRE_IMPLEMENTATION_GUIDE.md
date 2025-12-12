@@ -859,22 +859,47 @@ useEffect(() => {
 
 **User Story:** "As a user, I want to mark which questions matter most to me, so my matches are weighted toward my priorities."
 
+**Updated Design (per user feedback):**
+
+All questions have importance buttons displayed by default. Users can optionally click to change importance for any question they care about. All questions default to "Somewhat Important" (✓) unless changed.
+
 **Implementation:**
 
-1. Add toggle next to each question: 🔥 Dealbreaker, ⭐ Very Important, ✓ Somewhat Important, ~ Not Important
-2. Store in `importance` JSON field
-3. Make it optional (users can skip)
-4. Add "Fine-tune your matches (optional)" section after completing questions
+1. Display importance button row next to/below each question
+2. Four button options: 🔥 Dealbreaker, ⭐ Very Important, ✓ Somewhat Important (default), ~ Not Important
+3. Buttons styled as toggle buttons (active state shows selection)
+4. Store in `importance` JSON field (only store non-default values to save space)
+5. Make it optional - users can skip and leave as default
+6. Mention in pre-questionnaire agreement that users can optionally mark question importance
 
-**UI Mockup:**
+**UI Design:**
 
 ```
 [Question text here]
-[ ] Option 1
-[ ] Option 2
+( ) Option 1
+( ) Option 2
+(•) Option 3  ← selected
 
-Importance: ( ) 🔥 Dealbreaker  (•) ⭐ Very Important  ( ) ✓ Somewhat  ( ) ~ Not Important
+How important is this to you?
+[🔥] [⭐] [✓] [~]  ← Buttons (default: ✓ Somewhat Important)
+Dealbreaker | Very | Somewhat | Not Important
 ```
+
+**Implementation Details:**
+
+- Component: `ImportanceRating.tsx`
+- Props: `questionId`, `value`, `onChange`, `disabled`
+- Default state: "somewhat-important" (don't store in DB unless changed)
+- Visual feedback: Active button has different color/border
+- Mobile-friendly: Large touch targets (44px minimum)
+- Accessible: Keyboard navigation, ARIA labels
+- Optional: Tooltip explaining what each level means
+
+**Pre-Questionnaire Agreement Update:**
+
+Add to the agreement points:
+
+- "You can optionally mark which questions matter most to you (using importance buttons) to fine-tune your matches"
 
 ---
 
