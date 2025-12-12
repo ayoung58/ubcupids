@@ -217,13 +217,23 @@ export function QuestionnaireForm({
               : "Take your time answering these questions. Your progress is saved automatically."}
           </p>
           {lastSaved && !isSubmitted && (
-            <p className="text-sm text-gray-500 mt-2" role="status" aria-live="polite">
+            <p
+              className="text-sm text-gray-500 mt-2"
+              role="status"
+              aria-live="polite"
+            >
               Last saved at {lastSaved.toLocaleTimeString()}
             </p>
           )}
         </div>
         {/* Sections */}
-        <div className="space-y-6" role="form" aria-label="Compatibility questionnaire form">\n          {config.sections.map((section) => (
+        <div
+          className="space-y-6"
+          role="form"
+          aria-label="Compatibility questionnaire form"
+        >
+          \n{" "}
+          {config.sections.map((section) => (
             <SectionRenderer
               key={section.id}
               section={section}
