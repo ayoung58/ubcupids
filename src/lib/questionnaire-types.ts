@@ -46,6 +46,8 @@ export interface AgreementConfig {
   title: string;
   description: string;
   points: string[];
+  commitments?: string[];
+  reminder?: string;
   agreementText: string;
 }
 
