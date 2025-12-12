@@ -2,6 +2,7 @@
 
 import { AgreementConfig } from "@/src/lib/questionnaire-types";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -23,11 +24,21 @@ export function PreQuestionnaireAgreement({
   agreement,
   onAgree,
 }: PreQuestionnaireAgreementProps) {
+  const router = useRouter();
   const [hasAgreed, setHasAgreed] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full shadow-lg">
+      <div className="max-w-2xl w-full">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push("/dashboard")}
+          className="mb-4"
+        >
+          ← Back to Dashboard
+        </Button>
+        <Card className="w-full shadow-lg">
         <CardHeader className="text-center space-y-3 pb-4 md:pb-6 px-4 md:px-6">
           <div className="flex justify-center">
             <div className="bg-pink-100 p-3 md:p-4 rounded-full">
@@ -58,6 +69,9 @@ export function PreQuestionnaireAgreement({
                   • {point}
                 </li>
               ))}
+              <li className="text-sm text-blue-800">
+                • Your progress is auto-saved every 3 seconds
+              </li>
             </ul>
           </div>
 
@@ -121,6 +135,7 @@ export function PreQuestionnaireAgreement({
           </p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

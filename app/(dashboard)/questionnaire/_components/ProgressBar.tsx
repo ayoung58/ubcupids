@@ -15,7 +15,7 @@ export function ProgressBar({
 }: ProgressBarProps) {
   return (
     <div className="sticky top-0 bg-white z-10 py-3 md:py-4 border-b shadow-sm">
-      <div className="container max-w-4xl px-4">
+      <div className="container max-w-4xl px-4 mx-auto">
         <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
           <span className="text-xs md:text-sm font-medium text-gray-700">
             Your Progress

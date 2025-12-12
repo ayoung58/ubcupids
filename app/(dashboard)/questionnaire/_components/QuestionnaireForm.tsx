@@ -38,7 +38,9 @@ export function QuestionnaireForm({
   const { toast } = useToast();
 
   // State
-  const [hasAgreed, setHasAgreed] = useState(isSubmitted); // Skip agreement if already submitted
+  // Skip agreement if already submitted OR if user has existing responses (continuing questionnaire)
+  const hasExistingResponses = Object.keys(initialResponses).length > 0;
+  const [hasAgreed, setHasAgreed] = useState(isSubmitted || hasExistingResponses);
   const [responses, setResponses] = useState<Responses>(initialResponses);
   const [importance] = useState<Record<string, string>>(
     initialImportance || {}
@@ -180,9 +182,15 @@ export function QuestionnaireForm({
 
   // Calculate progress
   const totalQuestions = getTotalQuestions();
-  const answeredQuestions = Object.keys(responses).filter(
-    (key) => responses[key] !== undefined && responses[key] !== ""
-  ).length;
+  const answeredQuestions = Object.keys(responses).filter((key) => {
+    const response = responses[key];
+    // Count as answered if not empty (matching calculateProgress logic)
+    return (
+      response &&
+      (typeof response !== "string" || response.trim() !== "") &&
+      (!Array.isArray(response) || response.length > 0)
+    );
+  }).length;
   const progress = calculateProgress(responses);
 
   // Show pre-questionnaire agreement
@@ -204,13 +212,22 @@ export function QuestionnaireForm({
         answeredQuestions={answeredQuestions}
       />
 
-      <main id="main-content" className="container max-w-4xl py-6 md:py-8 px-4">
-        \n {/* Header */}\n{" "}
+      <main id="main-content" className="container max-w-4xl py-6 md:py-8 px-4 mx-auto">
+        {/* Header */}
         <div className="mb-6 md:mb-8">
-          \n{" "}
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-            \n UBCupids Compatibility Questionnaire\n{" "}
-          </h1>
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
+              UBCupids Compatibility Questionnaire
+            </h1>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/dashboard")}
+              className="flex-shrink-0"
+            >
+              ← Dashboard
+            </Button>
+          </div>
           <p className="text-sm md:text-base text-gray-600">
             {isSubmitted
               ? "Your responses have been submitted and are now locked."
@@ -232,7 +249,6 @@ export function QuestionnaireForm({
           role="form"
           aria-label="Compatibility questionnaire form"
         >
-          \n{" "}
           {config.sections.map((section) => (
             <SectionRenderer
               key={section.id}

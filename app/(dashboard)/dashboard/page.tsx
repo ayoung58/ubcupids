@@ -5,6 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogOut } from "lucide-react"; // Import icon
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+
+async function getQuestionnaireStatus(userId: string) {
+  try {
+    const questionnaire = await prisma.questionnaireResponse.findUnique({
+      where: { userId },
+      select: { isSubmitted: true, responses: true },
+    });
+
+    if (!questionnaire) return "not-started";
+    if (questionnaire.isSubmitted) return "completed";
+    if (questionnaire.responses && Object.keys(questionnaire.responses).length > 0) return "draft";
+    return "not-started";
+  } catch (error) {
+    console.error("Error checking questionnaire status:", error);
+    return "not-started";
+  }
+}
 
 export const metadata: Metadata = {
   title: "Dashboard | UBCupids",
@@ -17,6 +35,8 @@ export default async function DashboardPage() {
   if (!session?.user) {
     redirect("/login");
   }
+
+  const questionnaireStatus = await getQuestionnaireStatus(session.user.id);
 
   return (
     <div className="min-h-screen bg-slate-50 p-8">
@@ -45,12 +65,14 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle className="text-lg">Questionnaire</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col justify-between min-h-[120px]">
               <p className="text-sm text-slate-600 mb-4">
                 Fill out your compatibility questionnaire
               </p>
               <Link href="/questionnaire">
-                <Button className="w-full">Start</Button>
+                <Button className="w-full">
+                  {questionnaireStatus === "draft" ? "Continue" : "Start"}
+                </Button>
               </Link>
             </CardContent>
           </Card>
@@ -59,7 +81,7 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle className="text-lg">My Matches</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col justify-between min-h-[120px]">
               <p className="text-sm text-slate-600 mb-4">
                 View your Valentine&apos;s Day matches
               </p>
@@ -75,7 +97,7 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle className="text-lg">Submit Proof</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col justify-between min-h-[120px]">
               <p className="text-sm text-slate-600 mb-4">
                 Upload date receipt for prize draw
               </p>
