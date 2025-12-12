@@ -28,16 +28,19 @@ export function PreQuestionnaireAgreement({
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full shadow-lg">
-        <CardHeader className="text-center space-y-3 pb-6">
+        <CardHeader className="text-center space-y-3 pb-4 md:pb-6 px-4 md:px-6">
           <div className="flex justify-center">
-            <div className="bg-pink-100 p-4 rounded-full">
-              <Heart className="h-12 w-12 text-pink-500" fill="currentColor" />
+            <div className="bg-pink-100 p-3 md:p-4 rounded-full">
+              <Heart
+                className="h-10 w-10 md:h-12 md:w-12 text-pink-500"
+                fill="currentColor"
+              />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">
+          <CardTitle className="text-2xl md:text-3xl font-bold">
             {agreement.title}
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-sm md:text-base">
             {agreement.description}
           </CardDescription>
         </CardHeader>
@@ -92,10 +95,11 @@ export function PreQuestionnaireAgreement({
               checked={hasAgreed}
               onCheckedChange={(checked) => setHasAgreed(checked as boolean)}
               className="mt-0.5"
+              aria-required="true"
             />
             <Label
               htmlFor="agreement"
-              className="text-sm font-medium cursor-pointer leading-relaxed"
+              className="text-sm md:text-base font-medium cursor-pointer leading-relaxed"
             >
               {agreement.agreementText}
             </Label>
@@ -105,8 +109,9 @@ export function PreQuestionnaireAgreement({
           <Button
             onClick={onAgree}
             disabled={!hasAgreed}
-            className="w-full h-12 text-lg"
+            className="w-full h-12 md:h-14 text-base md:text-lg min-h-[48px]"
             size="lg"
+            aria-label="Continue to questionnaire"
           >
             Continue to Questionnaire →
           </Button>

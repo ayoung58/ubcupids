@@ -26,16 +26,25 @@ export function QuestionRenderer({
   switch (question.type) {
     case "single-choice":
       return (
-        <div className="space-y-3">
-          <Label className="text-base font-medium">
+        <div
+          className="space-y-3"
+          role="group"
+          aria-labelledby={`${question.id}-label`}
+        >
+          <Label id={`${question.id}-label`} className="text-base font-medium">
             {question.text}
-            {question.required && <span className="text-red-500 ml-1">*</span>}
+            {question.required && (
+              <span className="text-red-500 ml-1" aria-label="required">
+                *
+              </span>
+            )}
           </Label>
           <RadioGroup
             value={(value as string) || ""}
             onValueChange={onChange}
             disabled={disabled}
             className="space-y-2"
+            aria-required={question.required}
           >
             {question.options?.map((option) => (
               <div key={option.value} className="flex items-start space-x-2">
@@ -70,12 +79,20 @@ export function QuestionRenderer({
     case "multi-choice":
       const multiValue = (value as string[]) || [];
       return (
-        <div className="space-y-3">
-          <Label className="text-base font-medium">
+        <div
+          className="space-y-3"
+          role="group"
+          aria-labelledby={`${question.id}-label`}
+        >
+          <Label id={`${question.id}-label`} className="text-base font-medium">
             {question.text}
-            {question.required && <span className="text-red-500 ml-1">*</span>}
+            {question.required && (
+              <span className="text-red-500 ml-1" aria-label="required">
+                *
+              </span>
+            )}
           </Label>
-          <div className="space-y-2">
+          <div className="space-y-2" role="list">
             {question.options?.map((option) => (
               <div key={option.value} className="flex items-start space-x-2">
                 <Checkbox
@@ -134,17 +151,24 @@ export function QuestionRenderer({
 
     case "text":
       return (
-        <div className="space-y-2">
-          <Label className="text-base font-medium">
+        <div className="space-y-3">
+          <Label htmlFor={question.id} className="text-base font-medium">
             {question.text}
-            {question.required && <span className="text-red-500 ml-1">*</span>}
+            {question.required && (
+              <span className="text-red-500 ml-1" aria-label="required">
+                *
+              </span>
+            )}
           </Label>
           <Input
+            id={question.id}
             value={(value as string) || ""}
             onChange={(e) => onChange(e.target.value)}
             placeholder={question.placeholder}
             disabled={disabled}
             maxLength={question.maxLength}
+            aria-required={question.required}
+            className="min-h-[44px]"
           />
         </div>
       );
@@ -154,23 +178,40 @@ export function QuestionRenderer({
       // TODO: Implement drag-and-drop ranking in future
       const rankingValue = (value as string[]) || [];
       return (
-        <div className="space-y-3">
-          <Label className="text-base font-medium">
+        <div
+          className="space-y-3"
+          role="group"
+          aria-labelledby={`${question.id}-label`}
+        >
+          <Label id={`${question.id}-label`} className="text-base font-medium">
             {question.text}
-            {question.required && <span className="text-red-500 ml-1">*</span>}
+            {question.required && (
+              <span className="text-red-500 ml-1" aria-label="required">
+                *
+              </span>
+            )}
           </Label>
-          <p className="text-sm text-gray-600">
+          <p
+            className="text-sm text-gray-600"
+            id={`${question.id}-instructions`}
+          >
             Select your top 3 in order of importance (click to select)
           </p>
-          <div className="space-y-2">
+          <div
+            className="space-y-2"
+            role="list"
+            aria-describedby={`${question.id}-instructions`}
+          >
             {question.options?.map((option) => {
               const selectedIndex = rankingValue.indexOf(option.value);
               const isSelected = selectedIndex !== -1;
 
               return (
-                <div
+                <button
                   key={option.value}
-                  className={`flex items-center space-x-3 p-3 rounded-md border-2 cursor-pointer transition-colors ${
+                  type="button"
+                  disabled={disabled}
+                  className={`flex items-center space-x-3 p-3 rounded-md border-2 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 w-full text-left ${
                     isSelected
                       ? "border-primary bg-primary/5"
                       : "border-gray-200 hover:border-gray-300"
@@ -188,6 +229,8 @@ export function QuestionRenderer({
                       }
                     }
                   }}
+                  aria-pressed={isSelected}
+                  aria-label={`${option.label}${isSelected ? `, ranked ${selectedIndex + 1}` : ""}`}
                 >
                   {isSelected && (
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
@@ -197,7 +240,7 @@ export function QuestionRenderer({
                   <Label className="font-normal cursor-pointer flex-1">
                     {option.label}
                   </Label>
-                </div>
+                </button>
               );
             })}
           </div>

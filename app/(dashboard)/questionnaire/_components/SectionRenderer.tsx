@@ -29,15 +29,15 @@ export function SectionRenderer({
 }: SectionRendererProps) {
   return (
     <Card className="mb-6 shadow-sm">
-      <CardHeader className="bg-slate-50">
-        <CardTitle className="text-2xl">{section.title}</CardTitle>
+      <CardHeader className="bg-slate-50 px-4 md:px-6 py-4 md:py-6">
+        <CardTitle className="text-xl md:text-2xl">{section.title}</CardTitle>
         {section.description && (
-          <CardDescription className="text-base mt-2">
+          <CardDescription className="text-sm md:text-base mt-2">
             {section.description}
           </CardDescription>
         )}
       </CardHeader>
-      <CardContent className="space-y-8 pt-6">
+      <CardContent className="space-y-6 md:space-y-8 pt-4 md:pt-6 px-4 md:px-6">
         {section.questions.map((question) => (
           <div
             key={question.id}

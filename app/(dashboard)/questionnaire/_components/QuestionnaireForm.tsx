@@ -16,6 +16,7 @@ import { SectionRenderer } from "./SectionRenderer";
 import { ProgressBar } from "./ProgressBar";
 import { SubmitConfirmDialog } from "./SubmitConfirmDialog";
 import { PreQuestionnaireAgreement } from "./PreQuestionnaireAgreement";
+import { SkipLink } from "./SkipLink";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Send } from "lucide-react";
@@ -196,33 +197,33 @@ export function QuestionnaireForm({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SkipLink />
       <ProgressBar
         value={progress}
         totalQuestions={totalQuestions}
         answeredQuestions={answeredQuestions}
       />
 
-      <div className="container max-w-4xl py-8 px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            UBCupids Compatibility Questionnaire
+      <main id="main-content" className="container max-w-4xl py-6 md:py-8 px-4">
+        \n {/* Header */}\n{" "}
+        <div className="mb-6 md:mb-8">
+          \n{" "}
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+            \n UBCupids Compatibility Questionnaire\n{" "}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm md:text-base text-gray-600">
             {isSubmitted
               ? "Your responses have been submitted and are now locked."
               : "Take your time answering these questions. Your progress is saved automatically."}
           </p>
           {lastSaved && !isSubmitted && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 mt-2" role="status" aria-live="polite">
               Last saved at {lastSaved.toLocaleTimeString()}
             </p>
           )}
         </div>
-
         {/* Sections */}
-        <div className="space-y-6">
-          {config.sections.map((section) => (
+        <div className="space-y-6" role="form" aria-label="Compatibility questionnaire form">\n          {config.sections.map((section) => (
             <SectionRenderer
               key={section.id}
               section={section}
@@ -232,37 +233,35 @@ export function QuestionnaireForm({
             />
           ))}
         </div>
-
         {/* Action Buttons */}
         {!isSubmitted && (
-          <div className="sticky bottom-0 bg-white border-t shadow-lg mt-8 py-4">
-            <div className="container max-w-4xl flex items-center justify-between gap-4">
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleManualSave}
-                  disabled={isSaving}
-                  variant="outline"
-                  size="lg"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Progress
-                    </>
-                  )}
-                </Button>
-              </div>
+          <div className="sticky bottom-0 bg-white border-t shadow-lg mt-8 py-3 md:py-4">
+            <div className="container max-w-4xl px-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <Button
+                onClick={handleManualSave}
+                disabled={isSaving}
+                variant="outline"
+                size="lg"
+                className="min-h-[44px] w-full sm:w-auto"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Progress
+                  </>
+                )}
+              </Button>
 
               <Button
                 onClick={handleSubmitClick}
                 disabled={isSubmitting || progress < 100}
                 size="lg"
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
               >
                 {isSubmitting ? (
                   <>
@@ -279,7 +278,7 @@ export function QuestionnaireForm({
             </div>
           </div>
         )}
-      </div>
+      </main>
 
       {/* Submit Confirmation Dialog */}
       <SubmitConfirmDialog
