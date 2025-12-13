@@ -63,14 +63,15 @@ export type ResponseValue = string | string[] | number;
 // User's responses (questionId -> value)
 export type Responses = Record<string, ResponseValue>;
 
-// Importance levels for question weighting
-export type ImportanceLevel =
-  | "dealbreaker" // 🔥 Must match
-  | "very-important" // ⭐ Heavily weighted
-  | "somewhat-important" // ✓ Default weight
-  | "not-important"; // ~ Ignore in matching
+// Importance levels for question weighting (1-5 numeric scale)
+// 1 = Not Important
+// 2 = Somewhat Important
+// 3 = Important (default)
+// 4 = Very Important
+// 5 = Deal Breaker
+export type ImportanceLevel = 1 | 2 | 3 | 4 | 5;
 
-// User's importance ratings (questionId -> importance)
+// User's importance ratings (questionId -> importance level)
 export type ImportanceRatings = Record<string, ImportanceLevel>;
 
 // Database model interface (matches Prisma schema)

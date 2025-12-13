@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { validateResponses } from "@/src/lib/questionnaire-utils";
+import { encryptJSON } from "@/lib/encryption";
 
 /**
  * POST /api/questionnaire/submit
@@ -11,7 +12,7 @@ import { validateResponses } from "@/src/lib/questionnaire-utils";
  *
  * Request body:
  * - responses: Object mapping questionId -> answer
- * - importance: Optional object mapping questionId -> importance level
+ * - importance: Optional object mapping questionId -> importance level (1-5 scale)
  *
  * Validation:
  * - All required questions must be answered
@@ -21,6 +22,7 @@ import { validateResponses } from "@/src/lib/questionnaire-utils";
  * - isSubmitted set to true
  * - submittedAt timestamp recorded
  * - User cannot edit responses anymore (read-only)
+ * - Data encrypted before storage
  */
 
 // Validation schema for submit request
@@ -32,12 +34,7 @@ const submitSchema = z.object({
   importance: z
     .record(
       z.string(),
-      z.enum([
-        "dealbreaker",
-        "very-important",
-        "somewhat-important",
-        "not-important",
-      ])
+      z.number().int().min(1).max(5) // 1=Not Important, 3=Important (default), 5=Deal Breaker
     )
     .optional(),
 });
@@ -82,20 +79,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Encrypt data before saving
+    const encryptedResponses = encryptJSON(validatedData.responses);
+    const encryptedImportance = validatedData.importance
+      ? encryptJSON(validatedData.importance)
+      : undefined;
+
     // Submit questionnaire (lock responses)
     await prisma.questionnaireResponse.upsert({
       where: { userId: session.user.id },
       update: {
-        responses: validatedData.responses as any,
-        importance: (validatedData.importance || {}) as any,
+        responses: encryptedResponses,
+        importance: encryptedImportance,
         isSubmitted: true,
         submittedAt: new Date(),
         updatedAt: new Date(),
       },
       create: {
         userId: session.user.id,
-        responses: validatedData.responses as any,
-        importance: (validatedData.importance || {}) as any,
+        responses: encryptedResponses,
+        importance: encryptedImportance,
         isSubmitted: true,
         submittedAt: new Date(),
       },

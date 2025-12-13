@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
+import { decryptJSON } from "@/lib/encryption";
 
 /**
  * GET /api/questionnaire
  * Fetch the current user's questionnaire responses
  *
  * Returns:
- * - responses: User's answers (empty object if none)
- * - importance: Question importance ratings (empty object if none)
+ * - responses: User's answers (decrypted, empty object if none)
+ * - importance: Question importance ratings (decrypted, empty object if none)
  * - isSubmitted: Whether questionnaire is locked
  * - submittedAt: Timestamp of submission (null if not submitted)
  */
@@ -47,9 +48,17 @@ export async function GET() {
       });
     }
 
+    // Decrypt data before sending to client
+    const decryptedResponses = questionnaireResponse.responses
+      ? decryptJSON(questionnaireResponse.responses as string)
+      : {};
+    const decryptedImportance = questionnaireResponse.importance
+      ? decryptJSON(questionnaireResponse.importance as string)
+      : {};
+
     return NextResponse.json({
-      responses: questionnaireResponse.responses || {},
-      importance: questionnaireResponse.importance || {},
+      responses: decryptedResponses,
+      importance: decryptedImportance,
       isSubmitted: questionnaireResponse.isSubmitted,
       submittedAt: questionnaireResponse.submittedAt,
     });

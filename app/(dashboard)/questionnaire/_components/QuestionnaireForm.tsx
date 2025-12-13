@@ -6,6 +6,8 @@ import {
   Responses,
   ResponseValue,
   QuestionnaireConfig,
+  ImportanceRatings,
+  ImportanceLevel,
 } from "@/src/lib/questionnaire-types";
 import {
   calculateProgress,
@@ -16,6 +18,7 @@ import { SectionRenderer } from "./SectionRenderer";
 import { ProgressBar } from "./ProgressBar";
 import { SubmitConfirmDialog } from "./SubmitConfirmDialog";
 import { PreQuestionnaireAgreement } from "./PreQuestionnaireAgreement";
+import { InfoPanel } from "./InfoPanel";
 import { SkipLink } from "./SkipLink";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -23,7 +26,7 @@ import { Loader2, Save, Send } from "lucide-react";
 
 interface QuestionnaireFormProps {
   initialResponses: Responses;
-  initialImportance?: Record<string, string>;
+  initialImportance?: ImportanceRatings;
   isSubmitted: boolean;
   config: QuestionnaireConfig;
 }
@@ -44,7 +47,7 @@ export function QuestionnaireForm({
     isSubmitted || hasExistingResponses
   );
   const [responses, setResponses] = useState<Responses>(initialResponses);
-  const [importance] = useState<Record<string, string>>(
+  const [importance, setImportance] = useState<ImportanceRatings>(
     initialImportance || {}
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -88,6 +91,18 @@ export function QuestionnaireForm({
     (questionId: string, value: ResponseValue) => {
       if (isSubmitted) return;
       setResponses((prev) => ({
+        ...prev,
+        [questionId]: value,
+      }));
+    },
+    [isSubmitted]
+  );
+
+  // Handle importance change
+  const handleImportanceChange = useCallback(
+    (questionId: string, value: ImportanceLevel) => {
+      if (isSubmitted) return;
+      setImportance((prev) => ({
         ...prev,
         [questionId]: value,
       }));
@@ -248,6 +263,10 @@ export function QuestionnaireForm({
             </p>
           )}
         </div>
+
+        {/* Info Panel */}
+        <InfoPanel agreement={config.agreement} />
+
         {/* Sections */}
         <div
           className="space-y-6"
@@ -259,7 +278,9 @@ export function QuestionnaireForm({
               key={section.id}
               section={section}
               responses={responses}
+              importance={importance}
               onChange={handleResponseChange}
+              onImportanceChange={handleImportanceChange}
               disabled={isSubmitted}
             />
           ))}

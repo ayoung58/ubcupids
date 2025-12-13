@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { encryptJSON } from "@/lib/encryption";
 
 /**
  * POST /api/questionnaire/save
@@ -10,12 +11,13 @@ import { z } from "zod";
  *
  * Request body:
  * - responses: Object mapping questionId -> answer
- * - importance: Optional object mapping questionId -> importance level
+ * - importance: Optional object mapping questionId -> importance level (1-5 scale)
  *
  * Behavior:
  * - Creates new record if none exists
  * - Updates existing record if found
  * - Rejects if questionnaire already submitted (locked)
+ * - Encrypts responses and importance before saving to database
  */
 
 // Validation schema for save request
@@ -31,12 +33,7 @@ const saveSchema = z.object({
   importance: z
     .record(
       z.string(),
-      z.enum([
-        "dealbreaker",
-        "very-important",
-        "somewhat-important",
-        "not-important",
-      ])
+      z.number().int().min(1).max(5) // 1=Not Important, 3=Important (default), 5=Deal Breaker
     )
     .optional(),
 });
@@ -69,18 +66,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Encrypt data before saving
+    const encryptedResponses = encryptJSON(validatedData.responses);
+    const encryptedImportance = validatedData.importance
+      ? encryptJSON(validatedData.importance)
+      : undefined;
+
     // Save draft (upsert: update if exists, create if not)
     await prisma.questionnaireResponse.upsert({
       where: { userId: session.user.id },
       update: {
-        responses: validatedData.responses as any,
-        importance: (validatedData.importance || {}) as any,
+        responses: encryptedResponses,
+        importance: encryptedImportance,
         updatedAt: new Date(),
       },
       create: {
         userId: session.user.id,
-        responses: validatedData.responses as any,
-        importance: (validatedData.importance || {}) as any,
+        responses: encryptedResponses,
+        importance: encryptedImportance,
         isSubmitted: false,
       },
     });

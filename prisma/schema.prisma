@@ -119,8 +119,8 @@ model QuestionnaireResponse {
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  responses   Json     // Stores all answers: { "q0.1": "man", "q1": "pizza", ... }
-  importance  Json?    // Stores importance ratings: { "q1": "dealbreaker", "q5": "very-important", ... }
+  responses   String   @db.Text // Encrypted JSON: { "q0.1": "man", "q1": "pizza", ... }
+  importance  String?  @db.Text // Encrypted JSON: { "q1": 3, "q5": 5, ... } (1-5 scale)
   
   isSubmitted Boolean  @default(false)  // false = draft, true = locked
   submittedAt DateTime?

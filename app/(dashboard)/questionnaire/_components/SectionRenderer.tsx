@@ -4,6 +4,8 @@ import {
   Section,
   Responses,
   ResponseValue,
+  ImportanceRatings,
+  ImportanceLevel,
 } from "@/src/lib/questionnaire-types";
 import { QuestionRenderer } from "./QuestionRenderer";
 import {
@@ -17,14 +19,18 @@ import {
 interface SectionRendererProps {
   section: Section;
   responses: Responses;
+  importance: ImportanceRatings;
   onChange: (questionId: string, value: ResponseValue) => void;
+  onImportanceChange: (questionId: string, importance: ImportanceLevel) => void;
   disabled?: boolean;
 }
 
 export function SectionRenderer({
   section,
   responses,
+  importance,
   onChange,
+  onImportanceChange,
   disabled = false,
 }: SectionRendererProps) {
   return (
@@ -47,6 +53,8 @@ export function SectionRenderer({
               question={question}
               value={responses[question.id]}
               onChange={(value) => onChange(question.id, value)}
+              importance={importance[question.id] || 3}
+              onImportanceChange={(imp) => onImportanceChange(question.id, imp)}
               disabled={disabled}
             />
           </div>

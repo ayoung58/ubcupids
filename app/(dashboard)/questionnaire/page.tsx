@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getQuestionnaireConfig } from "@/src/lib/questionnaire-utils";
 import { QuestionnaireForm } from "./_components/QuestionnaireForm";
 import { QuestionnaireLoading } from "./_components/QuestionnaireLoading";
-import { Responses } from "@/src/lib/questionnaire-types";
+import { Responses, ImportanceRatings } from "@/src/lib/questionnaire-types";
 
 async function getQuestionnaireData(userId: string) {
   const existingResponse = await prisma.questionnaireResponse.findUnique({
@@ -33,7 +33,7 @@ async function QuestionnairePage() {
   return (
     <QuestionnaireForm
       initialResponses={data.responses as Responses}
-      initialImportance={data.importance as Record<string, string>}
+      initialImportance={data.importance as ImportanceRatings}
       isSubmitted={data.isSubmitted}
       config={config}
     />

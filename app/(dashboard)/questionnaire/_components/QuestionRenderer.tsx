@@ -1,17 +1,24 @@
 "use client";
 
-import { Question, ResponseValue } from "@/src/lib/questionnaire-types";
+import {
+  Question,
+  ResponseValue,
+  ImportanceLevel,
+} from "@/src/lib/questionnaire-types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ImportanceSelector } from "./ImportanceSelector";
 import { useState } from "react";
 
 interface QuestionRendererProps {
   question: Question;
   value: ResponseValue | undefined;
   onChange: (value: ResponseValue) => void;
+  importance: ImportanceLevel;
+  onImportanceChange: (importance: ImportanceLevel) => void;
   disabled?: boolean;
 }
 
@@ -19,13 +26,28 @@ export function QuestionRenderer({
   question,
   value,
   onChange,
+  importance,
+  onImportanceChange,
   disabled = false,
 }: QuestionRendererProps) {
   const [otherText, setOtherText] = useState<string>("");
 
+  // Wrapper to include importance selector with each question type
+  const wrapWithImportance = (content: React.ReactNode) => (
+    <div className="space-y-1">
+      {content}
+      <ImportanceSelector
+        questionId={question.id}
+        value={importance}
+        onChange={onImportanceChange}
+        disabled={disabled}
+      />
+    </div>
+  );
+
   switch (question.type) {
     case "single-choice":
-      return (
+      return wrapWithImportance(
         <div
           className="space-y-3"
           role="group"
@@ -78,7 +100,7 @@ export function QuestionRenderer({
 
     case "multi-choice":
       const multiValue = (value as string[]) || [];
-      return (
+      return wrapWithImportance(
         <div
           className="space-y-3"
           role="group"
@@ -122,7 +144,7 @@ export function QuestionRenderer({
 
     case "textarea":
       const textareaValue = (value as string) || "";
-      return (
+      return wrapWithImportance(
         <div className="space-y-2">
           <Label className="text-base font-medium">
             {question.text}
@@ -150,7 +172,7 @@ export function QuestionRenderer({
       );
 
     case "text":
-      return (
+      return wrapWithImportance(
         <div className="space-y-3">
           <Label htmlFor={question.id} className="text-base font-medium">
             {question.text}
@@ -177,7 +199,7 @@ export function QuestionRenderer({
       // For now, we'll implement a simple multi-select
       // TODO: Implement drag-and-drop ranking in future
       const rankingValue = (value as string[]) || [];
-      return (
+      return wrapWithImportance(
         <div
           className="space-y-3"
           role="group"
@@ -250,7 +272,7 @@ export function QuestionRenderer({
     case "scale":
       // Simple numeric input for now
       // TODO: Could use slider component in future
-      return (
+      return wrapWithImportance(
         <div className="space-y-2">
           <Label className="text-base font-medium">
             {question.text}
