@@ -1,24 +1,24 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { RegisterForm } from '@/components/auth/RegisterForm';
+import { Metadata } from "next";
+import Link from "next/link";
+import { RegisterForm } from "@/components/auth/RegisterForm";
 
 /**
  * Registration Page
- * 
+ *
  * URL: /register
- * 
+ *
  * Features:
  * - UBC email validation (@student.ubc.ca, @alumni.ubc.ca)
  * - Password strength validation
  * - Terms & Conditions acceptance
  * - Redirect to verification pending page after registration
- * 
+ *
  * Public page (no authentication required)
  */
 
 export const metadata: Metadata = {
-  title: 'Sign Up | UBCupids',
-  description: 'Create your UBCupids account',
+  title: "Sign Up | UBCupids",
+  description: "Create your UBCupids account",
 };
 
 export default function RegisterPage() {
@@ -43,7 +43,7 @@ export default function RegisterPage() {
         {/* Footer Links */}
         <div className="text-center text-sm">
           <p className="text-slate-600">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link
               href="/login"
               className="font-medium text-slate-900 hover:underline"
