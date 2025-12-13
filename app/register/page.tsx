@@ -27,9 +27,11 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900">
-            💘 UBCupids
-          </h1>
+          <Link href="/">
+            <h1 className="text-3xl font-bold text-slate-900 cursor-pointer hover:text-slate-700 transition-colors">
+              💘 UBCupids
+            </h1>
+          </Link>
           <p className="mt-2 text-sm text-slate-600">
             Create your account to get started
           </p>

@@ -30,15 +30,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div className="max-w-2xl w-full space-y-8 text-center">
-        {/* Header */}
-        <div className="text-center">
-          <Link href="/">
-            <h1 className="text-3xl font-bold text-slate-900 cursor-pointer hover:text-slate-700 transition-colors">
-              💘 UBCupids
-            </h1>
-          </Link>
-        </div>
-
         {/* Sign Out Success Message - Show regardless of session state */}
         {showSignOutMessage && (
           <Alert className="border-green-200 bg-green-50">
