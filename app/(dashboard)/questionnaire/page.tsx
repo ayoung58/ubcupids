@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
+import { decryptJSON } from "@/lib/encryption";
 import { getQuestionnaireConfig } from "@/src/lib/questionnaire-utils";
 import { QuestionnaireForm } from "./_components/QuestionnaireForm";
 import { QuestionnaireLoading } from "./_components/QuestionnaireLoading";
@@ -13,9 +14,33 @@ async function getQuestionnaireData(userId: string) {
     where: { userId },
   });
 
+  // Decrypt responses and importance if they exist
+  let responses: Responses = {};
+  let importance: ImportanceRatings = {};
+
+  if (existingResponse?.responses) {
+    try {
+      responses = decryptJSON<Responses>(existingResponse.responses);
+    } catch (error) {
+      console.error("Failed to decrypt responses:", error);
+      // If decryption fails, start fresh
+      responses = {};
+    }
+  }
+
+  if (existingResponse?.importance) {
+    try {
+      importance = decryptJSON<ImportanceRatings>(existingResponse.importance);
+    } catch (error) {
+      console.error("Failed to decrypt importance:", error);
+      // If decryption fails, start fresh
+      importance = {};
+    }
+  }
+
   return {
-    responses: existingResponse?.responses || {},
-    importance: existingResponse?.importance || {},
+    responses,
+    importance,
     isSubmitted: existingResponse?.isSubmitted || false,
   };
 }
@@ -32,8 +57,8 @@ async function QuestionnairePage() {
 
   return (
     <QuestionnaireForm
-      initialResponses={data.responses as Responses}
-      initialImportance={data.importance as ImportanceRatings}
+      initialResponses={data.responses}
+      initialImportance={data.importance}
       isSubmitted={data.isSubmitted}
       config={config}
     />

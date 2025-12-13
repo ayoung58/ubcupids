@@ -80,10 +80,17 @@ export function InfoPanel({ agreement }: InfoPanelProps) {
                 ⭐ About Importance Ratings
               </h3>
               <p className="mb-2">
-                Each question has an importance selector. This helps emphasize
-                certain questions over others in matching:
+                Most personality and preference questions have an importance
+                selector. This helps emphasize certain questions over others in
+                matching.
               </p>
               <ul className="space-y-1 list-disc list-inside text-xs">
+                <li>
+                  <strong>Not Important</strong> - Minimal impact on matching
+                </li>
+                <li>
+                  <strong>Somewhat Important</strong> - Lower priority
+                </li>
                 <li>
                   <strong>Important</strong> (default) - Standard weight for
                   matching
@@ -93,12 +100,6 @@ export function InfoPanel({ agreement }: InfoPanelProps) {
                 </li>
                 <li>
                   <strong>Deal Breaker</strong> - Must match with your partner
-                </li>
-                <li>
-                  <strong>Somewhat Important</strong> - Lower priority
-                </li>
-                <li>
-                  <strong>Not Important</strong> - Minimal impact on matching
                 </li>
               </ul>
               <p className="mt-2 text-xs text-slate-600">

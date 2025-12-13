@@ -32,10 +32,38 @@ export function QuestionRenderer({
 }: QuestionRendererProps) {
   const [otherText, setOtherText] = useState<string>("");
 
+  // Determine if this question should show importance selector
+  const shouldShowImportance = () => {
+    // Don't show importance for textarea (open-ended) questions
+    if (question.type === "textarea") {
+      return false;
+    }
+    // Don't show importance for basic info questions (section 0)
+    if (question.id.startsWith("q0.")) {
+      return false;
+    }
+    return true;
+  };
+
   // Wrapper to include importance selector with each question type
   const wrapWithImportance = (content: React.ReactNode) => (
-    <div className="space-y-1">
-      {content}
+    <div className="space-y-1">{content}</div>
+  );
+
+  // Create question header with importance selector inline (if applicable)
+  const questionHeader = shouldShowImportance() ? (
+    <div className="flex items-start justify-between gap-3">
+      <Label
+        id={`${question.id}-label`}
+        className="text-base font-medium flex-1"
+      >
+        {question.text}
+        {question.required && (
+          <span className="text-red-500 ml-1" aria-label="required">
+            *
+          </span>
+        )}
+      </Label>
       <ImportanceSelector
         questionId={question.id}
         value={importance}
@@ -43,6 +71,15 @@ export function QuestionRenderer({
         disabled={disabled}
       />
     </div>
+  ) : (
+    <Label id={`${question.id}-label`} className="text-base font-medium">
+      {question.text}
+      {question.required && (
+        <span className="text-red-500 ml-1" aria-label="required">
+          *
+        </span>
+      )}
+    </Label>
   );
 
   switch (question.type) {
@@ -53,14 +90,7 @@ export function QuestionRenderer({
           role="group"
           aria-labelledby={`${question.id}-label`}
         >
-          <Label id={`${question.id}-label`} className="text-base font-medium">
-            {question.text}
-            {question.required && (
-              <span className="text-red-500 ml-1" aria-label="required">
-                *
-              </span>
-            )}
-          </Label>
+          {questionHeader}
           <RadioGroup
             value={(value as string) || ""}
             onValueChange={onChange}
@@ -106,14 +136,7 @@ export function QuestionRenderer({
           role="group"
           aria-labelledby={`${question.id}-label`}
         >
-          <Label id={`${question.id}-label`} className="text-base font-medium">
-            {question.text}
-            {question.required && (
-              <span className="text-red-500 ml-1" aria-label="required">
-                *
-              </span>
-            )}
-          </Label>
+          {questionHeader}
           <div className="space-y-2" role="list">
             {question.options?.map((option) => (
               <div key={option.value} className="flex items-start space-x-2">
@@ -144,12 +167,9 @@ export function QuestionRenderer({
 
     case "textarea":
       const textareaValue = (value as string) || "";
-      return wrapWithImportance(
+      return (
         <div className="space-y-2">
-          <Label className="text-base font-medium">
-            {question.text}
-            {question.required && <span className="text-red-500 ml-1">*</span>}
-          </Label>
+          {questionHeader}
           <Textarea
             value={textareaValue}
             onChange={(e) => onChange(e.target.value)}
@@ -174,14 +194,7 @@ export function QuestionRenderer({
     case "text":
       return wrapWithImportance(
         <div className="space-y-3">
-          <Label htmlFor={question.id} className="text-base font-medium">
-            {question.text}
-            {question.required && (
-              <span className="text-red-500 ml-1" aria-label="required">
-                *
-              </span>
-            )}
-          </Label>
+          {questionHeader}
           <Input
             id={question.id}
             value={(value as string) || ""}
@@ -205,14 +218,7 @@ export function QuestionRenderer({
           role="group"
           aria-labelledby={`${question.id}-label`}
         >
-          <Label id={`${question.id}-label`} className="text-base font-medium">
-            {question.text}
-            {question.required && (
-              <span className="text-red-500 ml-1" aria-label="required">
-                *
-              </span>
-            )}
-          </Label>
+          {questionHeader}
           <p
             className="text-sm text-gray-600"
             id={`${question.id}-instructions`}
