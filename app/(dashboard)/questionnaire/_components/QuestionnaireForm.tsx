@@ -54,6 +54,9 @@ export function QuestionnaireForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Map<string, string>>(
+    new Map()
+  );
 
   // Auto-save function
   const handleAutoSave = useCallback(async () => {
@@ -94,8 +97,16 @@ export function QuestionnaireForm({
         ...prev,
         [questionId]: value,
       }));
+      // Clear validation error for this question when user makes changes
+      if (validationErrors.has(questionId)) {
+        setValidationErrors((prev) => {
+          const newErrors = new Map(prev);
+          newErrors.delete(questionId);
+          return newErrors;
+        });
+      }
     },
-    [isSubmitted]
+    [isSubmitted, validationErrors]
   );
 
   // Handle importance change
@@ -149,11 +160,18 @@ export function QuestionnaireForm({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      console.log("Submitting questionnaire...", {
+        responsesCount: Object.keys(responses).length,
+        importanceCount: Object.keys(importance).length,
+      });
+
       const response = await fetch("/api/questionnaire/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ responses, importance }),
       });
+
+      console.log("Submit response status:", response.status);
 
       if (response.ok) {
         toast({
@@ -165,13 +183,15 @@ export function QuestionnaireForm({
         router.refresh();
       } else {
         const data = await response.json();
+        console.error("Submission failed:", data);
         toast({
           title: "Submission Failed",
           description: data.error || "Please complete all required questions.",
           variant: "destructive",
         });
       }
-    } catch {
+    } catch (error) {
+      console.error("Submission error:", error);
       toast({
         title: "Submission Failed",
         description: "An error occurred. Please try again.",
@@ -185,15 +205,50 @@ export function QuestionnaireForm({
 
   // Validate before showing submit dialog
   const handleSubmitClick = () => {
+    console.log("Submit button clicked", {
+      responsesCount: Object.keys(responses).length,
+      progress,
+    });
+
     const errors = validateResponses(responses);
+    console.log("Validation errors:", errors);
+
     if (errors.length > 0) {
+      console.error("Validation failed:", errors);
+
+      // Create error map for displaying inline errors
+      const errorMap = new Map<string, string>();
+      errors.forEach((err) => {
+        errorMap.set(err.questionId, err.errorMessage);
+      });
+      setValidationErrors(errorMap);
+
+      // Scroll to first error
+      const firstErrorId = errors[0].questionId;
+      const element = document.getElementById(`question-${firstErrorId}`);
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        // Focus on the element after scrolling
+        setTimeout(() => {
+          element.focus();
+        }, 500);
+      }
+
       toast({
         title: "Incomplete Questionnaire",
-        description: errors[0],
+        description: `${errors.length} question${errors.length > 1 ? "s need" : " needs"} attention. Please check the highlighted fields.`,
         variant: "destructive",
       });
       return;
     }
+
+    // Clear any existing validation errors
+    setValidationErrors(new Map());
+
+    console.log("Showing submit dialog");
     setShowSubmitDialog(true);
   };
 
@@ -282,6 +337,7 @@ export function QuestionnaireForm({
               onChange={handleResponseChange}
               onImportanceChange={handleImportanceChange}
               disabled={isSubmitted}
+              validationErrors={validationErrors}
             />
           ))}
         </div>

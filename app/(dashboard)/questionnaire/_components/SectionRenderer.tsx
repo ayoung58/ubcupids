@@ -23,6 +23,7 @@ interface SectionRendererProps {
   onChange: (questionId: string, value: ResponseValue) => void;
   onImportanceChange: (questionId: string, importance: ImportanceLevel) => void;
   disabled?: boolean;
+  validationErrors?: Map<string, string>; // Map of questionId -> error message
 }
 
 export function SectionRenderer({
@@ -32,6 +33,7 @@ export function SectionRenderer({
   onChange,
   onImportanceChange,
   disabled = false,
+  validationErrors,
 }: SectionRendererProps) {
   return (
     <Card className="mb-6 shadow-sm">
@@ -56,6 +58,7 @@ export function SectionRenderer({
               importance={importance[question.id] || 3}
               onImportanceChange={(imp) => onImportanceChange(question.id, imp)}
               disabled={disabled}
+              validationError={validationErrors?.get(question.id)}
             />
           </div>
         ))}

@@ -66,27 +66,33 @@ export default async function DashboardPage() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle className="text-lg">Questionnaire</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col justify-between min-h-[120px]">
-              <p className="text-sm text-slate-600 mb-4">
-                Fill out your compatibility questionnaire
+            <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
+              <p className="text-sm text-slate-600 mb-2">
+                {questionnaireStatus === "completed"
+                  ? "You've filled out your questionnaire! Matches to be revealed soon! 🎉"
+                  : "Fill out your compatibility questionnaire"}
               </p>
               <Link href="/questionnaire">
                 <Button className="w-full">
-                  {questionnaireStatus === "draft" ? "Continue" : "Start"}
+                  {questionnaireStatus === "draft"
+                    ? "Continue"
+                    : questionnaireStatus === "completed"
+                      ? "View Responses"
+                      : "Start"}
                 </Button>
               </Link>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle className="text-lg">My Matches</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col justify-between min-h-[120px]">
-              <p className="text-sm text-slate-600 mb-4">
+            <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
+              <p className="text-sm text-slate-600 mb-2">
                 View your Valentine&apos;s Day matches
               </p>
               <Link href="/matches">
@@ -98,11 +104,11 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle className="text-lg">Submit Proof</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col justify-between min-h-[120px]">
-              <p className="text-sm text-slate-600 mb-4">
+            <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
+              <p className="text-sm text-slate-600 mb-2">
                 Upload date receipt for prize draw
               </p>
               <Link href="/submit-proof">
@@ -114,14 +120,18 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        {/* Placeholder Content */}
+        {/* Next Steps Timeline */}
         <Card>
           <CardHeader>
             <CardTitle>Next Steps</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-slate-600">
             <p>✅ Account created and verified</p>
-            <p>⏳ Complete your questionnaire (opens January 15)</p>
+            <p>
+              {questionnaireStatus === "completed"
+                ? "✅ Questionnaire completed"
+                : "⏳ Complete your questionnaire (opens January 15)"}
+            </p>
             <p>⏳ Matches revealed February 1 & 7, 2026</p>
           </CardContent>
         </Card>

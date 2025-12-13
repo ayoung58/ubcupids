@@ -43,11 +43,20 @@ export function getRequiredQuestions(): Question[] {
 }
 
 /**
- * Validate that all required questions have been answered
- * @returns Array of error messages (empty if valid)
+ * Validation error with question details
  */
-export function validateResponses(responses: Responses): string[] {
-  const errors: string[] = [];
+export interface ValidationError {
+  questionId: string;
+  questionText: string;
+  errorMessage: string;
+}
+
+/**
+ * Validate that all required questions have been answered
+ * @returns Array of validation errors with question IDs (empty if valid)
+ */
+export function validateResponses(responses: Responses): ValidationError[] {
+  const errors: ValidationError[] = [];
   const requiredQuestions = getRequiredQuestions();
 
   requiredQuestions.forEach((question) => {
@@ -59,7 +68,12 @@ export function validateResponses(responses: Responses): string[] {
       (typeof response === "string" && response.trim() === "") ||
       (Array.isArray(response) && response.length === 0)
     ) {
-      errors.push(`"${question.text}" is required`);
+      errors.push({
+        questionId: question.id,
+        questionText: question.text,
+        errorMessage: "Please provide an answer to this question",
+      });
+      return; // Skip further validation for this question
     }
 
     // Additional validation for text/textarea fields
@@ -69,15 +83,53 @@ export function validateResponses(responses: Responses): string[] {
       // Only validate length if we have a string response
       if (typeof textResponse === "string") {
         if (question.minLength && textResponse.length < question.minLength) {
-          errors.push(
-            `"${question.text}" must be at least ${question.minLength} characters`
-          );
+          errors.push({
+            questionId: question.id,
+            questionText: question.text,
+            errorMessage: `Please provide at least ${question.minLength} characters (currently ${textResponse.length})`,
+          });
         }
 
         if (question.maxLength && textResponse.length > question.maxLength) {
-          errors.push(
-            `"${question.text}" must be no more than ${question.maxLength} characters`
-          );
+          errors.push({
+            questionId: question.id,
+            questionText: question.text,
+            errorMessage: `Please keep your response under ${question.maxLength} characters (currently ${textResponse.length})`,
+          });
+        }
+      }
+    }
+
+    // Additional validation for multi-choice questions requiring specific counts
+    if (question.type === "multi-choice") {
+      const arrayResponse = response as string[];
+
+      if (question.id === "q39") {
+        // Love languages you GIVE - require exactly 2 selections
+        if (!Array.isArray(arrayResponse) || arrayResponse.length !== 2) {
+          errors.push({
+            questionId: question.id,
+            questionText: question.text,
+            errorMessage:
+              "Please select 2 love languages that you most naturally give",
+          });
+        }
+      }
+    }
+
+    // Additional validation for ranking questions requiring specific counts
+    if (question.type === "ranking") {
+      const arrayResponse = response as string[];
+
+      if (question.id === "q28") {
+        // Love languages you RECEIVE - require exactly 3 rankings
+        if (!Array.isArray(arrayResponse) || arrayResponse.length !== 3) {
+          errors.push({
+            questionId: question.id,
+            questionText: question.text,
+            errorMessage:
+              "Please rank 3 love languages for how you prefer to receive affection",
+          });
         }
       }
     }

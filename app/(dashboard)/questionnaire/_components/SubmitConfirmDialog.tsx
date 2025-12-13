@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
 
 interface SubmitConfirmDialogProps {
   open: boolean;
@@ -26,36 +27,51 @@ export function SubmitConfirmDialog({
 }: SubmitConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-2xl">
-            Submit Your Questionnaire?
+          <AlertDialogTitle className="text-2xl font-bold text-gray-900">
+            Confirm Submission
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-base space-y-3">
-            <p>
-              Once submitted, you will{" "}
-              <strong className="text-gray-900">
+          <div className="text-base space-y-4 pt-2">
+            <p className="text-gray-700">
+              Once you submit, you will{" "}
+              <strong className="text-red-600 font-semibold">
                 not be able to edit your responses
               </strong>
-              . You&apos;ll only be able to view them.
+              . Your answers will be locked and used for matching.
             </p>
-            <p>
-              Your responses will be used to match you with compatible people
-              for Valentine&apos;s Day 2026.
+            <p className="text-gray-600">
+              Your responses will be encrypted and used to match you with
+              compatible people for Valentine&apos;s Day 2026.
             </p>
-            <p className="text-sm text-gray-600">
-              Are you sure you want to continue?
+            <p className="text-sm font-medium text-gray-900">
+              Are you ready to submit?
             </p>
-          </AlertDialogDescription>
+          </div>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Go Back</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
+        <AlertDialogFooter className="gap-2 sm:gap-2">
+          <AlertDialogCancel
             disabled={isLoading}
-            className="bg-primary"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-900 border-gray-300"
           >
-            {isLoading ? "Submitting..." : "Yes, Submit My Responses"}
+            Return to Questionnaire
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              onConfirm();
+            }}
+            disabled={isLoading}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Confirm Submission"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

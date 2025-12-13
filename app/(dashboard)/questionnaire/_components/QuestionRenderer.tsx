@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImportanceSelector } from "./ImportanceSelector";
 import { useState } from "react";
+import { AlertCircle } from "lucide-react";
 
 interface QuestionRendererProps {
   question: Question;
@@ -20,6 +21,7 @@ interface QuestionRendererProps {
   importance: ImportanceLevel;
   onImportanceChange: (importance: ImportanceLevel) => void;
   disabled?: boolean;
+  validationError?: string; // Error message to display
 }
 
 export function QuestionRenderer({
@@ -29,6 +31,7 @@ export function QuestionRenderer({
   importance,
   onImportanceChange,
   disabled = false,
+  validationError,
 }: QuestionRendererProps) {
   const [otherText, setOtherText] = useState<string>("");
 
@@ -82,6 +85,14 @@ export function QuestionRenderer({
     </Label>
   );
 
+  // Validation error display
+  const validationErrorDisplay = validationError && (
+    <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+      <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+      <p className="flex-1">{validationError}</p>
+    </div>
+  );
+
   switch (question.type) {
     case "single-choice":
       return wrapWithImportance(
@@ -89,8 +100,10 @@ export function QuestionRenderer({
           className="space-y-3"
           role="group"
           aria-labelledby={`${question.id}-label`}
+          id={`question-${question.id}`}
         >
           {questionHeader}
+          {validationErrorDisplay}
           <RadioGroup
             value={(value as string) || ""}
             onValueChange={onChange}
@@ -139,12 +152,15 @@ export function QuestionRenderer({
           className="space-y-3"
           role="group"
           aria-labelledby={`${question.id}-label`}
+          id={`question-${question.id}`}
         >
           {questionHeader}
+          {validationErrorDisplay}
           <div className="space-y-2" role="list">
             {question.options?.map((option) => {
               const isChecked = multiValue.includes(option.value);
-              const isDisabled = disabled || (!isChecked && multiValue.length >= maxSelections);
+              const isDisabled =
+                disabled || (!isChecked && multiValue.length >= maxSelections);
 
               return (
                 <div key={option.value} className="flex items-center space-x-2">
@@ -163,7 +179,7 @@ export function QuestionRenderer({
                   />
                   <Label
                     htmlFor={`${question.id}-${option.value}`}
-                    className={`font-normal flex-1 ${isDisabled && !isChecked ? 'text-gray-400 cursor-not-allowed' : 'cursor-pointer'}`}
+                    className={`font-normal flex-1 ${isDisabled && !isChecked ? "text-gray-400 cursor-not-allowed" : "cursor-pointer"}`}
                   >
                     {option.label}
                   </Label>
@@ -177,8 +193,9 @@ export function QuestionRenderer({
     case "textarea":
       const textareaValue = (value as string) || "";
       return (
-        <div className="space-y-2">
+        <div className="space-y-2" id={`question-${question.id}`}>
           {questionHeader}
+          {validationErrorDisplay}
           <Textarea
             value={textareaValue}
             onChange={(e) => onChange(e.target.value)}
@@ -202,8 +219,9 @@ export function QuestionRenderer({
 
     case "text":
       return wrapWithImportance(
-        <div className="space-y-3">
+        <div className="space-y-3" id={`question-${question.id}`}>
           {questionHeader}
+          {validationErrorDisplay}
           <Input
             id={question.id}
             value={(value as string) || ""}
@@ -226,8 +244,10 @@ export function QuestionRenderer({
           className="space-y-3"
           role="group"
           aria-labelledby={`${question.id}-label`}
+          id={`question-${question.id}`}
         >
           {questionHeader}
+          {validationErrorDisplay}
           <p
             className="text-sm text-gray-600"
             id={`${question.id}-instructions`}

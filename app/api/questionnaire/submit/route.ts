@@ -55,12 +55,12 @@ export async function POST(request: NextRequest) {
     const validatedData = submitSchema.parse(body);
 
     // Validate all required questions are answered
-    const validationErrors = validateResponses(validatedData.responses as any);
+    const validationErrors = validateResponses(validatedData.responses);
     if (validationErrors.length > 0) {
       return NextResponse.json(
         {
           error: "Please answer all required questions",
-          details: validationErrors,
+          details: validationErrors.map((e) => e.errorMessage),
         },
         { status: 400 }
       );
