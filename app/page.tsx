@@ -57,8 +57,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </p>
           <p className="text-slate-500 max-w-lg mx-auto">
             Anonymous matching service for UBC students. Complete a
-            compatibility questionnaire and receive 1-3 matches for Valentine&apos;s
-            Day 2026.
+            compatibility questionnaire and receive 1-3 matches for
+            Valentine&apos;s Day 2026.
           </p>
         </div>
 
