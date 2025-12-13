@@ -1,7 +1,7 @@
 /**
  * Script to reset questionnaire data for users
  * Use this if encrypted data became corrupted during the encryption migration
- * 
+ *
  * Usage:
  * - Reset all users: npm run reset-questionnaire
  * - Reset specific user: npm run reset-questionnaire -- user@example.com
@@ -39,7 +39,10 @@ async function resetQuestionnaireData(userEmail?: string) {
       console.log("   (Submitted questionnaires were preserved)");
     }
   } catch (error) {
-    if (error instanceof Error && error.message.includes("Record to delete does not exist")) {
+    if (
+      error instanceof Error &&
+      error.message.includes("Record to delete does not exist")
+    ) {
       console.log("ℹ️  No questionnaire data to reset");
     } else {
       console.error("❌ Error resetting questionnaire data:", error);

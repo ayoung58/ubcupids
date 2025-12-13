@@ -255,7 +255,7 @@ export function QuestionnaireForm({
           </p>
           {lastSaved && !isSubmitted && (
             <p
-              className="text-sm text-gray-500 mt-2"
+              className="text-sm text-gray-500 mt-1"
               role="status"
               aria-live="polite"
             >

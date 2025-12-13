@@ -99,11 +99,11 @@ export function QuestionRenderer({
             aria-required={question.required}
           >
             {question.options?.map((option) => (
-              <div key={option.value} className="flex items-start space-x-2">
+              <div key={option.value} className="flex items-center space-x-2">
                 <RadioGroupItem
                   value={option.value}
                   id={`${question.id}-${option.value}`}
-                  className="mt-0.5"
+                  className="flex-shrink-0"
                 />
                 <div className="flex-1">
                   <Label
@@ -130,6 +130,10 @@ export function QuestionRenderer({
 
     case "multi-choice":
       const multiValue = (value as string[]) || [];
+      // Special handling for love languages question (q39) - limit to 2 selections
+      const isLoveLanguagesQuestion = question.id === "q39";
+      const maxSelections = isLoveLanguagesQuestion ? 2 : Infinity;
+
       return wrapWithImportance(
         <div
           className="space-y-3"
@@ -138,29 +142,34 @@ export function QuestionRenderer({
         >
           {questionHeader}
           <div className="space-y-2" role="list">
-            {question.options?.map((option) => (
-              <div key={option.value} className="flex items-start space-x-2">
-                <Checkbox
-                  id={`${question.id}-${option.value}`}
-                  checked={multiValue.includes(option.value)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      onChange([...multiValue, option.value]);
-                    } else {
-                      onChange(multiValue.filter((v) => v !== option.value));
-                    }
-                  }}
-                  disabled={disabled}
-                  className="mt-0.5"
-                />
-                <Label
-                  htmlFor={`${question.id}-${option.value}`}
-                  className="font-normal cursor-pointer flex-1"
-                >
-                  {option.label}
-                </Label>
-              </div>
-            ))}
+            {question.options?.map((option) => {
+              const isChecked = multiValue.includes(option.value);
+              const isDisabled = disabled || (!isChecked && multiValue.length >= maxSelections);
+
+              return (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`${question.id}-${option.value}`}
+                    checked={isChecked}
+                    onCheckedChange={(checked) => {
+                      if (checked && multiValue.length < maxSelections) {
+                        onChange([...multiValue, option.value]);
+                      } else if (!checked) {
+                        onChange(multiValue.filter((v) => v !== option.value));
+                      }
+                    }}
+                    disabled={isDisabled}
+                    className="flex-shrink-0"
+                  />
+                  <Label
+                    htmlFor={`${question.id}-${option.value}`}
+                    className={`font-normal flex-1 ${isDisabled && !isChecked ? 'text-gray-400 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    {option.label}
+                  </Label>
+                </div>
+              );
+            })}
           </div>
         </div>
       );
