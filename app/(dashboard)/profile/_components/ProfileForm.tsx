@@ -187,6 +187,28 @@ export function ProfileForm() {
         description: "Display name is required",
         variant: "destructive",
       });
+      // Scroll to and focus the display name field
+      const displayNameField = document.getElementById("displayName");
+      if (displayNameField) {
+        displayNameField.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        displayNameField.focus();
+        displayNameField.classList.add(
+          "ring-2",
+          "ring-red-500",
+          "border-red-500"
+        );
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          displayNameField.classList.remove(
+            "ring-2",
+            "ring-red-500",
+            "border-red-500"
+          );
+        }, 3000);
+      }
       return;
     }
 
@@ -564,15 +586,6 @@ export function ProfileForm() {
                     </Label>
                   </div>
                 </div>
-              </div>
-
-              {/* Reset Password */}
-              <div className="pt-4 border-t">
-                <Link href="/forgot-password">
-                  <Button type="button" variant="outline" className="w-full">
-                    Reset Password
-                  </Button>
-                </Link>
               </div>
 
               {/* Submit Button */}

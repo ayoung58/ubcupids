@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,22 +19,10 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [backUrl, setBackUrl] = useState("/login");
-  const [backLabel, setBackLabel] = useState("Back to login");
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   });
-
-  // Detect where user came from
-  useEffect(() => {
-    const referrer = document.referrer;
-    if (referrer.includes("/dashboard") || referrer.includes("/profile")) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setBackUrl("/dashboard");
-      setBackLabel("Back to dashboard");
-    }
-  }, []);
 
   const getPasswordStrength = (password: string) => {
     const checks = {
@@ -124,10 +112,10 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>Reset Password</CardTitle>
-        <Link href={backUrl}>
+        <Link href="/login">
           <Button variant="ghost" size="sm" className="mt-2">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {backLabel}
+            Back to login
           </Button>
         </Link>
       </CardHeader>

@@ -42,6 +42,14 @@ export default async function DashboardPage() {
 
   const questionnaireStatus = await getQuestionnaireStatus(session.user.id);
 
+  // Fetch user profile for display name
+  const profile = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { displayName: true },
+  });
+
+  const displayName = profile?.displayName || session.user.name;
+
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -49,7 +57,7 @@ export default async function DashboardPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">
-              Welcome, {session.user.name}!
+              Welcome, {displayName}!
             </h1>
             <p className="text-slate-600 mt-1">{session.user.email}</p>
           </div>
