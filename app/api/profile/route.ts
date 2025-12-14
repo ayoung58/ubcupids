@@ -28,6 +28,8 @@ export async function GET() {
         showBioToMatches: true,
         showProfilePicToMatches: true,
         showInterestsToMatches: true,
+        isCupid: true,
+        isBeingMatched: true,
       },
     });
 

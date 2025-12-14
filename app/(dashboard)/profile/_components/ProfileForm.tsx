@@ -53,6 +53,11 @@ export function ProfileForm() {
     showInterestsToMatches: true,
   });
 
+  const [accountInfo, setAccountInfo] = useState({
+    isCupid: false,
+    isBeingMatched: true,
+  });
+
   useEffect(() => {
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,6 +80,10 @@ export function ProfileForm() {
           showBioToMatches: data.showBioToMatches ?? true,
           showProfilePicToMatches: data.showProfilePicToMatches ?? true,
           showInterestsToMatches: data.showInterestsToMatches ?? true,
+        });
+        setAccountInfo({
+          isCupid: data.isCupid || false,
+          isBeingMatched: data.isBeingMatched ?? true,
         });
       }
     } catch (error) {
@@ -605,6 +614,78 @@ export function ProfileForm() {
                 )}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Account Linking Card */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Account Type</CardTitle>
+            <p className="text-sm text-slate-600">
+              Manage your Cupid and Match accounts
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Current Account Status */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-100 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Cupid Account</span>
+                  {accountInfo.isCupid ? (
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <X className="h-5 w-5 text-slate-400" />
+                  )}
+                </div>
+                <p className="text-xs text-slate-600 mt-1">
+                  {accountInfo.isCupid
+                    ? "You can create matches"
+                    : "Not activated"}
+                </p>
+              </div>
+              <div className="p-4 bg-slate-100 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Match Account</span>
+                  {accountInfo.isBeingMatched ? (
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <X className="h-5 w-5 text-slate-400" />
+                  )}
+                </div>
+                <p className="text-xs text-slate-600 mt-1">
+                  {accountInfo.isBeingMatched
+                    ? "You can receive matches"
+                    : "Not activated"}
+                </p>
+              </div>
+            </div>
+
+            {/* Account Linking Buttons */}
+            {!accountInfo.isCupid && (
+              <div className="pt-2">
+                <Link href="/register?type=cupid&linking=true">
+                  <Button variant="outline" className="w-full">
+                    Create Cupid Account 🏹
+                  </Button>
+                </Link>
+                <p className="text-xs text-slate-500 mt-2">
+                  Help match people anonymously while keeping your current
+                  account
+                </p>
+              </div>
+            )}
+            {!accountInfo.isBeingMatched && (
+              <div className="pt-2">
+                <Link href="/register?type=match&linking=true">
+                  <Button variant="outline" className="w-full">
+                    Create Match Account 💖
+                  </Button>
+                </Link>
+                <p className="text-xs text-slate-500 mt-2">
+                  Let Cupids and the algorithm find matches for you
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

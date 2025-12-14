@@ -114,7 +114,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <p className="text-slate-600">
             Don&apos;t have an account?{" "}
             <Link
-              href="/register"
+              href="/signup"
               className="font-medium text-slate-900 hover:underline"
             >
               Sign up
