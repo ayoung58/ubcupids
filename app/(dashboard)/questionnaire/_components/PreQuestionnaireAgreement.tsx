@@ -103,17 +103,17 @@ export function PreQuestionnaireAgreement({
             )}
 
             {/* Agreement Checkbox */}
-            <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
               <Checkbox
                 id="agreement"
                 checked={hasAgreed}
                 onCheckedChange={(checked) => setHasAgreed(checked as boolean)}
-                className="mt-0.5"
+                className="flex-shrink-0"
                 aria-required="true"
               />
               <Label
                 htmlFor="agreement"
-                className="text-sm md:text-base font-medium cursor-pointer leading-relaxed"
+                className="text-sm md:text-base font-medium cursor-pointer leading-relaxed flex-1"
               >
                 {agreement.agreementText}
               </Label>

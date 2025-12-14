@@ -124,15 +124,15 @@ export function RegisterForm() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <Alert className="border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
+          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-md">
+            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-green-800">
               <p className="font-medium">Account created successfully!</p>
-              <p className="mt-1 text-sm">
+              <p className="mt-1">
                 Check your email for a verification link. Redirecting...
               </p>
-            </AlertDescription>
-          </Alert>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -147,10 +147,10 @@ export function RegisterForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Error Alert */}
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-md">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
           )}
 
           {/* Name Fields (Side by Side) */}

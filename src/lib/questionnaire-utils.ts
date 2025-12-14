@@ -100,21 +100,26 @@ export function validateResponses(responses: Responses): ValidationError[] {
       }
     }
 
-    // Additional validation for multi-choice questions requiring specific counts
-    if (question.type === "multi-choice") {
-      const arrayResponse = response as string[];
-
-      if (question.id === "q39") {
-        // Love languages you GIVE - require exactly 2 selections
-        if (!Array.isArray(arrayResponse) || arrayResponse.length !== 2) {
+    // Additional validation for text inputs in options
+    if (question.type === "single-choice" && question.options) {
+      const responseValue = response;
+      if (responseValue && typeof responseValue === 'object' && 'value' in responseValue) {
+        // This is a response with a text input
+        const optionResponse = responseValue as { value: string; text: string };
+        const selectedOption = question.options.find(opt => opt.value === optionResponse.value);
+        if (selectedOption?.hasTextInput && (!optionResponse.text || optionResponse.text.trim() === "")) {
           errors.push({
             questionId: question.id,
             questionText: question.text,
-            errorMessage:
-              "Please select 2 love languages that you most naturally give",
+            errorMessage: `Please provide a description for "${selectedOption.label}"`,
           });
         }
       }
+    }
+    if (question.type === "multi-choice") {
+      const arrayResponse = response as string[];
+
+      // No specific multi-choice validations needed currently
     }
 
     // Additional validation for ranking questions requiring specific counts
@@ -129,6 +134,18 @@ export function validateResponses(responses: Responses): ValidationError[] {
             questionText: question.text,
             errorMessage:
               "Please rank 3 love languages for how you prefer to receive affection",
+          });
+        }
+      }
+
+      if (question.id === "q39") {
+        // Love languages you GIVE - require exactly 3 rankings
+        if (!Array.isArray(arrayResponse) || arrayResponse.length !== 3) {
+          errors.push({
+            questionId: question.id,
+            questionText: question.text,
+            errorMessage:
+              "Please rank 3 love languages that you most naturally give",
           });
         }
       }

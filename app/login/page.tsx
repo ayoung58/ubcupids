@@ -50,60 +50,59 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         {/* Success Messages */}
         {signedout === "true" && (
-          <Alert className="border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
+          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-md">
+            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-green-800">
               You have successfully signed out.
-            </AlertDescription>
-          </Alert>
+            </p>
+          </div>
         )}
 
         {verified === "true" && (
-          <Alert className="border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
+          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-md">
+            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-green-800">
               Email verified successfully! You can now log in.
-            </AlertDescription>
-          </Alert>
+            </p>
+          </div>
         )}
 
         {verified === "already" && (
-          <Alert className="border-blue-200 bg-blue-50">
-            <CheckCircle className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
+          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-800">
               Your email is already verified. You can log in below.
-            </AlertDescription>
-          </Alert>
+            </p>
+          </div>
         )}
 
         {/* Password Reset Success */}
         {reset === "success" && (
-          <Alert className="border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              Password reset successfully! You can now log in with your new
-              password.
-            </AlertDescription>
-          </Alert>
+          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-md">
+            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-green-800">
+              Password reset successfully! You can now log in with your new password.
+            </p>
+          </div>
         )}
 
         {/* Error Messages */}
         {error === "invalid_token" && (
-          <Alert className="border-red-200 bg-red-50">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
+          <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-md">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800">
               Invalid verification link. Please request a new one.
-            </AlertDescription>
-          </Alert>
+            </p>
+          </div>
         )}
 
         {error === "token_expired" && (
-          <Alert className="border-red-200 bg-red-50">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
+          <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-md">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800">
               Verification link expired. Please request a new one below.
-            </AlertDescription>
-          </Alert>
+            </p>
+          </div>
         )}
 
         {/* Login Form */}

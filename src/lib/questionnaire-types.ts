@@ -58,7 +58,7 @@ export interface QuestionnaireConfig {
 }
 
 // Response value types (what users submit)
-export type ResponseValue = string | string[] | number;
+export type ResponseValue = string | string[] | number | { value: string; text: string };
 
 // User's responses (questionId -> value)
 export type Responses = Record<string, ResponseValue>;

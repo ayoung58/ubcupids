@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImportanceSelector } from "./ImportanceSelector";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 
 interface QuestionRendererProps {
@@ -35,7 +35,24 @@ export function QuestionRenderer({
 }: QuestionRendererProps) {
   const [otherText, setOtherText] = useState<string>("");
 
-  // Determine if this question should show importance selector
+  // Initialize otherText from value if it's an object with text
+  useEffect(() => {
+    if (value && typeof value === 'object' && 'text' in value) {
+      setOtherText(value.text);
+    } else {
+      setOtherText("");
+    }
+  }, [value]);
+
+  // Reusable CSS classes for consistent styling
+  const questionContainerClass = "space-y-3";
+  const optionListClass = "space-y-2";
+  const optionItemClass = "flex items-center space-x-2";
+  const optionLabelClass = "font-normal cursor-pointer flex-1";
+  const disabledLabelClass = "text-gray-400 cursor-not-allowed";
+  const radioItemClass = "flex-shrink-0";
+  const textInputClass = "ml-6";
+  const validationErrorClass = "flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm";
   const shouldShowImportance = () => {
     // Don't show importance for textarea (open-ended) questions
     if (question.type === "textarea") {
@@ -87,7 +104,7 @@ export function QuestionRenderer({
 
   // Validation error display
   const validationErrorDisplay = validationError && (
-    <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+    <div className={validationErrorClass}>
       <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
       <p className="flex-1">{validationError}</p>
     </div>
@@ -105,36 +122,52 @@ export function QuestionRenderer({
           {questionHeader}
           {validationErrorDisplay}
           <RadioGroup
-            value={(value as string) || ""}
-            onValueChange={onChange}
+            value={(typeof value === 'object' && value && 'value' in value) ? value.value : (value as string) || ""}
+            onValueChange={(selectedValue) => {
+              const selectedOption = question.options?.find(opt => opt.value === selectedValue);
+              if (selectedOption?.hasTextInput) {
+                onChange({ value: selectedValue, text: otherText });
+              } else {
+                onChange(selectedValue);
+              }
+            }}
             disabled={disabled}
-            className="space-y-2"
+            className={optionListClass}
             aria-required={question.required}
           >
             {question.options?.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value={option.value}
-                  id={`${question.id}-${option.value}`}
-                  className="flex-shrink-0"
-                />
-                <div className="flex-1">
+              <div key={option.value} className="space-y-2">
+                <div className={optionItemClass}>
+                  <RadioGroupItem
+                    value={option.value}
+                    id={`${question.id}-${option.value}`}
+                    className={radioItemClass}
+                  />
                   <Label
                     htmlFor={`${question.id}-${option.value}`}
-                    className="font-normal cursor-pointer"
+                    className={optionLabelClass}
                   >
                     {option.label}
                   </Label>
-                  {option.hasTextInput && value === option.value && (
-                    <Input
-                      placeholder="Please specify..."
-                      className="mt-2"
-                      disabled={disabled}
-                      value={otherText}
-                      onChange={(e) => setOtherText(e.target.value)}
-                    />
-                  )}
                 </div>
+                {option.hasTextInput && ((typeof value === 'object' && value && 'value' in value && value.value === option.value) || value === option.value) && (
+                  <Input
+                    placeholder="Please specify..."
+                    className={textInputClass}
+                    disabled={disabled}
+                    value={otherText}
+                    onChange={(e) => {
+                      const newText = e.target.value;
+                      setOtherText(newText);
+                      // Update the response with the new text
+                      if (typeof value === 'object' && value && 'value' in value) {
+                        onChange({ value: value.value, text: newText });
+                      } else if (value === option.value) {
+                        onChange({ value: option.value, text: newText });
+                      }
+                    }}
+                  />
+                )}
               </div>
             ))}
           </RadioGroup>
@@ -143,27 +176,27 @@ export function QuestionRenderer({
 
     case "multi-choice":
       const multiValue = (value as string[]) || [];
-      // Special handling for love languages question (q39) - limit to 2 selections
+      // Special handling for love languages question (q39) - limit to 3 selections
       const isLoveLanguagesQuestion = question.id === "q39";
-      const maxSelections = isLoveLanguagesQuestion ? 2 : Infinity;
+      const maxSelections = isLoveLanguagesQuestion ? 3 : Infinity;
 
       return wrapWithImportance(
         <div
-          className="space-y-3"
+          className={questionContainerClass}
           role="group"
           aria-labelledby={`${question.id}-label`}
           id={`question-${question.id}`}
         >
           {questionHeader}
           {validationErrorDisplay}
-          <div className="space-y-2" role="list">
+          <div className={optionListClass} role="list">
             {question.options?.map((option) => {
               const isChecked = multiValue.includes(option.value);
               const isDisabled =
                 disabled || (!isChecked && multiValue.length >= maxSelections);
 
               return (
-                <div key={option.value} className="flex items-center space-x-2">
+                <div key={option.value} className={optionItemClass}>
                   <Checkbox
                     id={`${question.id}-${option.value}`}
                     checked={isChecked}
@@ -175,11 +208,11 @@ export function QuestionRenderer({
                       }
                     }}
                     disabled={isDisabled}
-                    className="flex-shrink-0"
+                    className={radioItemClass}
                   />
                   <Label
                     htmlFor={`${question.id}-${option.value}`}
-                    className={`font-normal flex-1 ${isDisabled && !isChecked ? "text-gray-400 cursor-not-allowed" : "cursor-pointer"}`}
+                    className={`${optionLabelClass} ${isDisabled && !isChecked ? disabledLabelClass : ""}`}
                   >
                     {option.label}
                   </Label>

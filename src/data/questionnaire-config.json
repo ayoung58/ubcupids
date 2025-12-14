@@ -983,18 +983,29 @@
         },
         {
           "id": "q39",
-          "type": "multi-choice",
-          "text": "What love languages do you most naturally GIVE? (Select your top 2)",
+          "type": "ranking",
+          "text": "What love languages do you most naturally GIVE? (Select your top 3)",
           "required": true,
           "options": [
-            { "value": "physical-touch", "label": "Physical Touch" },
-            { "value": "words", "label": "Words of Affirmation" },
-            { "value": "quality-time", "label": "Quality Time" },
-            { "value": "acts-service", "label": "Acts of Service" },
-            { "value": "gifts", "label": "Gifts" },
             {
-              "value": "all-equally",
-              "label": "I give all equally / I'm not sure yet"
+              "value": "physical-touch",
+              "label": "Physical Touch (hugs, holding hands, cuddling)"
+            },
+            {
+              "value": "words",
+              "label": "Words of Affirmation (compliments, \"I love you\", verbal encouragement)"
+            },
+            {
+              "value": "quality-time",
+              "label": "Quality Time (undivided attention, meaningful conversations)"
+            },
+            {
+              "value": "acts-service",
+              "label": "Acts of Service (doing helpful things, taking care of tasks)"
+            },
+            {
+              "value": "gifts",
+              "label": "Gifts (thoughtful presents, surprises)"
             }
           ]
         },
