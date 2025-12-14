@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { NEXTAUTH_SECRET, isDevelopment } from "@/lib/env";
 
 /**
  * NextAuth Configuration
@@ -227,10 +228,10 @@ export const authOptions: NextAuthOptions = {
   // ============================================
   // SECURITY
   // ============================================
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: NEXTAUTH_SECRET,
 
   // Enable debug logs in development
-  debug: process.env.NODE_ENV === "development",
+  debug: isDevelopment(),
 };
 
 // Export NextAuth handlers for App Router

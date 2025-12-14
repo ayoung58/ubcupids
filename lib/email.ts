@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import VerificationEmail from "@/emails/VerificationEmail";
 import PasswordResetEmail from "@/emails/PasswordResetEmail";
+import { RESEND_API_KEY, RESEND_FROM_EMAIL, NEXT_PUBLIC_APP_URL } from "./env";
 
 /**
  * Resend client configuration
@@ -17,7 +18,7 @@ import PasswordResetEmail from "@/emails/PasswordResetEmail";
  * - RESEND_FROM_EMAIL in .env (defaults to onboarding@resend.dev for testing)
  * - For production: Verify custom domain in Resend dashboard
  */
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(RESEND_API_KEY);
 
 /**
  * Sends email verification link to new user
@@ -40,12 +41,12 @@ export async function sendVerificationEmail(
   token: string
 ): Promise<void> {
   // Construct verification URL
-  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
+  const verificationUrl = `${NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
 
   try {
     // Send email using React Email component
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "UBCupids <onboarding@resend.dev>",
+      from: RESEND_FROM_EMAIL || "UBCupids <onboarding@resend.dev>",
       to: email,
       subject: "Verify your UBCupids account",
       react: VerificationEmail({
@@ -140,11 +141,11 @@ export async function sendPasswordResetEmail(
   firstName: string,
   token: string
 ): Promise<void> {
-  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
+  const resetUrl = `${NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "UBCupids <onboarding@resend.dev>",
+      from: RESEND_FROM_EMAIL || "UBCupids <onboarding@resend.dev>",
       to: email,
       subject: "Reset your UBCupids password",
       react: PasswordResetEmail({

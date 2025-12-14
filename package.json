@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "reset-questionnaire": "tsx scripts/reset-questionnaire-data.ts"
+    "reset-questionnaire": "tsx scripts/reset-questionnaire-data.ts",
+    "validate-env": "tsx -e \"import('./lib/env.ts').then(m => m.validateEnvironment())\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
