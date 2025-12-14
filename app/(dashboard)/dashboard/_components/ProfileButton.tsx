@@ -64,7 +64,10 @@ export function ProfileButton({
         aria-expanded={isOpen}
       >
         <Avatar className="h-10 w-10 border-2 border-slate-200">
-          <AvatarImage src={profilePicture} alt={`${firstName} ${lastName}`} />
+          <AvatarImage
+            src={profilePicture || undefined}
+            alt={`${firstName} ${lastName}`}
+          />
           <AvatarFallback className="bg-primary text-white font-medium">
             {initials}
           </AvatarFallback>

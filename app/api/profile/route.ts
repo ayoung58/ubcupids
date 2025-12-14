@@ -77,9 +77,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!age || age < 18 || age > 100) {
+    if (!age || age < 16 || age > 100) {
       return NextResponse.json(
-        { error: "Valid age is required (18-100)" },
+        { error: "Valid age is required (16-100)" },
         { status: 400 }
       );
     }

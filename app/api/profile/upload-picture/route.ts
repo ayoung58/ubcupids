@@ -15,6 +15,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Check if Cloudinary is configured
+    if (
+      !process.env.CLOUDINARY_CLOUD_NAME ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
+    ) {
+      console.error("Cloudinary configuration missing:", {
+        hasCloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+        hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+        hasApiSecret: !!process.env.CLOUDINARY_API_SECRET,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Image upload service is not configured. Please contact the administrator.",
+        },
+        { status: 503 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
@@ -55,11 +75,25 @@ export async function POST(request: NextRequest) {
 
     // Delete old profile picture from Cloudinary if exists
     if (user?.profilePicture) {
-      await deleteFromCloudinary(user.profilePicture);
+      try {
+        await deleteFromCloudinary(user.profilePicture);
+      } catch (deleteError) {
+        // Log but don't fail the upload if deletion fails
+        console.warn("Failed to delete old profile picture:", deleteError);
+      }
     }
 
     // Upload to Cloudinary
-    const imageUrl = await uploadToCloudinary(buffer, "ubcupids/profiles");
+    let imageUrl: string;
+    try {
+      imageUrl = await uploadToCloudinary(buffer, "ubcupids/profiles");
+    } catch (uploadError) {
+      console.error("Cloudinary upload error:", uploadError);
+      return NextResponse.json(
+        { error: "Failed to upload image to cloud storage. Please try again." },
+        { status: 500 }
+      );
+    }
 
     // Update user's profile picture URL
     const updatedUser = await prisma.user.update({
@@ -73,8 +107,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error uploading profile picture:", error);
+    // More detailed error message
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("Detailed error:", errorMessage);
     return NextResponse.json(
-      { error: "Failed to upload profile picture" },
+      { error: "Failed to upload profile picture", details: errorMessage },
       { status: 500 }
     );
   }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,21 +8,42 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, X, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import {
+  Loader2,
+  Upload,
+  X,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Info,
+  CheckCircle,
+} from "lucide-react";
 import { ProfileFormData } from "@/types/profile";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 
 export function ProfileForm() {
-  const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Custom validation styles
+  const customValidationStyles = `
+    input:invalid:not(:placeholder-shown) {
+      border-color: #ef4444;
+      border-width: 2px;
+    }
+    input:invalid:not(:placeholder-shown):focus {
+      ring-color: #ef4444;
+    }
+  `;
   const [profileData, setProfileData] = useState<ProfileFormData>({
     firstName: "",
     lastName: "",
     displayName: "",
+    age: 18,
     major: "",
     interests: "",
     bio: "",
@@ -47,6 +67,7 @@ export function ProfileForm() {
           firstName: data.firstName,
           lastName: data.lastName,
           displayName: data.displayName || data.firstName,
+          age: data.age || 18,
           major: data.major || "",
           interests: data.interests || "",
           bio: data.bio || "",
@@ -204,6 +225,7 @@ export function ProfileForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           displayName: profileData.displayName,
+          age: profileData.age,
           major: profileData.major,
           interests: profileData.interests,
           bio: profileData.bio,
@@ -214,11 +236,12 @@ export function ProfileForm() {
       });
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Profile updated successfully",
-        });
-        router.push("/dashboard");
+        // Show success message and scroll to top
+        setShowSuccess(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        // Hide success message after 5 seconds
+        setTimeout(() => setShowSuccess(false), 5000);
       } else {
         const error = await response.json();
         toast({
@@ -272,12 +295,25 @@ export function ProfileForm() {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Success Message */}
+            {showSuccess && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <p className="text-green-900 font-medium">
+                  All changes have been saved
+                </p>
+              </div>
+            )}
+
+            <style>{customValidationStyles}</style>
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
               {/* Profile Picture */}
               <div className="flex flex-col items-center gap-4">
                 <div className="relative">
                   <Avatar className="h-32 w-32 border-4 border-slate-200">
-                    <AvatarImage src={profileData.profilePicture} />
+                    <AvatarImage
+                      src={profileData.profilePicture || undefined}
+                    />
                     <AvatarFallback className="bg-primary text-white text-3xl font-bold">
                       {initials}
                     </AvatarFallback>
@@ -286,7 +322,7 @@ export function ProfileForm() {
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors"
+                      className="absolute -top-2 -right-2 bg-slate-500 text-white rounded-full p-1.5 hover:bg-slate-600 transition-colors shadow-md"
                       aria-label="Remove profile picture"
                     >
                       <X className="h-4 w-4" />
@@ -392,6 +428,35 @@ export function ProfileForm() {
                 <p className="text-xs text-slate-500">
                   {profileData.displayName.length}/50 characters
                 </p>
+              </div>
+
+              {/* Age */}
+              <div className="space-y-2">
+                <Label htmlFor="age" className="flex items-center gap-2">
+                  Age <span className="text-red-500">*</span>
+                  <div className="group relative inline-block">
+                    <Info className="h-4 w-4 text-slate-400 cursor-help" />
+                    <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
+                      We collect your age to improve matches and ensure everyone
+                      is comfortable. Please use your real age.
+                    </div>
+                  </div>
+                </Label>
+                <Input
+                  id="age"
+                  type="number"
+                  min="18"
+                  max="100"
+                  value={profileData.age}
+                  onChange={(e) =>
+                    setProfileData((prev) => ({
+                      ...prev,
+                      age: parseInt(e.target.value) || 18,
+                    }))
+                  }
+                  required
+                  placeholder="18"
+                />
               </div>
 
               {/* Major */}
