@@ -30,6 +30,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   useEffect(() => {
     const referrer = document.referrer;
     if (referrer.includes("/dashboard") || referrer.includes("/profile")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBackUrl("/dashboard");
       setBackLabel("Back to dashboard");
     }
