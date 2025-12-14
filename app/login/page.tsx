@@ -81,7 +81,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-md">
             <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-green-800">
-              Password reset successfully! You can now log in with your new password.
+              Password reset successfully! You can now log in with your new
+              password.
             </p>
           </div>
         )}

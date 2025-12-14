@@ -103,11 +103,20 @@ export function validateResponses(responses: Responses): ValidationError[] {
     // Additional validation for text inputs in options
     if (question.type === "single-choice" && question.options) {
       const responseValue = response;
-      if (responseValue && typeof responseValue === 'object' && 'value' in responseValue) {
+      if (
+        responseValue &&
+        typeof responseValue === "object" &&
+        "value" in responseValue
+      ) {
         // This is a response with a text input
         const optionResponse = responseValue as { value: string; text: string };
-        const selectedOption = question.options.find(opt => opt.value === optionResponse.value);
-        if (selectedOption?.hasTextInput && (!optionResponse.text || optionResponse.text.trim() === "")) {
+        const selectedOption = question.options.find(
+          (opt) => opt.value === optionResponse.value
+        );
+        if (
+          selectedOption?.hasTextInput &&
+          (!optionResponse.text || optionResponse.text.trim() === "")
+        ) {
           errors.push({
             questionId: question.id,
             questionText: question.text,

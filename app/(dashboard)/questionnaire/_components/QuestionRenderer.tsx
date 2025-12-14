@@ -37,7 +37,7 @@ export function QuestionRenderer({
 
   // Initialize otherText from value if it's an object with text
   useEffect(() => {
-    if (value && typeof value === 'object' && 'text' in value) {
+    if (value && typeof value === "object" && "text" in value) {
       setOtherText(value.text);
     } else {
       setOtherText("");
@@ -52,7 +52,8 @@ export function QuestionRenderer({
   const disabledLabelClass = "text-gray-400 cursor-not-allowed";
   const radioItemClass = "flex-shrink-0";
   const textInputClass = "ml-6";
-  const validationErrorClass = "flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm";
+  const validationErrorClass =
+    "flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm";
   const shouldShowImportance = () => {
     // Don't show importance for textarea (open-ended) questions
     if (question.type === "textarea") {
@@ -122,9 +123,15 @@ export function QuestionRenderer({
           {questionHeader}
           {validationErrorDisplay}
           <RadioGroup
-            value={(typeof value === 'object' && value && 'value' in value) ? value.value : (value as string) || ""}
+            value={
+              typeof value === "object" && value && "value" in value
+                ? value.value
+                : (value as string) || ""
+            }
             onValueChange={(selectedValue) => {
-              const selectedOption = question.options?.find(opt => opt.value === selectedValue);
+              const selectedOption = question.options?.find(
+                (opt) => opt.value === selectedValue
+              );
               if (selectedOption?.hasTextInput) {
                 onChange({ value: selectedValue, text: otherText });
               } else {
@@ -150,24 +157,33 @@ export function QuestionRenderer({
                     {option.label}
                   </Label>
                 </div>
-                {option.hasTextInput && ((typeof value === 'object' && value && 'value' in value && value.value === option.value) || value === option.value) && (
-                  <Input
-                    placeholder="Please specify..."
-                    className={textInputClass}
-                    disabled={disabled}
-                    value={otherText}
-                    onChange={(e) => {
-                      const newText = e.target.value;
-                      setOtherText(newText);
-                      // Update the response with the new text
-                      if (typeof value === 'object' && value && 'value' in value) {
-                        onChange({ value: value.value, text: newText });
-                      } else if (value === option.value) {
-                        onChange({ value: option.value, text: newText });
-                      }
-                    }}
-                  />
-                )}
+                {option.hasTextInput &&
+                  ((typeof value === "object" &&
+                    value &&
+                    "value" in value &&
+                    value.value === option.value) ||
+                    value === option.value) && (
+                    <Input
+                      placeholder="Please specify..."
+                      className={textInputClass}
+                      disabled={disabled}
+                      value={otherText}
+                      onChange={(e) => {
+                        const newText = e.target.value;
+                        setOtherText(newText);
+                        // Update the response with the new text
+                        if (
+                          typeof value === "object" &&
+                          value &&
+                          "value" in value
+                        ) {
+                          onChange({ value: value.value, text: newText });
+                        } else if (value === option.value) {
+                          onChange({ value: option.value, text: newText });
+                        }
+                      }}
+                    />
+                  )}
               </div>
             ))}
           </RadioGroup>
