@@ -131,11 +131,64 @@ export async function POST(request: NextRequest) {
     // ============================================
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
+      select: {
+        isCupid: true,
+        isBeingMatched: true,
+      },
     });
 
     if (existingUser) {
-      // Security note: Don't reveal if email is verified or not
-      // This prevents attackers from enumerating registered emails
+      // Check what account type they're trying to create
+      const isTryingToCreateCupid = accountType === "cupid";
+      const isTryingToCreateMatch = accountType === "match";
+
+      // Determine what they already have
+      const hasCupidAccount = existingUser.isCupid;
+      const hasMatchAccount = existingUser.isBeingMatched;
+
+      // Provide specific error messages for dual-account scenarios
+      if (isTryingToCreateCupid && hasCupidAccount) {
+        return NextResponse.json(
+          {
+            error: "You already have a Cupid account",
+            hint: "Please log in to access your existing Cupid account.",
+          },
+          { status: 409 }
+        );
+      }
+
+      if (isTryingToCreateMatch && hasMatchAccount) {
+        return NextResponse.json(
+          {
+            error: "You already have a Match account",
+            hint: "Please log in to access your existing Match account.",
+          },
+          { status: 409 }
+        );
+      }
+
+      // If they have one account type and are trying to create the other
+      if (isTryingToCreateCupid && hasMatchAccount && !hasCupidAccount) {
+        return NextResponse.json(
+          {
+            error: "An account with this email already exists",
+            hint: "If you already have a Match account and would like a Cupid account, please log in and create a Cupid account through your profile.",
+          },
+          { status: 409 }
+        );
+      }
+
+      if (isTryingToCreateMatch && hasCupidAccount && !hasMatchAccount) {
+        return NextResponse.json(
+          {
+            error: "An account with this email already exists",
+            hint: "If you already have a Cupid account and would like a Match account, please log in and create a Match account through your profile.",
+          },
+          { status: 409 }
+        );
+      }
+
+      // Fallback for any other case (shouldn't happen with current logic)
       return NextResponse.json(
         {
           error: "An account with this email already exists",
