@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 interface ResetPasswordFormProps {
   token: string;
@@ -18,10 +19,21 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [backUrl, setBackUrl] = useState("/login");
+  const [backLabel, setBackLabel] = useState("Back to login");
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   });
+
+  // Detect where user came from
+  useEffect(() => {
+    const referrer = document.referrer;
+    if (referrer.includes("/dashboard") || referrer.includes("/profile")) {
+      setBackUrl("/dashboard");
+      setBackLabel("Back to dashboard");
+    }
+  }, []);
 
   const getPasswordStrength = (password: string) => {
     const checks = {
@@ -111,6 +123,12 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>Reset Password</CardTitle>
+        <Link href={backUrl}>
+          <Button variant="ghost" size="sm" className="mt-2">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {backLabel}
+          </Button>
+        </Link>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
