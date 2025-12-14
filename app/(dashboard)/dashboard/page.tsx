@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/get-session";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut } from "lucide-react"; // Import icon
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { ProfileButton } from "./_components/ProfileButton";
 
 async function getQuestionnaireStatus(userId: string) {
   try {
@@ -54,13 +54,12 @@ export default async function DashboardPage() {
             <p className="text-slate-600 mt-1">{session.user.email}</p>
           </div>
 
-          {/* Logout Button */}
-          <Link href="/signout">
-            <Button variant="outline" className="gap-2">
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          </Link>
+          {/* Profile Button with Dropdown */}
+          <ProfileButton
+            firstName={session.user.name?.split(" ")[0] || ""}
+            lastName={session.user.name?.split(" ")[1] || ""}
+            profilePicture={session.user.image || ""}
+          />
         </div>
 
         {/* Quick Actions */}
