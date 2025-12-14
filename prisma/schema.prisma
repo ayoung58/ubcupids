@@ -70,10 +70,24 @@ model User {
   lastName      String    // Changed from String? to String (required)
   acceptedTerms DateTime  // NEW: Timestamp when user accepted T&C
   
-  // Optional Profile Information (can be filled in questionnaire)
-  major         String?
+  // User Role Flags
+  isCupid       Boolean   @default(false) // Can create matches for others
+  isBeingMatched Boolean  @default(true)  // Participating in matching (default true for new users)
+  
+  // Profile Information
+  displayName   String?   // Shown to matches, defaults to firstName
+  major         String?   // Optional, from signup or profile
+  interests     String?   @db.Text // Hobbies and interests (used for matching)
+  bio           String?   @db.Text // Short bio (used minimally for matching)
+  profilePicture String?  // Cloudinary URL for profile picture
+  
+  // Profile Visibility Settings
+  showBioToMatches Boolean @default(true)  // Whether to display bio to matches
+  showProfilePicToMatches Boolean @default(true) // Whether to display profile pic to matches
+  showInterestsToMatches Boolean @default(true)  // Whether to display interests to matches
+  
+  // Legacy fields (keeping for backwards compatibility)
   yearOfStudy   Int?
-  interests     String[]
   
   // Preferences stored as JSONB (for complex matching criteria)
   // Note: Consider moving this entirely to Questionnaire model
