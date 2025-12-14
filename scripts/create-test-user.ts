@@ -46,6 +46,7 @@ async function main() {
       firstName: "Test",
       lastName: "User",
       major: "Professional Cupid Studies",
+      age: 25, // Required age field
       emailVerified: new Date(), // Pre-verified for testing
       acceptedTerms: new Date(), // Pre-accepted for testing
     },

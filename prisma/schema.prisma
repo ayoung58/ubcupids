@@ -68,6 +68,7 @@ model User {
   // Required at Registration
   firstName     String    // Changed from String? to String (required)
   lastName      String    // Changed from String? to String (required)
+  age           Int       // User's age (required for better matching)
   acceptedTerms DateTime  // NEW: Timestamp when user accepted T&C
   
   // User Role Flags

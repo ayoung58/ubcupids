@@ -20,6 +20,7 @@ export async function GET() {
         firstName: true,
         lastName: true,
         displayName: true,
+        age: true,
         major: true,
         interests: true,
         bio: true,
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       displayName,
+      age,
       major,
       interests,
       bio,
@@ -71,6 +73,13 @@ export async function POST(request: NextRequest) {
     if (!displayName || displayName.trim() === "") {
       return NextResponse.json(
         { error: "Display name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!age || age < 18 || age > 100) {
+      return NextResponse.json(
+        { error: "Valid age is required (18-100)" },
         { status: 400 }
       );
     }
@@ -102,6 +111,7 @@ export async function POST(request: NextRequest) {
       where: { id: session.user.id },
       data: {
         displayName: displayName.trim(),
+        age: parseInt(age),
         major: major?.trim() || null,
         interests: interests?.trim() || null,
         bio: bio?.trim() || null,
@@ -113,6 +123,7 @@ export async function POST(request: NextRequest) {
         firstName: true,
         lastName: true,
         displayName: true,
+        age: true,
         major: true,
         interests: true,
         bio: true,

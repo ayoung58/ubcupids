@@ -44,19 +44,28 @@ export async function POST(request: NextRequest) {
     // 1. PARSE REQUEST BODY
     // ============================================
     const body = await request.json();
-    const { email, password, firstName, lastName, major, acceptedTerms } = body;
+    const { email, password, firstName, lastName, age, major, acceptedTerms } =
+      body;
 
     // ============================================
     // 2. VALIDATE REQUIRED FIELDS
     // ============================================
-    if (!email || !password || !firstName || !lastName) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: email, password, firstName, lastName",
-        },
-        { status: 400 }
-      );
+    const missingFields: string[] = [];
+
+    if (!email) missingFields.push("Email");
+    if (!password) missingFields.push("Password");
+    if (!firstName) missingFields.push("First Name");
+    if (!lastName) missingFields.push("Last Name");
+    if (!age) missingFields.push("Age");
+
+    if (missingFields.length > 0) {
+      const fieldList = missingFields.join(", ");
+      const errorMessage =
+        missingFields.length === 1
+          ? `Missing required field: ${fieldList}`
+          : `Missing required fields: ${fieldList}`;
+
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
     // ============================================
@@ -136,6 +145,7 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        age: parseInt(age),
         major: major?.trim() || null,
         emailVerified: null, // Will be set when user clicks verification link
         acceptedTerms: new Date(), // Record timestamp of acceptance

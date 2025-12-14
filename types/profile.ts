@@ -4,6 +4,7 @@
 
 export interface ProfileData {
   displayName: string;
+  age: number;
   major?: string;
   interests?: string;
   bio?: string;
@@ -15,11 +16,12 @@ export interface ProfileData {
 
 export interface ProfileFormData extends ProfileData {
   firstName: string; // Read-only display
-  lastName: string;  // Read-only display
+  lastName: string; // Read-only display
 }
 
 export interface ProfileUpdateRequest {
   displayName: string;
+  age: number;
   major?: string;
   interests?: string;
   bio?: string;

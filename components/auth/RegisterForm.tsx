@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 
 /**
@@ -32,11 +31,23 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [termsError, setTermsError] = useState(false);
+
+  // Add styles for custom validation
+  const customValidationStyles = `
+    input:invalid:not(:placeholder-shown) {
+      border-color: #ef4444;
+      border-width: 2px;
+    }
+    input:invalid:not(:placeholder-shown):focus {
+      ring-color: #ef4444;
+    }
+  `;
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     firstName: "",
     lastName: "",
+    age: "",
     major: "",
     acceptedTerms: false,
   });
@@ -144,7 +155,8 @@ export function RegisterForm() {
         <CardTitle>Create Account</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <style>{customValidationStyles}</style>
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Error Alert */}
           {error && (
             <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-md">
@@ -156,7 +168,9 @@ export function RegisterForm() {
           {/* Name Fields (Side by Side) */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">
+                First Name <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="firstName"
                 type="text"
@@ -170,7 +184,9 @@ export function RegisterForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">
+                Last Name <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="lastName"
                 type="text"
@@ -187,7 +203,9 @@ export function RegisterForm() {
 
           {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="email">UBC Email</Label>
+            <Label htmlFor="email">
+              UBC Email <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="email"
               type="email"
@@ -206,7 +224,9 @@ export function RegisterForm() {
 
           {/* Password Field with Strength Indicator */}
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">
+              Password <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="password"
               type="password"
@@ -226,6 +246,32 @@ export function RegisterForm() {
             <p className="text-xs text-slate-500">
               At least 8 characters, 1 uppercase, 1 lowercase, 1 number
             </p>
+          </div>
+
+          {/* Age Field (Required) */}
+          <div className="space-y-2">
+            <Label htmlFor="age" className="flex items-center gap-2">
+              Age <span className="text-red-500">*</span>
+              <div className="group relative inline-block">
+                <AlertCircle className="h-4 w-4 text-slate-400 cursor-help" />
+                <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
+                  We collect your age to improve matches and ensure everyone is
+                  comfortable. Please use your real age.
+                </div>
+              </div>
+            </Label>
+            <Input
+              id="age"
+              type="number"
+              placeholder="18"
+              max="100"
+              value={formData.age}
+              onChange={(e) =>
+                setFormData({ ...formData, age: e.target.value })
+              }
+              required
+              disabled={isLoading}
+            />
           </div>
 
           {/* Major Field (Optional) */}
