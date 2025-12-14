@@ -66,9 +66,9 @@ model User {
   emailVerified DateTime? // NULL until user verifies via email link
   
   // Required at Registration
-  firstName     String    // Changed from String? to String (required)
-  lastName      String    // Changed from String? to String (required)
-  age           Int       // User's age (required for better matching)
+  firstName     String?   // Required for matching accounts, null for Cupids
+  lastName      String?   // Required for matching accounts, null for Cupids
+  age           Int?      // User's age (required for matching, optional for Cupids)
   acceptedTerms DateTime  // NEW: Timestamp when user accepted T&C
   
   // User Role Flags
@@ -78,6 +78,7 @@ model User {
   
   // Profile Information
   displayName   String?   // Shown to matches, defaults to firstName
+  cupidDisplayName String? // Display name when acting as a Cupid (defaults to displayName)
   major         String?   // Optional, from signup or profile
   interests     String?   @db.Text // Hobbies and interests (used for matching)
   bio           String?   @db.Text // Short bio (used minimally for matching)

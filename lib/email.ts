@@ -37,7 +37,7 @@ const resend = new Resend(RESEND_API_KEY);
  */
 export async function sendVerificationEmail(
   email: string,
-  firstName: string,
+  firstName: string | null,
   token: string
 ): Promise<void> {
   // Construct verification URL
@@ -138,7 +138,7 @@ export async function resendVerificationEmail(email: string): Promise<void> {
  */
 export async function sendPasswordResetEmail(
   email: string,
-  firstName: string,
+  firstName: string | null,
   token: string
 ): Promise<void> {
   const resetUrl = `${NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}`;

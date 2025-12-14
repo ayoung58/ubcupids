@@ -4,6 +4,7 @@
 
 export interface ProfileData {
   displayName: string;
+  cupidDisplayName?: string;
   age: number;
   major?: string;
   interests?: string;
@@ -21,6 +22,7 @@ export interface ProfileFormData extends ProfileData {
 
 export interface ProfileUpdateRequest {
   displayName: string;
+  cupidDisplayName?: string;
   age: number;
   major?: string;
   interests?: string;

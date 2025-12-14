@@ -127,7 +127,7 @@ export default async function MatchingPortalPage() {
               <div>
                 <strong className="text-slate-900">Trust your intuition</strong>
                 <p className="text-slate-600">
-                  You're here because you understand human connections!
+                  You&apos;re here because you understand human connections!
                 </p>
               </div>
             </CardContent>

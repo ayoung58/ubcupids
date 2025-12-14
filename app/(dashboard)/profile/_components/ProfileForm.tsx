@@ -43,6 +43,7 @@ export function ProfileForm() {
     firstName: "",
     lastName: "",
     displayName: "",
+    cupidDisplayName: "",
     age: 18,
     major: "",
     interests: "",
@@ -72,6 +73,8 @@ export function ProfileForm() {
           firstName: data.firstName,
           lastName: data.lastName,
           displayName: data.displayName || data.firstName,
+          cupidDisplayName:
+            data.cupidDisplayName || data.displayName || data.firstName,
           age: data.age || 18,
           major: data.major || "",
           interests: data.interests || "",
@@ -230,6 +233,54 @@ export function ProfileForm() {
       return;
     }
 
+    // Validate Cupid display name if user has Cupid account
+    if (
+      accountInfo.isCupid &&
+      (!profileData.cupidDisplayName || !profileData.cupidDisplayName.trim())
+    ) {
+      toast({
+        title: "Validation error",
+        description: "Cupid display name is required",
+        variant: "destructive",
+      });
+      // Scroll to and focus the Cupid display name field
+      const cupidDisplayNameField = document.getElementById("cupidDisplayName");
+      if (cupidDisplayNameField) {
+        cupidDisplayNameField.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        cupidDisplayNameField.focus();
+        cupidDisplayNameField.classList.add(
+          "ring-2",
+          "ring-red-500",
+          "border-red-500"
+        );
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          cupidDisplayNameField.classList.remove(
+            "ring-2",
+            "ring-red-500",
+            "border-red-500"
+          );
+        }, 3000);
+      }
+      return;
+    }
+
+    if (
+      accountInfo.isCupid &&
+      profileData.cupidDisplayName &&
+      profileData.cupidDisplayName.length > 50
+    ) {
+      toast({
+        title: "Validation error",
+        description: "Cupid display name must be 50 characters or less",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (profileData.interests && profileData.interests.length > 300) {
       toast({
         title: "Validation error",
@@ -256,6 +307,7 @@ export function ProfileForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           displayName: profileData.displayName,
+          cupidDisplayName: profileData.cupidDisplayName,
           age: profileData.age,
           major: profileData.major,
           interests: profileData.interests,
@@ -535,6 +587,35 @@ export function ProfileForm() {
                   {profileData.displayName.length}/50 characters
                 </p>
               </div>
+
+              {/* Cupid Display Name - Only show if user has Cupid account */}
+              {accountInfo.isCupid && (
+                <div className="space-y-2">
+                  <Label htmlFor="cupidDisplayName">
+                    Cupid Display Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="cupidDisplayName"
+                    value={profileData.cupidDisplayName}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        cupidDisplayName: e.target.value,
+                      }))
+                    }
+                    maxLength={50}
+                    required
+                    placeholder="How you'd like to be called as a Cupid"
+                  />
+                  <p className="text-xs text-slate-500">
+                    {(profileData.cupidDisplayName || "").length}/50 characters
+                  </p>
+                  <p className="text-xs text-slate-600">
+                    This name is shown when you're acting as a Cupid in the
+                    matching portal.
+                  </p>
+                </div>
+              )}
 
               {/* Age - Only for Match accounts */}
               {accountInfo.isBeingMatched && (

@@ -20,11 +20,12 @@ export default async function CupidDashboardPage() {
     redirect("/login");
   }
 
-  // Fetch user profile to check if they're a Cupid
+  // Fetch user profile for display name
   const profile = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
       displayName: true,
+      cupidDisplayName: true,
       isCupid: true,
       isBeingMatched: true,
     },
@@ -35,7 +36,8 @@ export default async function CupidDashboardPage() {
     redirect("/dashboard");
   }
 
-  const displayName = profile?.displayName || session.user.name;
+  const displayName =
+    profile?.cupidDisplayName || profile?.displayName || session.user.name;
 
   // TODO: Fetch Cupid-specific stats (matches created, etc.)
   const matchesCreated = 0; // Placeholder

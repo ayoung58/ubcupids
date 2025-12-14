@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         firstName: true,
         lastName: true,
         age: true,
+        displayName: true,
       },
     });
 
@@ -95,6 +96,12 @@ export async function POST(request: NextRequest) {
 
     if (isCupid) {
       updateData.isCupid = true;
+      // Set cupidDisplayName to existing displayName if available, otherwise use firstName + lastName
+      if (currentUser.displayName) {
+        updateData.cupidDisplayName = currentUser.displayName;
+      } else if (currentUser.firstName && currentUser.lastName) {
+        updateData.cupidDisplayName = `${currentUser.firstName} ${currentUser.lastName}`;
+      }
     } else {
       updateData.isBeingMatched = true;
       // Update profile fields if provided
