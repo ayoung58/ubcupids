@@ -9,7 +9,8 @@ export type QuestionType =
   | "text" // Short text input
   | "textarea" // Long text input (multi-line)
   | "ranking" // Drag-to-rank items
-  | "scale"; // Slider (numeric scale)
+  | "scale" // Slider (numeric scale)
+  | "age-range"; // Age range with min/max inputs
 
 // Option for single-choice and multi-choice questions
 export interface QuestionOption {
@@ -31,6 +32,9 @@ export interface Question {
   min?: number; // Min value for scale questions
   max?: number; // Max value for scale questions
   step?: number; // Step for scale questions
+  minAge?: number; // Min age for age-range questions
+  maxAge?: number; // Max age for age-range questions
+  maxSelections?: number; // Max selections for multi-choice questions
 }
 
 // Section grouping multiple questions
@@ -62,7 +66,8 @@ export type ResponseValue =
   | string
   | string[]
   | number
-  | { value: string; text: string };
+  | { value: string; text: string }
+  | { minAge: number; maxAge: number };
 
 // User's responses (questionId -> value)
 export type Responses = Record<string, ResponseValue>;

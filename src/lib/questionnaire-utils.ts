@@ -135,7 +135,7 @@ export function validateResponses(responses: Responses): ValidationError[] {
     if (question.type === "ranking") {
       const arrayResponse = response as string[];
 
-      if (question.id === "q28") {
+      if (question.id === "q30") {
         // Love languages you RECEIVE - require exactly 3 rankings
         if (!Array.isArray(arrayResponse) || arrayResponse.length !== 3) {
           errors.push({
@@ -147,7 +147,7 @@ export function validateResponses(responses: Responses): ValidationError[] {
         }
       }
 
-      if (question.id === "q39") {
+      if (question.id === "q41") {
         // Love languages you GIVE - require exactly 3 rankings
         if (!Array.isArray(arrayResponse) || arrayResponse.length !== 3) {
           errors.push({
@@ -155,6 +155,31 @@ export function validateResponses(responses: Responses): ValidationError[] {
             questionText: question.text,
             errorMessage:
               "Please rank 3 love languages that you most naturally give",
+          });
+        }
+      }
+    }
+
+    // Validation for age-range questions
+    if (question.type === "age-range") {
+      if (
+        !response ||
+        typeof response !== "object" ||
+        !("minAge" in response) ||
+        !("maxAge" in response)
+      ) {
+        errors.push({
+          questionId: question.id,
+          questionText: question.text,
+          errorMessage: "Please provide both minimum and maximum age",
+        });
+      } else {
+        const ageRange = response as { minAge: number; maxAge: number };
+        if (ageRange.maxAge <= ageRange.minAge) {
+          errors.push({
+            questionId: question.id,
+            questionText: question.text,
+            errorMessage: "Maximum age must be greater than minimum age",
           });
         }
       }

@@ -192,9 +192,8 @@ export function QuestionRenderer({
 
     case "multi-choice":
       const multiValue = (value as string[]) || [];
-      // Special handling for love languages question (q39) - limit to 3 selections
-      const isLoveLanguagesQuestion = question.id === "q39";
-      const maxSelections = isLoveLanguagesQuestion ? 3 : Infinity;
+      // Get max selections from question or default to Infinity
+      const maxSelections = question.maxSelections || Infinity;
 
       return wrapWithImportance(
         <div
@@ -371,6 +370,72 @@ export function QuestionRenderer({
             step={question.step}
             disabled={disabled}
           />
+        </div>
+      );
+
+    case "age-range":
+      const ageRangeValue = (value as { minAge: number; maxAge: number }) || {
+        minAge: 0,
+        maxAge: 0,
+      };
+
+      return wrapWithImportance(
+        <div
+          className="space-y-3"
+          role="group"
+          aria-labelledby={`${question.id}-label`}
+          id={`question-${question.id}`}
+        >
+          {questionHeader}
+          {validationErrorDisplay}
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <Label
+                htmlFor={`${question.id}-min`}
+                className="text-sm font-medium mb-1 block"
+              >
+                Minimum Age
+              </Label>
+              <Input
+                id={`${question.id}-min`}
+                type="number"
+                min={0}
+                value={ageRangeValue.minAge}
+                onChange={(e) => {
+                  const newMin = Number(e.target.value);
+                  onChange({
+                    minAge: newMin,
+                    maxAge: ageRangeValue.maxAge,
+                  });
+                }}
+                disabled={disabled}
+                className="w-full"
+              />
+            </div>
+            <div className="flex-1">
+              <Label
+                htmlFor={`${question.id}-max`}
+                className="text-sm font-medium mb-1 block"
+              >
+                Maximum Age
+              </Label>
+              <Input
+                id={`${question.id}-max`}
+                type="number"
+                min={0}
+                value={ageRangeValue.maxAge}
+                onChange={(e) => {
+                  const newMax = Number(e.target.value);
+                  onChange({
+                    minAge: ageRangeValue.minAge,
+                    maxAge: newMax,
+                  });
+                }}
+                disabled={disabled}
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
       );
 

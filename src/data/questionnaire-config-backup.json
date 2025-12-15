@@ -22,10 +22,9 @@
       "id": "section-0",
       "title": "Basic Info & Matching Criteria",
       "description": "This helps us understand who you are and who you're looking for.",
-      "questionsCount": 3,
       "questions": [
         {
-          "id": "q1",
+          "id": "q0.1",
           "type": "single-choice",
           "text": "What's your gender identity?",
           "required": true,
@@ -41,7 +40,7 @@
           ]
         },
         {
-          "id": "q2",
+          "id": "q0.2",
           "type": "single-choice",
           "text": "What's your sexual/romantic orientation?",
           "required": true,
@@ -63,11 +62,10 @@
           ]
         },
         {
-          "id": "q3",
+          "id": "q0.3",
           "type": "multi-choice",
           "text": "I'm open to being matched with: (select all that apply)",
           "required": true,
-          "note": "Your matches will only include people whose preferences are compatible with yours.",
           "options": [
             { "value": "men", "label": "Men" },
             { "value": "women", "label": "Women" },
@@ -84,16 +82,36 @@
       "id": "section-1",
       "title": "Icebreakers / Personality",
       "description": "Let's get to know you! These questions help us understand your personality and sense of humor.",
-      "questionsCount": 10,
       "questions": [
         {
-          "id": "q4",
+          "id": "q1",
+          "type": "single-choice",
+          "text": "It's 2am and you're hungry. You're ordering:",
+          "required": true,
+          "options": [
+            { "value": "sushi", "label": "Sushi (fancy even when desperate)" },
+            { "value": "pizza", "label": "Pizza (classic comfort)" },
+            {
+              "value": "mcdonalds",
+              "label": "McDonald's (no shame, just convenience)"
+            },
+            {
+              "value": "meal-prep",
+              "label": "Nothing, I actually meal-prepped like a responsible adult"
+            },
+            { "value": "fastest", "label": "Whatever's fastest, I don't care" }
+          ]
+        },
+        {
+          "id": "q2",
           "type": "single-choice",
           "text": "Your ideal Saturday morning is closest to:",
           "required": true,
-          "rationale": "Energy level, social vs. solo, routine vs. spontaneity",
           "options": [
-            { "value": "sleep-noon", "label": "Sleeping until noon" },
+            {
+              "value": "sleep-noon",
+              "label": "Sleeping until noon (rest is sacred)"
+            },
             {
               "value": "early-active",
               "label": "Up at 7am for a run, hike, or gym session"
@@ -110,27 +128,35 @@
           ]
         },
         {
-          "id": "q5",
+          "id": "q3",
           "type": "single-choice",
           "text": "You've had a terrible day. What helps you decompress?",
           "required": true,
-          "rationale": "Emotional processing, introversion/extraversion, coping mechanisms",
           "options": [
-            { "value": "talk-out", "label": "Talking it out with someone" },
-            { "value": "alone", "label": "Being alone to recharge" },
-            { "value": "physical", "label": "Physical activity" },
+            {
+              "value": "talk-out",
+              "label": "Talking it out with someone (I process externally)"
+            },
+            {
+              "value": "alone",
+              "label": "Being alone to recharge (I process internally)"
+            },
+            {
+              "value": "physical",
+              "label": "Physical activity (gym, walk, dance it out)"
+            },
             {
               "value": "escapism",
-              "label": "Diving into a show, book, or game"
-            }
+              "label": "Diving into a show, book, or game (escapism)"
+            },
+            { "value": "depends", "label": "It depends on what went wrong" }
           ]
         },
         {
-          "id": "q6",
+          "id": "q4",
           "type": "single-choice",
           "text": "At a party where you don't know anyone except the host, you:",
           "required": true,
-          "rationale": "Social comfort, extraversion, humor, self-awareness",
           "options": [
             {
               "value": "confident",
@@ -142,7 +168,7 @@
             },
             {
               "value": "corner",
-              "label": "Stick to a quiet corner"
+              "label": "Find the pet (or quietest corner) and camp there"
             },
             {
               "value": "leave-early",
@@ -155,13 +181,15 @@
           ]
         },
         {
-          "id": "q7",
+          "id": "q5",
           "type": "single-choice",
-          "text": "If you were to make plans with friends, you're the person who:",
+          "text": "When making plans with friends, you're the person who:",
           "required": true,
-          "rationale": "Initiative, planning style, social role",
           "options": [
-            { "value": "organizer", "label": "Organizes everything" },
+            {
+              "value": "organizer",
+              "label": "Organizes everything (time, place, backup plan)"
+            },
             {
               "value": "flow",
               "label": "Goes with the flow (whatever everyone else wants)"
@@ -178,18 +206,20 @@
           ]
         },
         {
-          "id": "q8",
+          "id": "q6",
           "type": "single-choice",
           "text": "Your texting style is best described as:",
           "required": true,
-          "rationale": "Communication habits, attentiveness, boundaries",
           "options": [
             { "value": "quick", "label": "Quick replies, always available" },
             {
               "value": "few-hours",
               "label": "I respond when I can, but might take a few hours"
             },
-            { "value": "slow-thoughtful", "label": "Slow but thoughtful" },
+            {
+              "value": "slow-thoughtful",
+              "label": "Slow but thoughtful (I actually read and consider)"
+            },
             {
               "value": "terrible",
               "label": "Terrible—I forget to reply for days"
@@ -201,17 +231,19 @@
           ]
         },
         {
-          "id": "q9",
+          "id": "q7",
           "type": "single-choice",
           "text": "You just finished a tough exam. You celebrate by:",
           "required": true,
-          "rationale": "Stress response, celebration style, anxiety levels",
           "options": [
             {
               "value": "going-out",
               "label": "Going out with friends immediately"
             },
-            { "value": "treat", "label": "Treating yourself" },
+            {
+              "value": "treat",
+              "label": "Treating yourself (food, shopping, something fun)"
+            },
             { "value": "sleep", "label": "Sleeping for 12 hours straight" },
             {
               "value": "stress-next",
@@ -224,11 +256,10 @@
           ]
         },
         {
-          "id": "q10",
+          "id": "q8",
           "type": "single-choice",
           "text": "If you could describe your humor style:",
           "required": true,
-          "rationale": "Humor compatibility, self-awareness",
           "options": [
             { "value": "witty", "label": "Witty and sarcastic" },
             { "value": "goofy", "label": "Goofy and silly" },
@@ -241,13 +272,12 @@
           ]
         },
         {
-          "id": "q11",
+          "id": "q9",
           "type": "single-choice",
           "text": "On a road trip, you're the person who:",
           "required": true,
-          "rationale": "Role in groups, control vs. trust, energy contribution",
           "options": [
-            { "value": "dj", "label": "DJs the entire drive" },
+            { "value": "dj", "label": "DJs the entire drive (curating vibes)" },
             {
               "value": "navigator",
               "label": "Navigates and keeps us on schedule"
@@ -257,15 +287,17 @@
               "label": "Provides snacks and entertainment"
             },
             { "value": "sleeper", "label": "Sleeps in the passenger seat" },
-            { "value": "driver", "label": "Drives the whole way" }
+            {
+              "value": "driver",
+              "label": "Drives the whole way because I don't trust anyone else"
+            }
           ]
         },
         {
-          "id": "q12",
+          "id": "q10",
           "type": "single-choice",
           "text": "Your relationship with spontaneity:",
           "required": true,
-          "rationale": "Flexibility, planning preference, stress tolerance",
           "options": [
             {
               "value": "thrive",
@@ -279,35 +311,10 @@
               "value": "advance-notice",
               "label": "I need advance notice for most things"
             },
-            { "value": "stresses", "label": "Spontaneity stresses me out" }
-          ]
-        },
-        {
-          "id": "q13",
-          "type": "single-choice",
-          "text": "My dating experience is:",
-          "required": true,
-          "options": [
+            { "value": "stresses", "label": "Spontaneity stresses me out" },
             {
-              "value": "rejected",
-              "label": "I've tried but got rejected every time"
-            },
-            {
-              "value": "never",
-              "label": "I've never had or pursued a romantic relationship before"
-            },
-            { "value": "once-twice", "label": "I've dated once or twice" },
-            {
-              "value": "multiple",
-              "label": "I've dated multiple times so far"
-            },
-            {
-              "value": "experienced",
-              "label": "I'm quite experienced with dating"
-            },
-            {
-              "value": "very-experienced",
-              "label": "I'm VERY experienced with dating (why exactly are you here? 🤨)"
+              "value": "depends-mood",
+              "label": "It depends entirely on my mood that day"
             }
           ]
         }
@@ -317,14 +324,12 @@
       "id": "section-2",
       "title": "What I'm Like",
       "description": "Tell us more about yourself—your lifestyle, values, and how you navigate the world.",
-      "questionsCount": 19,
       "questions": [
         {
-          "id": "q14",
+          "id": "q11",
           "type": "single-choice",
           "text": "I'd describe my energy level as:",
           "required": true,
-          "rationale": "Energy baseline for lifestyle compatibility",
           "options": [
             { "value": "high", "label": "High—I'm always on the go" },
             {
@@ -334,24 +339,30 @@
             {
               "value": "low-key",
               "label": "Low-key—I prefer calm, steady activities"
+            },
+            {
+              "value": "fluctuates",
+              "label": "It fluctuates a lot depending on what's happening"
             }
           ]
         },
         {
-          "id": "q15",
+          "id": "q12",
           "type": "single-choice",
           "text": "My ideal work-life balance looks like:",
           "required": true,
-          "rationale": "Ambition, priorities, values",
           "options": [
-            { "value": "work-hard-play-hard", "label": "Work hard, play hard" },
+            {
+              "value": "work-hard-play-hard",
+              "label": "Work hard, play hard (ambitious and social)"
+            },
             {
               "value": "career-focused",
               "label": "Career-focused, but I make time for loved ones"
             },
             {
               "value": "balanced",
-              "label": "Balanced, work and personal life are equally important"
+              "label": "Balanced—work and personal life are equally important"
             },
             {
               "value": "life-first",
@@ -360,11 +371,10 @@
           ]
         },
         {
-          "id": "q16",
+          "id": "q13",
           "type": "single-choice",
           "text": "When I'm stressed or upset, I typically:",
           "required": true,
-          "rationale": "Emotional processing, communication needs, vulnerability",
           "options": [
             {
               "value": "talk-immediately",
@@ -378,19 +388,29 @@
               "value": "distract",
               "label": "Distract myself until I feel better"
             },
-            { "value": "bottle-up", "label": "Bottle it up" }
+            {
+              "value": "bottle-up",
+              "label": "Bottle it up (I'm working on this)"
+            },
+            {
+              "value": "depends",
+              "label": "Depends on the situation and who I'm with"
+            }
           ]
         },
         {
-          "id": "q17",
+          "id": "q14",
           "type": "single-choice",
           "text": "Personal growth and self-improvement are:",
           "required": true,
           "options": [
-            { "value": "central", "label": "Central to my life" },
+            {
+              "value": "central",
+              "label": "Central to my life—I'm always working on myself (therapy, books, reflection)"
+            },
             {
               "value": "important",
-              "label": "Important, but it's not my whole identity"
+              "label": "Important—I'm growing, but it's not my whole identity"
             },
             {
               "value": "occasional",
@@ -404,15 +424,14 @@
           ]
         },
         {
-          "id": "q18",
+          "id": "q15",
           "type": "single-choice",
           "text": "I'd describe my social battery as:",
           "required": true,
-          "rationale": "Introversion/extraversion, social needs",
           "options": [
             {
               "value": "infinite",
-              "label": "Infinite, I could hang out with people all day"
+              "label": "Infinite—I could hang out with people all day"
             },
             {
               "value": "high",
@@ -420,11 +439,11 @@
             },
             {
               "value": "moderate",
-              "label": "Moderate, I like socializing, but in smaller doses"
+              "label": "Moderate—I like socializing, but in smaller doses"
             },
             {
               "value": "low",
-              "label": "Low, I'm selective about when and who I socialize with"
+              "label": "Low—I'm selective about when and who I socialize with"
             },
             {
               "value": "hermit",
@@ -433,39 +452,51 @@
           ]
         },
         {
-          "id": "q19",
+          "id": "q16",
           "type": "single-choice",
           "text": "My living space is usually:",
           "required": true,
-          "rationale": "Organization, compatibility for cohabitation, self-awareness",
           "options": [
-            { "value": "spotless", "label": "Spotless and organized" },
+            {
+              "value": "spotless",
+              "label": "Spotless and organized (everything has a place)"
+            },
             {
               "value": "clean-enough",
               "label": "Clean enough, but not perfect"
             },
-            { "value": "organized-chaos", "label": "Organized chaos" },
-            { "value": "mess", "label": "A mess, not gonna lie" }
+            {
+              "value": "organized-chaos",
+              "label": "Organized chaos (I know where things are)"
+            },
+            { "value": "mess", "label": "A mess, not gonna lie" },
+            {
+              "value": "depends",
+              "label": "It depends—clean when motivated, messy otherwise"
+            }
           ]
         },
         {
-          "id": "q20",
+          "id": "q17",
           "type": "single-choice",
           "text": "When it comes to money, I tend to:",
           "required": true,
           "options": [
             {
               "value": "save-aggressively",
-              "label": "Save aggressively, I'm very financially cautious"
+              "label": "Save aggressively—I'm very financially cautious"
             },
             {
               "value": "save-regularly",
-              "label": "Save regularly, but I also enjoy spending on select things I value"
+              "label": "Save regularly, but I also enjoy spending on things I value"
             },
-            { "value": "save-when-can", "label": "I save when I can" },
+            {
+              "value": "balanced",
+              "label": "Spend on experiences and things that matter, save when I can"
+            },
             {
               "value": "live-moment",
-              "label": "Live in the moment, I don't think much about saving"
+              "label": "Live in the moment—I don't think much about saving"
             },
             {
               "value": "figuring-out",
@@ -474,15 +505,20 @@
           ]
         },
         {
-          "id": "q21",
+          "id": "q18",
           "type": "single-choice",
           "text": "I'm most productive:",
           "required": true,
-          "rationale": "Schedule compatibility, energy patterns",
           "options": [
-            { "value": "early-morning", "label": "Early morning" },
-            { "value": "mid-day", "label": "Mid-morning to afternoon" },
-            { "value": "late-night", "label": "Late night" },
+            {
+              "value": "early-morning",
+              "label": "Early morning (up with the sunrise)"
+            },
+            {
+              "value": "mid-day",
+              "label": "Mid-morning to afternoon (standard schedule)"
+            },
+            { "value": "late-night", "label": "Late night (night owl energy)" },
             {
               "value": "varies",
               "label": "It varies, I don't have a set rhythm"
@@ -490,11 +526,10 @@
           ]
         },
         {
-          "id": "q22",
+          "id": "q19",
           "type": "single-choice",
           "text": "My relationship with exercise:",
           "required": true,
-          "rationale": "Lifestyle, health priorities, activity level",
           "options": [
             {
               "value": "huge-part",
@@ -510,11 +545,10 @@
           ]
         },
         {
-          "id": "q23",
+          "id": "q20",
           "type": "single-choice",
           "text": "How I handle conflict:",
           "required": true,
-          "rationale": "Conflict resolution, communication maturity",
           "options": [
             {
               "value": "direct",
@@ -522,27 +556,56 @@
             },
             {
               "value": "time-then-talk",
-              "label": "Give it some time to cool off, then talk it through"
+              "label": "Give it some time, then talk it through"
             },
             {
-              "value": "process-internally",
-              "label": "Process internally on my own first, I prefer to avoid confrontation when possible"
+              "value": "avoid",
+              "label": "Avoid it unless absolutely necessary"
             },
             {
-              "value": "emotional-need-space",
-              "label": "I can get emotional in the moment and need space to collect myself"
+              "value": "defensive",
+              "label": "Get defensive or shut down (working on it)"
+            },
+            {
+              "value": "depends",
+              "label": "Depends on who I'm in conflict with"
             }
           ]
         },
         {
-          "id": "q24",
+          "id": "q21",
           "type": "single-choice",
-          "text": "If your partner gets attention from someone else (flirting, interest, etc.), how do you view feeling jealous in that situation?",
+          "text": "Do you prefer to be the smartest person in the room?",
+          "required": true,
+          "options": [
+            { "value": "yes", "label": "Yes, I like feeling like the expert" },
+            {
+              "value": "sometimes",
+              "label": "Sometimes—it depends on the context"
+            },
+            {
+              "value": "no",
+              "label": "No, I prefer being challenged and learning from others"
+            },
+            {
+              "value": "dont-think",
+              "label": "I don't think about it this way"
+            },
+            {
+              "value": "avoid",
+              "label": "I actively avoid situations where I'm the smartest (imposter syndrome)"
+            }
+          ]
+        },
+        {
+          "id": "q22",
+          "type": "single-choice",
+          "text": "When your partner gets attention from someone else (flirting, interest, etc.), how do you view feeling jealous in that situation?",
           "required": true,
           "options": [
             {
               "value": "healthy",
-              "label": "It's healthy, being jealous shows that I care about my partner"
+              "label": "It's healthy — it shows that I care about my partner"
             },
             {
               "value": "bit-normal",
@@ -552,32 +615,43 @@
               "value": "insecurity",
               "label": "It's mostly a sign of my insecurity"
             },
-            { "value": "not-jealous", "label": "I don't feel jealous" },
+            { "value": "depends", "label": "It depends on the circumstances" },
             { "value": "not-sure", "label": "I'm not sure" }
           ]
         },
         {
-          "id": "q25",
+          "id": "q23",
           "type": "single-choice",
           "text": "I'd describe my communication style as:",
           "required": true,
-          "rationale": "Communication clarity, potential for misunderstandings",
           "options": [
-            { "value": "direct", "label": "Direct and straightforward" },
-            { "value": "thoughtful", "label": "Thoughtful and considerate" },
-            { "value": "casual", "label": "Casual and easy-going" },
+            {
+              "value": "direct",
+              "label": "Direct and straightforward (say what I mean)"
+            },
+            {
+              "value": "thoughtful",
+              "label": "Thoughtful and considerate (choose words carefully)"
+            },
+            {
+              "value": "casual",
+              "label": "Casual and easy-going (no big deal)"
+            },
             {
               "value": "indirect",
-              "label": "Indirect, I hint rather than state directly"
+              "label": "Indirect—I hint rather than state directly"
+            },
+            {
+              "value": "depends",
+              "label": "Depends on comfort level with the person"
             }
           ]
         },
         {
-          "id": "q26",
+          "id": "q24",
           "type": "single-choice",
           "text": "My relationship with alcohol:",
           "required": true,
-          "rationale": "Lifestyle, dealbreaker potential, social habits",
           "options": [
             {
               "value": "social",
@@ -596,61 +670,62 @@
           ]
         },
         {
-          "id": "q27",
+          "id": "q25",
           "type": "single-choice",
           "text": "When it comes to trying new things, I'm:",
           "required": true,
-          "rationale": "Openness, adventure compatibility",
           "options": [
             {
               "value": "always-down",
-              "label": "Always down, I love novelty and adventure"
+              "label": "Always down—I love novelty and adventure"
             },
             { "value": "open", "label": "Open if it sounds interesting" },
             {
               "value": "cautious",
-              "label": "Cautious, I prefer familiar experiences"
+              "label": "Cautious—I prefer familiar experiences"
             },
-            { "value": "resistant", "label": "Resistant, I like what I like" }
+            { "value": "resistant", "label": "Resistant—I like what I like" },
+            { "value": "depends", "label": "Depends entirely on the \"thing\"" }
           ]
         },
         {
-          "id": "q28",
+          "id": "q26",
           "type": "single-choice",
           "text": "Which statement resonates most with you?",
           "required": true,
-          "rationale": "Values alignment, dealbreaker potential",
           "options": [
             {
               "value": "stability",
-              "label": "I value stability and tradition"
+              "label": "I value stability and tradition—I like knowing what to expect"
             },
-            { "value": "growth", "label": "I value growth and change" },
+            {
+              "value": "growth",
+              "label": "I value growth and change—I'm always evolving"
+            },
             {
               "value": "freedom",
-              "label": "I value freedom and independence"
+              "label": "I value freedom and independence—I need autonomy"
             },
             {
               "value": "connection",
-              "label": "I value connection and community"
+              "label": "I value connection and community—relationships are everything"
             },
             {
               "value": "achievement",
-              "label": "I value achievement and success"
+              "label": "I value achievement and success—I'm driven by goals"
             }
           ]
         },
         {
-          "id": "q29",
+          "id": "q27",
           "type": "single-choice",
           "text": "How important is religion or spirituality in your life?",
           "required": true,
-          "rationale": "Values, lifestyle, dealbreaker potential",
           "options": [
-            { "value": "very", "label": "Very important, I practice actively" },
+            { "value": "very", "label": "Very important—I practice actively" },
             {
               "value": "somewhat",
-              "label": "Somewhat important, culturally or occasionally"
+              "label": "Somewhat important—culturally or occasionally"
             },
             {
               "value": "not-very",
@@ -664,11 +739,10 @@
           ]
         },
         {
-          "id": "q30",
+          "id": "q28",
           "type": "ranking",
-          "text": "Rank your love languages (how you prefer to receive affection): Drag to rank from most to least important:",
+          "text": "Rank your top 3 love languages (how you prefer to RECEIVE affection):",
           "required": true,
-          "helpText": "You can do a love language quiz if you want: The [Official] Love Language® Quiz",
           "options": [
             {
               "value": "physical-touch",
@@ -693,15 +767,14 @@
           ]
         },
         {
-          "id": "q31",
+          "id": "q29",
           "type": "single-choice",
-          "text": "In a relationship, I would:",
+          "text": "In a relationship, I tend to:",
           "required": true,
-          "rationale": "Emotional availability, attachment style",
           "options": [
             {
               "value": "open-quickly",
-              "label": "Open up quickly, I'm an open book"
+              "label": "Open up quickly—I'm an open book"
             },
             {
               "value": "time-trust",
@@ -711,20 +784,26 @@
               "value": "private",
               "label": "Keep things pretty private, even when close"
             },
-            { "value": "struggle", "label": "Struggle with vulnerability" }
+            {
+              "value": "struggle",
+              "label": "Struggle with vulnerability (but I'm trying)"
+            },
+            {
+              "value": "depends",
+              "label": "It depends on the person and relationship"
+            }
           ]
         },
         {
-          "id": "q32",
+          "id": "q30",
           "type": "single-choice",
           "text": "When someone I care about is going through a hard time, I typically:",
           "required": true,
-          "rationale": "Emotional intelligence and support style. Mismatches here cause relationship friction (e.g., \"fixer\" paired with someone who just wants to be heard)",
           "options": [
             { "value": "solve", "label": "Jump in to help solve the problem" },
             {
               "value": "listen",
-              "label": "Listen and offer emotional support"
+              "label": "Listen and offer emotional support (they can vent)"
             },
             {
               "value": "space",
@@ -736,7 +815,7 @@
             },
             {
               "value": "struggle",
-              "label": "I struggle with knowing what to do"
+              "label": "I struggle with knowing what to do (working on this)"
             }
           ]
         }
@@ -744,16 +823,14 @@
     },
     {
       "id": "section-3",
-      "title": "What I'm Looking For",
+      "title": "What I'm Looking For in a Person",
       "description": "Help us understand what kind of partner you're hoping to meet.",
-      "questionsCount": 16,
       "questions": [
         {
-          "id": "q33",
+          "id": "q31",
           "type": "single-choice",
           "text": "I'm looking for someone whose energy level is:",
           "required": true,
-          "rationale": "Energy compatibility preference",
           "options": [
             {
               "value": "high",
@@ -761,41 +838,31 @@
             },
             { "value": "moderate", "label": "Moderate—balanced and steady" },
             { "value": "low-key", "label": "Low-key—calm and grounding" },
-            {
-              "value": "similar",
-              "label": "Similar to mine (what I answered in Q14)"
-            },
+            { "value": "similar", "label": "Similar to mine" },
             { "value": "doesnt-matter", "label": "Doesn't matter to me" }
           ]
         },
         {
-          "id": "q34",
-          "type": "age-range",
-          "text": "What is the acceptable age range for your match?",
-          "required": true
-        },
-        {
-          "id": "q35",
+          "id": "q32",
           "type": "single-choice",
           "text": "I'm looking for someone who is:",
           "required": true,
-          "rationale": "Introversion/extraversion preference",
           "options": [
-            { "value": "outgoing", "label": "Outgoing and social" },
+            { "value": "outgoing", "label": "Very outgoing and social" },
             {
               "value": "somewhat-social",
               "label": "Somewhat social, but also enjoys alone time"
             },
             { "value": "introverted", "label": "More introverted and low-key" },
-            { "value": "doesnt-matter", "label": "Doesn't matter" }
+            { "value": "adapt", "label": "Doesn't matter—I adapt easily" },
+            { "value": "opposite", "label": "Opposite of me (balance me out)" }
           ]
         },
         {
-          "id": "q36",
+          "id": "q33",
           "type": "single-choice",
           "text": "In terms of ambition, I want someone who:",
           "required": true,
-          "rationale": "Values, lifestyle compatibility",
           "options": [
             {
               "value": "highly-driven",
@@ -817,37 +884,54 @@
           ]
         },
         {
-          "id": "q37",
+          "id": "q34",
           "type": "single-choice",
           "text": "I prefer someone whose texting style is:",
           "required": true,
-          "rationale": "Communication expectations",
           "options": [
             { "value": "quick", "label": "Quick and responsive" },
             {
               "value": "thoughtful",
               "label": "Thoughtful, even if it takes time"
             },
-            { "value": "prefer-not-text", "label": "I'd prefer not to text" },
+            { "value": "flexible", "label": "Doesn't matter, I'm flexible" },
+            { "value": "similar", "label": "Similar to mine" }
+          ]
+        },
+        {
+          "id": "q35",
+          "type": "single-choice",
+          "text": "I'd prefer someone whose approach to money is:",
+          "required": true,
+          "options": [
+            { "value": "very-similar", "label": "Very similar to mine" },
             {
-              "value": "doesnt-matter",
-              "label": "Doesn't matter, I'm flexible"
+              "value": "somewhat-similar",
+              "label": "Somewhat similar (same general philosophy)"
+            },
+            {
+              "value": "responsible",
+              "label": "Doesn't matter, as long as they're responsible"
+            },
+            {
+              "value": "complementary",
+              "label": "Complementary to mine (they balance me out)"
             }
           ]
         },
         {
-          "id": "q38",
+          "id": "q36",
           "type": "single-choice",
           "text": "Would you date someone who was significantly messier than you?",
           "required": true,
           "options": [
             {
               "value": "absolutely-not",
-              "label": "Absolutely not, I need someone who's clean"
+              "label": "Absolutely not—I need someone as clean as me"
             },
             {
               "value": "probably-not",
-              "label": "Probably not, it would bother me"
+              "label": "Probably not—it would bother me"
             },
             {
               "value": "could-deal",
@@ -858,11 +942,10 @@
           ]
         },
         {
-          "id": "q39",
+          "id": "q37",
           "type": "single-choice",
           "text": "When it comes to humor, I want someone who:",
           "required": true,
-          "rationale": "Humor compatibility",
           "options": [
             { "value": "makes-laugh", "label": "Makes me laugh constantly" },
             {
@@ -873,6 +956,7 @@
               "value": "genuine",
               "label": "Doesn't need to be funny, just genuine"
             },
+            { "value": "matches", "label": "Matches my humor style" },
             {
               "value": "challenges",
               "label": "Challenges me with different humor"
@@ -880,11 +964,10 @@
           ]
         },
         {
-          "id": "q40",
+          "id": "q38",
           "type": "single-choice",
           "text": "I'm looking for someone who handles conflict by:",
           "required": true,
-          "rationale": "Conflict resolution compatibility",
           "options": [
             { "value": "immediate", "label": "Talking it out immediately" },
             {
@@ -895,18 +978,14 @@
               "value": "resolve",
               "label": "Doesn't matter, as long as we resolve it"
             },
-            {
-              "value": "similar",
-              "label": "Similar to how I handle it (from Q23)"
-            }
+            { "value": "similar", "label": "Similar to how I handle it" }
           ]
         },
         {
-          "id": "q41",
+          "id": "q39",
           "type": "ranking",
-          "text": "What love languages do you most naturally GIVE? Rank your top 3:",
+          "text": "What love languages do you most naturally GIVE? (Select your top 3)",
           "required": true,
-          "rationale": "Affection needs, compatibility with love languages",
           "options": [
             {
               "value": "physical-touch",
@@ -931,11 +1010,10 @@
           ]
         },
         {
-          "id": "q42",
+          "id": "q40",
           "type": "single-choice",
           "text": "I want someone who is:",
           "required": true,
-          "rationale": "Emotional compatibility, vulnerability expectations",
           "options": [
             {
               "value": "very-open",
@@ -949,15 +1027,18 @@
             {
               "value": "meet-where",
               "label": "Doesn't matter, I meet people where they are"
+            },
+            {
+              "value": "similar",
+              "label": "Similar to me in emotional openness"
             }
           ]
         },
         {
-          "id": "q43",
+          "id": "q41",
           "type": "single-choice",
           "text": "In terms of lifestyle, I'm looking for someone who:",
           "required": true,
-          "rationale": "Lifestyle compatibility, shared activities",
           "options": [
             {
               "value": "active-outdoorsy",
@@ -974,28 +1055,31 @@
             {
               "value": "common-ground",
               "label": "Doesn't matter—we can find common ground"
-            }
+            },
+            { "value": "similar", "label": "Similar activity level to me" }
           ]
         },
         {
-          "id": "q44",
+          "id": "q42",
           "type": "single-choice",
           "text": "I want someone who is:",
           "required": true,
-          "rationale": "Planning style compatibility",
           "options": [
             { "value": "organized", "label": "Organized and plans ahead" },
             { "value": "spontaneous", "label": "Flexible and spontaneous" },
             { "value": "mix", "label": "A mix of both" },
-            { "value": "doesnt-matter", "label": "Doesn't matter to me" }
+            { "value": "doesnt-matter", "label": "Doesn't matter to me" },
+            {
+              "value": "opposite",
+              "label": "Opposite of me (we complement each other)"
+            }
           ]
         },
         {
-          "id": "q45",
+          "id": "q43",
           "type": "single-choice",
           "text": "Politically/socially, I'm looking for someone who:",
           "required": true,
-          "rationale": "Values alignment, dealbreaker screening",
           "options": [
             { "value": "exact-views", "label": "Shares my exact views" },
             {
@@ -1013,13 +1097,12 @@
           ]
         },
         {
-          "id": "q46",
+          "id": "q44",
           "type": "single-choice",
           "text": "I want someone whose relationship with alcohol is:",
           "required": true,
-          "rationale": "Lifestyle compatibility, dealbreaker screening",
           "options": [
-            { "value": "similar", "label": "Similar to mine (from Q26)" },
+            { "value": "similar", "label": "Similar to mine" },
             { "value": "doesnt-matter", "label": "Doesn't matter to me" },
             {
               "value": "less",
@@ -1030,32 +1113,19 @@
               "label": "More than mine (I want someone more social)"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "section-4",
+      "title": "What I'm Looking For in a Relationship",
+      "description": "Tell us about your relationship expectations and what you're looking for.",
+      "questions": [
         {
-          "id": "q47",
-          "type": "single-choice",
-          "text": "I'd prefer if someone:",
-          "required": true,
-          "options": [
-            { "value": "never-dated", "label": "Has never dated before" },
-            { "value": "once-twice", "label": "Has dated once or twice" },
-            {
-              "value": "few-times",
-              "label": "Dated a few times through high school and university"
-            },
-            {
-              "value": "experienced",
-              "label": "Has a very experienced dating history"
-            },
-            { "value": "no-preference", "label": "I don't have a preference" }
-          ]
-        },
-        {
-          "id": "q48",
+          "id": "q45",
           "type": "single-choice",
           "text": "Right now, I'm looking for:",
           "required": true,
-          "rationale": "Relationship intent, expectations alignment",
           "options": [
             {
               "value": "serious-long-term",
@@ -1075,88 +1145,87 @@
               "label": "Honestly, I'm just exploring and open to anything"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "section-4",
-      "title": "Relationship Dynamics",
-      "description": "Tell us about your relationship expectations and how you navigate connections.",
-      "questionsCount": 10,
-      "questions": [
+        },
         {
-          "id": "q49",
+          "id": "q46",
           "type": "single-choice",
           "text": "In a relationship, communication is:",
           "required": true,
-          "rationale": "Communication needs, attachment style",
           "options": [
             {
               "value": "constant",
-              "label": "Constant, I like frequent check-ins and updates"
+              "label": "Constant—I like frequent check-ins and updates"
             },
             {
               "value": "regular",
-              "label": "Regular but not constant"
+              "label": "Regular but not constant (a few times a day)"
             },
             {
               "value": "casual",
-              "label": "Casual, we talk when something comes up"
+              "label": "Casual—we talk when something comes up"
             },
             {
               "value": "independent",
-              "label": "Independent, we mainly do our own things"
+              "label": "Independent—we both do our own thing"
+            },
+            {
+              "value": "depends-phase",
+              "label": "Depends on the phase of the relationship"
             }
           ]
         },
         {
-          "id": "q50",
+          "id": "q47",
           "type": "single-choice",
-          "text": "Imagine you're getting close to someone you like. What's your first instinct?",
+          "text": "Which statement sounds most like you in relationships?",
           "required": true,
           "options": [
             {
-              "value": "comfortable-excited",
-              "label": "I feel comfortable and excited—it feels natural to get close"
+              "value": "secure",
+              "label": "I feel comfortable with closeness and don't worry much about the relationship (Secure)"
             },
             {
-              "value": "excited-anxious",
-              "label": "I feel excited, but I also get anxious about whether they feel the same"
+              "value": "anxious",
+              "label": "I crave closeness but often worry my partner doesn't feel the same (Anxious)"
             },
             {
-              "value": "enjoy-distance",
-              "label": "I enjoy them, but I want to keep some distance so things don't get too intense"
+              "value": "avoidant",
+              "label": "I value independence and sometimes feel smothered by too much closeness (Avoidant)"
             },
             {
-              "value": "want-scared",
-              "label": "I want closeness, but I also get scared and pull back"
+              "value": "fearful-avoidant",
+              "label": "I want closeness but pull away when I get it (Fearful-avoidant)"
             },
-            { "value": "none-fit", "label": "None of these fit me well" }
+            {
+              "value": "not-sure",
+              "label": "I'm not sure / I don't relate to any of these"
+            }
           ]
         },
         {
-          "id": "q51",
+          "id": "q48",
           "type": "single-choice",
           "text": "For me, quality time means:",
           "required": true,
-          "rationale": "Quality time preference, relationship style",
           "options": [
-            { "value": "activities", "label": "Doing activities together" },
-            { "value": "same-space", "label": "Just being in the same space" },
+            {
+              "value": "activities",
+              "label": "Doing activities together (adventures, dates, hobbies)"
+            },
+            {
+              "value": "same-space",
+              "label": "Just being in the same space (parallel play)"
+            },
             {
               "value": "deep-conversations",
               "label": "Deep conversations and emotional connection"
             },
-            {
-              "value": "other",
-              "label": "Other",
-              "hasTextInput": true
-            },
+            { "value": "mix", "label": "A mix of all of the above" },
             { "value": "figuring-out", "label": "I'm still figuring this out" }
           ]
         },
         {
-          "id": "q52",
+          "id": "q49",
           "type": "single-choice",
           "text": "I'd prefer someone who:",
           "required": true,
@@ -1171,21 +1240,20 @@
             },
             {
               "value": "accept-as-is",
-              "label": "Doesn't need to prioritize growth, I accept them as they are"
+              "label": "Doesn't need to prioritize growth—I accept them as they are"
             },
             { "value": "challenges-me", "label": "Challenges me to grow more" }
           ]
         },
         {
-          "id": "q53",
+          "id": "q50",
           "type": "single-choice",
           "text": "I see arguments in a relationship as:",
           "required": true,
-          "rationale": "Conflict perspective, relationship maturity",
           "options": [
             {
               "value": "healthy",
-              "label": "Healthy, they're opportunities to grow"
+              "label": "Healthy—they're opportunities to grow"
             },
             {
               "value": "rare",
@@ -1193,17 +1261,20 @@
             },
             {
               "value": "uncomfortable",
-              "label": "Uncomfortable, I prefer harmony"
+              "label": "Uncomfortable—I prefer harmony"
             },
-            { "value": "incompatibility", "label": "Signs of incompatibility" }
+            { "value": "incompatibility", "label": "Signs of incompatibility" },
+            {
+              "value": "depends",
+              "label": "Depends on what we're arguing about"
+            }
           ]
         },
         {
-          "id": "q54",
+          "id": "q51",
           "type": "single-choice",
           "text": "When it comes to personal space in a relationship:",
           "required": true,
-          "rationale": "Independence needs, attachment style",
           "options": [
             {
               "value": "lot-independence",
@@ -1217,11 +1288,15 @@
               "value": "most-time",
               "label": "I prefer spending most of my time together"
             },
-            { "value": "figuring-out", "label": "I'm figuring out what I need" }
+            {
+              "value": "figuring-out",
+              "label": "I'm figuring out what I need"
+            },
+            { "value": "depends", "label": "It depends on the relationship" }
           ]
         },
         {
-          "id": "q55",
+          "id": "q52",
           "type": "single-choice",
           "text": "To me, commitment in a relationship means:",
           "required": true,
@@ -1236,7 +1311,7 @@
             },
             {
               "value": "planning-future",
-              "label": "Planning a future together"
+              "label": "Planning a future together (talking about long-term goals)"
             },
             {
               "value": "prioritizing",
@@ -1253,7 +1328,7 @@
           ]
         },
         {
-          "id": "q56",
+          "id": "q53",
           "type": "single-choice",
           "text": "How important is sexual intimacy in a relationship to you?",
           "required": true,
@@ -1266,7 +1341,7 @@
           ]
         },
         {
-          "id": "q57",
+          "id": "q54",
           "type": "single-choice",
           "text": "The most important thing in a relationship to me is:",
           "required": true,
@@ -1285,7 +1360,7 @@
           ]
         },
         {
-          "id": "q58",
+          "id": "q55",
           "type": "single-choice",
           "text": "What relationship pace feels most comfortable to you?",
           "required": true,
@@ -1315,14 +1390,12 @@
       "id": "section-5",
       "title": "Dealbreakers / Core Values",
       "description": "These questions help us understand your non-negotiables and major life goals.",
-      "questionsCount": 3,
       "questions": [
         {
-          "id": "q59",
+          "id": "q56",
           "type": "single-choice",
           "text": "In terms of having children:",
           "required": true,
-          "rationale": "Major life decision, dealbreaker potential",
           "options": [
             {
               "value": "definitely-want",
@@ -1338,11 +1411,10 @@
           ]
         },
         {
-          "id": "q60",
+          "id": "q57",
           "type": "single-choice",
           "text": "My ideal distance for a relationship:",
           "required": true,
-          "rationale": "Practical compatibility, commitment level",
           "options": [
             {
               "value": "same-campus",
@@ -1360,11 +1432,10 @@
           ]
         },
         {
-          "id": "q61",
+          "id": "q58",
           "type": "textarea",
           "text": "Something I absolutely cannot compromise on in a relationship:",
           "required": true,
-          "rationale": "Personal dealbreaker, gives human cupids context",
           "placeholder": "Example: \"Honesty—I need complete transparency\" or \"Respect for my career ambitions\"",
           "minLength": 10,
           "maxLength": 200
@@ -1373,43 +1444,33 @@
     },
     {
       "id": "section-6",
-      "title": "Open-Ended Text",
+      "title": "Open-Ended Questions",
       "description": "Share more about yourself in your own words. These help us understand your personality and give your matches conversation starters.",
-      "questionsCount": 3,
       "questions": [
         {
-          "id": "q62",
+          "id": "q59",
           "type": "textarea",
-          "text": "What's something you're passionate about that people might not know?",
+          "text": "What's something you're passionate about that most people don't know?",
           "required": true,
-          "rationale": "Unique interests, depth, conversation starter",
           "placeholder": "Example: \"I'm weirdly into urban planning—I'll spend hours redesigning transit systems in my head. My friends think it's boring, but I genuinely love it.\"",
           "minLength": 20,
           "maxLength": 300
         },
         {
-          "id": "q63",
+          "id": "q60a",
           "type": "textarea",
           "text": "If you were matched, what is one thing you want the other person to know about you?",
           "required": true,
-          "rationale": "Personality, vulnerability, setting expectations",
           "placeholder": "Example: \"I'm really bad at texting first, but once we're talking I'm all in. Also, I make terrible puns and I'm not sorry about it.\"",
           "minLength": 20,
           "maxLength": 300
         },
         {
-          "id": "q64",
+          "id": "q60b",
           "type": "textarea",
           "text": "Ask your match a question! Write one question you'd want your match to answer. This could be fun, deep, or anything in between.",
           "required": true,
-          "hasAIGenerator": true,
-          "aiGeneratorExamples": [
-            "What's a belief you held strongly 5 years ago that you've completely changed your mind about?",
-            "If you could have dinner with anyone, living or dead, who and why?",
-            "What's something small that makes you unreasonably happy?",
-            "What's the most valuable lesson a past relationship taught you?"
-          ],
-          "placeholder": "Example: \"What's your biggest fear?\" or \"What's your favorite pizza topping?\"",
+          "placeholder": "Example: \"What's a belief you held strongly 5 years ago that you've completely changed your mind about?\" or \"What's something small that makes you unreasonably happy?\"",
           "minLength": 10,
           "maxLength": 200
         }
