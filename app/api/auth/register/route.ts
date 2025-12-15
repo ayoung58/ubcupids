@@ -44,8 +44,18 @@ export async function POST(request: NextRequest) {
     // 1. PARSE REQUEST BODY
     // ============================================
     const body = await request.json();
-    const { email, password, firstName, lastName, age, major, acceptedTerms } =
-      body;
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      age,
+      major,
+      acceptedTerms,
+      accountType,
+    } = body;
+
+    const isCupid = accountType === "cupid";
 
     // ============================================
     // 2. VALIDATE REQUIRED FIELDS
@@ -54,9 +64,13 @@ export async function POST(request: NextRequest) {
 
     if (!email) missingFields.push("Email");
     if (!password) missingFields.push("Password");
-    if (!firstName) missingFields.push("First Name");
-    if (!lastName) missingFields.push("Last Name");
-    if (!age) missingFields.push("Age");
+
+    // Name and age are only required for Match accounts
+    if (!isCupid) {
+      if (!firstName) missingFields.push("First Name");
+      if (!lastName) missingFields.push("Last Name");
+      if (!age) missingFields.push("Age");
+    }
 
     if (missingFields.length > 0) {
       const fieldList = missingFields.join(", ");
@@ -117,11 +131,64 @@ export async function POST(request: NextRequest) {
     // ============================================
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
+      select: {
+        isCupid: true,
+        isBeingMatched: true,
+      },
     });
 
     if (existingUser) {
-      // Security note: Don't reveal if email is verified or not
-      // This prevents attackers from enumerating registered emails
+      // Check what account type they're trying to create
+      const isTryingToCreateCupid = accountType === "cupid";
+      const isTryingToCreateMatch = accountType === "match";
+
+      // Determine what they already have
+      const hasCupidAccount = existingUser.isCupid;
+      const hasMatchAccount = existingUser.isBeingMatched;
+
+      // Provide specific error messages for dual-account scenarios
+      if (isTryingToCreateCupid && hasCupidAccount) {
+        return NextResponse.json(
+          {
+            error: "You already have a Cupid account",
+            hint: "Please log in to access your existing Cupid account.",
+          },
+          { status: 409 }
+        );
+      }
+
+      if (isTryingToCreateMatch && hasMatchAccount) {
+        return NextResponse.json(
+          {
+            error: "You already have a Match account",
+            hint: "Please log in to access your existing Match account.",
+          },
+          { status: 409 }
+        );
+      }
+
+      // If they have one account type and are trying to create the other
+      if (isTryingToCreateCupid && hasMatchAccount && !hasCupidAccount) {
+        return NextResponse.json(
+          {
+            error: "An account with this email already exists",
+            hint: "If you already have a Match account and would like a Cupid account, please log in and create a Cupid account through your profile.",
+          },
+          { status: 409 }
+        );
+      }
+
+      if (isTryingToCreateMatch && hasCupidAccount && !hasMatchAccount) {
+        return NextResponse.json(
+          {
+            error: "An account with this email already exists",
+            hint: "If you already have a Cupid account and would like a Match account, please log in and create a Match account through your profile.",
+          },
+          { status: 409 }
+        );
+      }
+
+      // Fallback for any other case (shouldn't happen with current logic)
       return NextResponse.json(
         {
           error: "An account with this email already exists",
@@ -143,12 +210,16 @@ export async function POST(request: NextRequest) {
       data: {
         email: normalizedEmail,
         password: hashedPassword,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        age: parseInt(age),
+        firstName: isCupid ? null : firstName.trim(),
+        lastName: isCupid ? null : lastName.trim(),
+        age: isCupid ? null : parseInt(age),
         major: major?.trim() || null,
+        displayName: isCupid ? null : `${firstName.trim()} ${lastName.trim()}`,
+        cupidDisplayName: null, // Cupids can set this later in their profile
         emailVerified: null, // Will be set when user clicks verification link
         acceptedTerms: new Date(), // Record timestamp of acceptance
+        isCupid: isCupid,
+        isBeingMatched: !isCupid, // Cupids are not being matched by default
       },
       select: {
         id: true,
@@ -184,7 +255,7 @@ export async function POST(request: NextRequest) {
     // 11. SEND VERIFICATION EMAIL
     // ============================================
     try {
-      await sendVerificationEmail(user.email, user.firstName, token);
+      await sendVerificationEmail(user.email, user.firstName || "Cupid", token);
       console.log(`[Register] Verification email sent to: ${user.email}`);
     } catch (emailError) {
       console.error(

@@ -20,6 +20,7 @@ export async function GET() {
         firstName: true,
         lastName: true,
         displayName: true,
+        cupidDisplayName: true,
         age: true,
         major: true,
         interests: true,
@@ -28,6 +29,8 @@ export async function GET() {
         showBioToMatches: true,
         showProfilePicToMatches: true,
         showInterestsToMatches: true,
+        isCupid: true,
+        isBeingMatched: true,
       },
     });
 
@@ -60,6 +63,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       displayName,
+      cupidDisplayName,
       age,
       major,
       interests,
@@ -92,6 +96,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (cupidDisplayName && cupidDisplayName.length > 50) {
+      return NextResponse.json(
+        { error: "Cupid display name must be 50 characters or less" },
+        { status: 400 }
+      );
+    }
+
     if (interests && interests.length > 300) {
       return NextResponse.json(
         { error: "Interests must be 300 characters or less" },
@@ -111,6 +122,7 @@ export async function POST(request: NextRequest) {
       where: { id: session.user.id },
       data: {
         displayName: displayName.trim(),
+        cupidDisplayName: cupidDisplayName?.trim() || null,
         age: parseInt(age),
         major: major?.trim() || null,
         interests: interests?.trim() || null,
@@ -123,6 +135,7 @@ export async function POST(request: NextRequest) {
         firstName: true,
         lastName: true,
         displayName: true,
+        cupidDisplayName: true,
         age: true,
         major: true,
         interests: true,

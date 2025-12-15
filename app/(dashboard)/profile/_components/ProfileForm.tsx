@@ -43,6 +43,7 @@ export function ProfileForm() {
     firstName: "",
     lastName: "",
     displayName: "",
+    cupidDisplayName: "",
     age: 18,
     major: "",
     interests: "",
@@ -51,6 +52,11 @@ export function ProfileForm() {
     showBioToMatches: true,
     showProfilePicToMatches: true,
     showInterestsToMatches: true,
+  });
+
+  const [accountInfo, setAccountInfo] = useState({
+    isCupid: false,
+    isBeingMatched: true,
   });
 
   useEffect(() => {
@@ -67,6 +73,8 @@ export function ProfileForm() {
           firstName: data.firstName,
           lastName: data.lastName,
           displayName: data.displayName || data.firstName,
+          cupidDisplayName:
+            data.cupidDisplayName || data.displayName || data.firstName,
           age: data.age || 18,
           major: data.major || "",
           interests: data.interests || "",
@@ -75,6 +83,10 @@ export function ProfileForm() {
           showBioToMatches: data.showBioToMatches ?? true,
           showProfilePicToMatches: data.showProfilePicToMatches ?? true,
           showInterestsToMatches: data.showInterestsToMatches ?? true,
+        });
+        setAccountInfo({
+          isCupid: data.isCupid || false,
+          isBeingMatched: data.isBeingMatched ?? true,
         });
       }
     } catch (error) {
@@ -221,6 +233,54 @@ export function ProfileForm() {
       return;
     }
 
+    // Validate Cupid display name if user has Cupid account
+    if (
+      accountInfo.isCupid &&
+      (!profileData.cupidDisplayName || !profileData.cupidDisplayName.trim())
+    ) {
+      toast({
+        title: "Validation error",
+        description: "Cupid display name is required",
+        variant: "destructive",
+      });
+      // Scroll to and focus the Cupid display name field
+      const cupidDisplayNameField = document.getElementById("cupidDisplayName");
+      if (cupidDisplayNameField) {
+        cupidDisplayNameField.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        cupidDisplayNameField.focus();
+        cupidDisplayNameField.classList.add(
+          "ring-2",
+          "ring-red-500",
+          "border-red-500"
+        );
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          cupidDisplayNameField.classList.remove(
+            "ring-2",
+            "ring-red-500",
+            "border-red-500"
+          );
+        }, 3000);
+      }
+      return;
+    }
+
+    if (
+      accountInfo.isCupid &&
+      profileData.cupidDisplayName &&
+      profileData.cupidDisplayName.length > 50
+    ) {
+      toast({
+        title: "Validation error",
+        description: "Cupid display name must be 50 characters or less",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (profileData.interests && profileData.interests.length > 300) {
       toast({
         title: "Validation error",
@@ -247,6 +307,7 @@ export function ProfileForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           displayName: profileData.displayName,
+          cupidDisplayName: profileData.cupidDisplayName,
           age: profileData.age,
           major: profileData.major,
           interests: profileData.interests,
@@ -307,6 +368,78 @@ export function ProfileForm() {
             </Button>
           </Link>
         </div>
+
+        {/* Account Type Card - Moved to top for visibility */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Account Type</CardTitle>
+            <p className="text-sm text-slate-600">
+              Manage your Cupid and Match accounts
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Current Account Status */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-100 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Cupid Account</span>
+                  {accountInfo.isCupid ? (
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <X className="h-5 w-5 text-slate-400" />
+                  )}
+                </div>
+                <p className="text-xs text-slate-600 mt-1">
+                  {accountInfo.isCupid
+                    ? "You can create matches"
+                    : "Not activated"}
+                </p>
+              </div>
+              <div className="p-4 bg-slate-100 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Match Account</span>
+                  {accountInfo.isBeingMatched ? (
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <X className="h-5 w-5 text-slate-400" />
+                  )}
+                </div>
+                <p className="text-xs text-slate-600 mt-1">
+                  {accountInfo.isBeingMatched
+                    ? "You can receive matches"
+                    : "Not activated"}
+                </p>
+              </div>
+            </div>
+
+            {/* Account Linking Buttons */}
+            {!accountInfo.isCupid && (
+              <div className="pt-2">
+                <Link href="/register?type=cupid&linking=true">
+                  <Button variant="outline" className="w-full">
+                    Create Cupid Account 🏹
+                  </Button>
+                </Link>
+                <p className="text-xs text-slate-500 mt-2">
+                  Help match people anonymously while keeping your current
+                  account
+                </p>
+              </div>
+            )}
+            {!accountInfo.isBeingMatched && (
+              <div className="pt-2">
+                <Link href="/register?type=match&linking=true">
+                  <Button variant="outline" className="w-full">
+                    Create Match Account 💖
+                  </Button>
+                </Link>
+                <p className="text-xs text-slate-500 mt-2">
+                  Let Cupids and the algorithm find matches for you
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -408,26 +541,29 @@ export function ProfileForm() {
               </div>
 
               {/* Name Fields (Read-only) */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={profileData.firstName}
-                    disabled
-                    className="bg-slate-100"
-                  />
+              {/* Name Fields - Only show for Match accounts */}
+              {accountInfo.isBeingMatched && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={profileData.firstName}
+                      disabled
+                      className="bg-slate-100"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={profileData.lastName}
+                      disabled
+                      className="bg-slate-100"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={profileData.lastName}
-                    disabled
-                    className="bg-slate-100"
-                  />
-                </div>
-              </div>
+              )}
 
               {/* Display Name */}
               <div className="space-y-2">
@@ -452,50 +588,83 @@ export function ProfileForm() {
                 </p>
               </div>
 
-              {/* Age */}
-              <div className="space-y-2">
-                <Label htmlFor="age" className="flex items-center gap-2">
-                  Age <span className="text-red-500">*</span>
-                  <div className="group relative inline-block">
-                    <Info className="h-4 w-4 text-slate-400 cursor-help" />
-                    <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
-                      We collect your age to improve matches and ensure everyone
-                      is comfortable. Please use your real age.
-                    </div>
-                  </div>
-                </Label>
-                <Input
-                  id="age"
-                  type="number"
-                  min="18"
-                  max="100"
-                  value={profileData.age}
-                  onChange={(e) =>
-                    setProfileData((prev) => ({
-                      ...prev,
-                      age: parseInt(e.target.value) || 18,
-                    }))
-                  }
-                  required
-                  placeholder="18"
-                />
-              </div>
+              {/* Cupid Display Name - Only show if user has Cupid account */}
+              {accountInfo.isCupid && (
+                <div className="space-y-2">
+                  <Label htmlFor="cupidDisplayName">
+                    Cupid Display Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="cupidDisplayName"
+                    value={profileData.cupidDisplayName}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        cupidDisplayName: e.target.value,
+                      }))
+                    }
+                    maxLength={50}
+                    required
+                    placeholder="How you'd like to be called as a Cupid"
+                  />
+                  <p className="text-xs text-slate-500">
+                    {(profileData.cupidDisplayName || "").length}/50 characters
+                  </p>
+                  <p className="text-xs text-slate-600">
+                    This name is shown when you're acting as a Cupid in the
+                    matching portal.
+                  </p>
+                </div>
+              )}
 
-              {/* Major */}
-              <div className="space-y-2">
-                <Label htmlFor="major">Major (Optional)</Label>
-                <Input
-                  id="major"
-                  value={profileData.major}
-                  onChange={(e) =>
-                    setProfileData((prev) => ({
-                      ...prev,
-                      major: e.target.value,
-                    }))
-                  }
-                  placeholder="e.g., Computer Science"
-                />
-              </div>
+              {/* Age - Only for Match accounts */}
+              {accountInfo.isBeingMatched && (
+                <div className="space-y-2">
+                  <Label htmlFor="age" className="flex items-center gap-2">
+                    Age <span className="text-red-500">*</span>
+                    <div className="group relative inline-block">
+                      <Info className="h-4 w-4 text-slate-400 cursor-help" />
+                      <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
+                        We collect your age to improve matches and ensure
+                        everyone is comfortable. Please use your real age.
+                      </div>
+                    </div>
+                  </Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    min="18"
+                    max="100"
+                    value={profileData.age}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        age: parseInt(e.target.value) || 18,
+                      }))
+                    }
+                    required
+                    placeholder="18"
+                  />
+                </div>
+              )}
+
+              {/* Major - Only for Match accounts */}
+              {accountInfo.isBeingMatched && (
+                <div className="space-y-2">
+                  <Label htmlFor="major">Major (Optional)</Label>
+                  <Input
+                    id="major"
+                    value={profileData.major}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        major: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., Computer Science"
+                  />
+                </div>
+              )}
 
               {/* Interests */}
               <div className="space-y-2">

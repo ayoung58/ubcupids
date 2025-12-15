@@ -21,7 +21,17 @@ export const metadata: Metadata = {
   description: "Create your UBCupids account",
 };
 
-export default function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; linking?: string }>;
+}) {
+  const params = await searchParams;
+  const accountType =
+    params.type === "cupid" || params.type === "match" ? params.type : "match";
+
+  const isLinking = params.linking === "true";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md space-y-6">
@@ -33,12 +43,14 @@ export default function RegisterPage() {
             </h1>
           </Link>
           <p className="mt-2 text-sm text-slate-600">
-            Create your account to get started
+            {isLinking
+              ? `Link your ${accountType === "cupid" ? "Cupid" : "Match"} account`
+              : `Create your ${accountType === "cupid" ? "Cupid" : "Match"} account to get started`}
           </p>
         </div>
 
         {/* Register Form */}
-        <RegisterForm />
+        <RegisterForm accountType={accountType} isLinking={isLinking} />
 
         {/* Footer Links */}
         <div className="text-center text-sm">

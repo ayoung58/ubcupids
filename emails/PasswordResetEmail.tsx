@@ -13,7 +13,7 @@ import {
 import * as React from "react";
 
 interface PasswordResetEmailProps {
-  firstName: string;
+  firstName: string | null;
   resetUrl: string;
 }
 

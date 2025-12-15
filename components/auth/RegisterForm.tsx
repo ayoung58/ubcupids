@@ -18,6 +18,7 @@ import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
  * - Terms & Conditions checkbox
  * - Error handling (duplicate email, validation errors)
  * - Success state with verification instructions
+ * - Account type support (Cupid vs Match)
  *
  * Security:
  * - Validates UBC email before submission
@@ -25,7 +26,15 @@ import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
  * - Rate limiting handled by API (Phase 3.5)
  */
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  accountType?: "cupid" | "match";
+  isLinking?: boolean;
+}
+
+export function RegisterForm({
+  accountType = "match",
+  isLinking = false,
+}: RegisterFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,28 +84,45 @@ export function RegisterForm() {
     setError(null);
     setIsLoading(true);
 
-    // Client-side validation
-    if (!formData.acceptedTerms) {
+    // Client-side validation for new accounts (not linking)
+    if (!isLinking && !formData.acceptedTerms) {
       setError("You must accept the Terms and Conditions");
       setTermsError(true);
       setIsLoading(false);
       return;
     }
 
-    // UBC email validation
-    const ubcEmailRegex =
-      /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i;
-    if (!ubcEmailRegex.test(formData.email)) {
-      setError("Please use your @student.ubc.ca or @alumni.ubc.ca email");
-      setIsLoading(false);
-      return;
+    // UBC email validation (only for new accounts)
+    if (!isLinking) {
+      const ubcEmailRegex =
+        /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i;
+      if (!ubcEmailRegex.test(formData.email)) {
+        setError("Please use your @student.ubc.ca or @alumni.ubc.ca email");
+        setIsLoading(false);
+        return;
+      }
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
+      // Different endpoints for linking vs creating new account
+      const endpoint = isLinking
+        ? "/api/auth/link-account"
+        : "/api/auth/register";
+
+      const requestBody = isLinking
+        ? {
+            accountType,
+            firstName: formData.firstName || undefined,
+            lastName: formData.lastName || undefined,
+            age: formData.age || undefined,
+            major: formData.major || undefined,
+          }
+        : { ...formData, accountType };
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -116,9 +142,13 @@ export function RegisterForm() {
       // Success!
       setSuccess(true);
 
-      // Redirect to verification pending page after 2 seconds
+      // Redirect based on linking status
       setTimeout(() => {
-        router.push("/verification-pending");
+        if (isLinking) {
+          router.push("/profile");
+        } else {
+          router.push("/verification-pending");
+        }
       }, 2000);
     } catch (err) {
       console.error("Registration error:", err);
@@ -138,9 +168,15 @@ export function RegisterForm() {
           <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-md">
             <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-green-800">
-              <p className="font-medium">Account created successfully!</p>
+              <p className="font-medium">
+                {isLinking
+                  ? "Account linked successfully!"
+                  : "Account created successfully!"}
+              </p>
               <p className="mt-1">
-                Check your email for a verification link. Redirecting...
+                {isLinking
+                  ? "Redirecting to your profile..."
+                  : "Check your email for a verification link. Redirecting..."}
               </p>
             </div>
           </div>
@@ -152,7 +188,11 @@ export function RegisterForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create Account</CardTitle>
+        <CardTitle>
+          {accountType === "cupid"
+            ? "Create Cupid Account 🏹"
+            : "Create Match Account 💖"}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <style>{customValidationStyles}</style>
@@ -165,165 +205,183 @@ export function RegisterForm() {
             </div>
           )}
 
-          {/* Name Fields (Side by Side) */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">
-                First Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="firstName"
-                type="text"
-                placeholder="Jane"
-                value={formData.firstName}
-                onChange={(e) =>
-                  setFormData({ ...formData, firstName: e.target.value })
-                }
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">
-                Last Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="lastName"
-                type="text"
-                placeholder="Doe"
-                value={formData.lastName}
-                onChange={(e) =>
-                  setFormData({ ...formData, lastName: e.target.value })
-                }
-                required
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
-          {/* Email Field */}
-          <div className="space-y-2">
-            <Label htmlFor="email">
-              UBC Email <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@student.ubc.ca"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              required
-              disabled={isLoading}
-            />
-            <p className="text-xs text-slate-500">
-              Must be @student.ubc.ca or @alumni.ubc.ca
-            </p>
-          </div>
-
-          {/* Password Field with Strength Indicator */}
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              Password <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required
-              disabled={isLoading}
-            />
-            {passwordStrength && (
-              <p className={`text-xs ${passwordStrength.color}`}>
-                Strength: {passwordStrength.strength}
-              </p>
-            )}
-            <p className="text-xs text-slate-500">
-              At least 8 characters, 1 uppercase, 1 lowercase, 1 number
-            </p>
-          </div>
-
-          {/* Age Field (Required) */}
-          <div className="space-y-2">
-            <Label htmlFor="age" className="flex items-center gap-2">
-              Age <span className="text-red-500">*</span>
-              <div className="group relative inline-block">
-                <AlertCircle className="h-4 w-4 text-slate-400 cursor-help" />
-                <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
-                  We collect your age to improve matches and ensure everyone is
-                  comfortable. Please use your real age.
-                </div>
+          {/* Name Fields (Side by Side) - Only for Match accounts */}
+          {accountType === "match" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">
+                  First Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="Jane"
+                  value={formData.firstName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, firstName: e.target.value })
+                  }
+                  required
+                  disabled={isLoading}
+                />
               </div>
-            </Label>
-            <Input
-              id="age"
-              type="number"
-              placeholder="18"
-              max="100"
-              value={formData.age}
-              onChange={(e) =>
-                setFormData({ ...formData, age: e.target.value })
-              }
-              required
-              disabled={isLoading}
-            />
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">
+                  Last Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Doe"
+                  value={formData.lastName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lastName: e.target.value })
+                  }
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          )}
 
-          {/* Major Field (Optional) */}
-          <div className="space-y-2">
-            <Label htmlFor="major">Major (Optional)</Label>
-            <Input
-              id="major"
-              type="text"
-              placeholder="Professional Cupid Studies"
-              value={formData.major}
-              onChange={(e) =>
-                setFormData({ ...formData, major: e.target.value })
-              }
-              disabled={isLoading}
-            />
-          </div>
+          {/* Email and Password Fields - Only for new accounts */}
+          {!isLinking && (
+            <>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email">
+                  UBC Email <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@student.ubc.ca"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  required
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-slate-500">
+                  Must be @student.ubc.ca or @alumni.ubc.ca
+                </p>
+              </div>
 
-          {/* Terms & Conditions */}
-          <div className="flex items-start space-x-2">
-            <Checkbox
-              id="terms"
-              checked={formData.acceptedTerms}
-              onCheckedChange={(checked) => {
-                setFormData({ ...formData, acceptedTerms: checked as boolean });
-                if (checked) {
-                  setTermsError(false);
+              {/* Password Field with Strength Indicator */}
+              <div className="space-y-2">
+                <Label htmlFor="password">
+                  Password <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  required
+                  disabled={isLoading}
+                />
+                {passwordStrength && (
+                  <p className={`text-xs ${passwordStrength.color}`}>
+                    Strength: {passwordStrength.strength}
+                  </p>
+                )}
+                <p className="text-xs text-slate-500">
+                  At least 8 characters, 1 uppercase, 1 lowercase, 1 number
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* Age Field (Required) - Only for Match accounts */}
+          {accountType === "match" && (
+            <div className="space-y-2">
+              <Label htmlFor="age" className="flex items-center gap-2">
+                Age <span className="text-red-500">*</span>
+                <div className="group relative inline-block">
+                  <AlertCircle className="h-4 w-4 text-slate-400 cursor-help" />
+                  <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
+                    We collect your age to improve matches and ensure everyone
+                    is comfortable. Please use your real age.
+                  </div>
+                </div>
+              </Label>
+              <Input
+                id="age"
+                type="number"
+                placeholder="18"
+                max="100"
+                value={formData.age}
+                onChange={(e) =>
+                  setFormData({ ...formData, age: e.target.value })
                 }
-              }}
-              disabled={isLoading}
-              className={termsError ? "border-red-500 border-2" : ""}
-            />
-            <Label
-              htmlFor="terms"
-              className={`text-sm leading-none cursor-pointer ${
-                termsError ? "text-red-600" : ""
-              }`}
-            >
-              I accept the{" "}
-              <a href="/terms" className="underline hover:text-slate-900">
-                Terms and Conditions
-              </a>{" "}
-              (placeholder for now)
-            </Label>
-          </div>
+                required
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
+          {/* Major Field (Optional) - Only for Match accounts */}
+          {accountType === "match" && (
+            <div className="space-y-2">
+              <Label htmlFor="major">Major (Optional)</Label>
+              <Input
+                id="major"
+                type="text"
+                placeholder="Professional Cupid Studies"
+                value={formData.major}
+                onChange={(e) =>
+                  setFormData({ ...formData, major: e.target.value })
+                }
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
+          {/* Terms & Conditions - Only for new accounts */}
+          {!isLinking && (
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="terms"
+                checked={formData.acceptedTerms}
+                onCheckedChange={(checked) => {
+                  setFormData({
+                    ...formData,
+                    acceptedTerms: checked as boolean,
+                  });
+                  if (checked) {
+                    setTermsError(false);
+                  }
+                }}
+                disabled={isLoading}
+                className={termsError ? "border-red-500 border-2" : ""}
+              />
+              <Label
+                htmlFor="terms"
+                className={`text-sm leading-none cursor-pointer ${
+                  termsError ? "text-red-600" : ""
+                }`}
+              >
+                I accept the{" "}
+                <a href="/terms" className="underline hover:text-slate-900">
+                  Terms and Conditions
+                </a>{" "}
+                (placeholder for now)
+              </Label>
+            </div>
+          )}
 
           {/* Submit Button */}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                {isLinking ? "Linking account..." : "Creating account..."}
               </>
+            ) : isLinking ? (
+              `Link ${accountType === "cupid" ? "Cupid" : "Match"} Account`
             ) : (
               "Create Account"
             )}

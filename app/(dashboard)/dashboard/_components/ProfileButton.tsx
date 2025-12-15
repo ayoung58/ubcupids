@@ -2,25 +2,34 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { User, LogOut, ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { User, LogOut, ChevronDown, RefreshCw } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ProfileButtonProps {
   firstName: string;
   lastName: string;
   profilePicture: string;
+  isCupid?: boolean;
+  isBeingMatched?: boolean;
 }
 
 export function ProfileButton({
   firstName,
   lastName,
   profilePicture: initialProfilePicture,
+  isCupid: initialIsCupid = false,
+  isBeingMatched: initialIsBeingMatched = true,
 }: ProfileButtonProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState(initialProfilePicture);
+  const [isCupid, setIsCupid] = useState(initialIsCupid);
+  const [isBeingMatched, setIsBeingMatched] = useState(initialIsBeingMatched);
+  const [isSwitching, setIsSwitching] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch latest profile picture
+  // Fetch latest profile picture and account info
   useEffect(() => {
     fetch("/api/profile")
       .then((res) => res.json())
@@ -28,6 +37,8 @@ export function ProfileButton({
         if (data.profilePicture) {
           setProfilePicture(data.profilePicture);
         }
+        setIsCupid(data.isCupid || false);
+        setIsBeingMatched(data.isBeingMatched ?? true);
       })
       .catch((error) => console.error("Error fetching profile:", error));
   }, []);
@@ -53,6 +64,35 @@ export function ProfileButton({
   }, [isOpen]);
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+
+  const hasBothAccounts = isCupid && isBeingMatched;
+
+  const handleSwitchDashboard = async (targetDashboard: "cupid" | "match") => {
+    setIsSwitching(true);
+    setIsOpen(false);
+
+    try {
+      const response = await fetch("/api/profile/switch-dashboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dashboard: targetDashboard }),
+      });
+
+      if (response.ok) {
+        // Redirect to the appropriate dashboard
+        if (targetDashboard === "cupid") {
+          router.push("/cupid-dashboard");
+        } else {
+          router.push("/dashboard");
+        }
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Error switching dashboard:", error);
+    } finally {
+      setIsSwitching(false);
+    }
+  };
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -88,6 +128,31 @@ export function ProfileButton({
             <User className="h-4 w-4" />
             Profile
           </Link>
+
+          {/* Dashboard Switching - Only show if user has both accounts */}
+          {hasBothAccounts && (
+            <>
+              <div className="border-t border-slate-200 my-2" />
+              <button
+                onClick={() =>
+                  handleSwitchDashboard(
+                    window.location.pathname.includes("cupid")
+                      ? "match"
+                      : "cupid"
+                  )
+                }
+                disabled={isSwitching}
+                className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors w-full text-left disabled:opacity-50"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${isSwitching ? "animate-spin" : ""}`}
+                />
+                Switch to{" "}
+                {window.location.pathname.includes("cupid") ? "Match" : "Cupid"}{" "}
+                Dashboard
+              </button>
+            </>
+          )}
 
           <div className="border-t border-slate-200 my-2" />
 

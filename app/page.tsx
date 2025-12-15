@@ -14,14 +14,14 @@ import { getCurrentUser } from "@/lib/get-session";
  */
 
 interface HomePageProps {
-  searchParams: {
+  searchParams: Promise<{
     signedout?: string;
-  };
+  }>;
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const session = await getCurrentUser();
-  const { signedout } = searchParams;
+  const { signedout } = await searchParams;
 
   // IMPORTANT: Show sign-out message even if session still exists
   // (JWT cookie might not be cleared immediately in browser)
@@ -58,7 +58,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           {/* Always show Login/Register buttons on sign-out page */}
           {showSignOutMessage ? (
             <>
-              <Link href="/register">
+              <Link href="/signup">
                 <Button size="lg" className="px-8">
                   Get Started
                 </Button>
@@ -79,7 +79,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           ) : (
             // User is logged out (normal state)
             <>
-              <Link href="/register">
+              <Link href="/signup">
                 <Button size="lg" className="px-8">
                   Get Started
                 </Button>

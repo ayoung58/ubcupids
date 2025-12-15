@@ -45,7 +45,11 @@ export default async function DashboardPage() {
   // Fetch user profile for display name
   const profile = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { displayName: true },
+    select: {
+      displayName: true,
+      isCupid: true,
+      isBeingMatched: true,
+    },
   });
 
   const displayName = profile?.displayName || session.user.name;
@@ -67,6 +71,8 @@ export default async function DashboardPage() {
             firstName={session.user.name?.split(" ")[0] || ""}
             lastName={session.user.name?.split(" ")[1] || ""}
             profilePicture={session.user.image || ""}
+            isCupid={profile?.isCupid}
+            isBeingMatched={profile?.isBeingMatched}
           />
         </div>
 

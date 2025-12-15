@@ -69,7 +69,31 @@ export function LoginForm() {
       }
 
       // Success - redirect to dashboard
-      router.push("/dashboard");
+      // Fetch user profile to determine which dashboard to show
+      const profileResponse = await fetch("/api/profile");
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        const { isCupid, isBeingMatched, lastActiveDashboard } = profileData;
+
+        // Determine redirect based on account type and preferences
+        if (isCupid && isBeingMatched) {
+          // User has both accounts - redirect to last active dashboard
+          if (lastActiveDashboard === "cupid") {
+            router.push("/cupid-dashboard");
+          } else {
+            router.push("/dashboard");
+          }
+        } else if (isCupid && !isBeingMatched) {
+          // User only has Cupid account
+          router.push("/cupid-dashboard");
+        } else {
+          // User only has Match account (default)
+          router.push("/dashboard");
+        }
+      } else {
+        // Fallback to default dashboard if profile fetch fails
+        router.push("/dashboard");
+      }
       router.refresh(); // Refresh server components to load session
     } catch (err) {
       console.error("Login error:", err);

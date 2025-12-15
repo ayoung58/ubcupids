@@ -9,18 +9,18 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components';
-import * as React from 'react';
+} from "@react-email/components";
+import * as React from "react";
 
 /**
  * Email Verification Template (React Email)
- * 
+ *
  * React Email benefits:
  * - Write emails in React (familiar syntax)
  * - Automatic responsive design
  * - Cross-client compatibility (Gmail, Outlook, Apple Mail, etc.)
  * - Preview emails locally: npm run email (optional)
- * 
+ *
  * Design principles:
  * - Clear call-to-action button
  * - Fallback link (if button doesn't work)
@@ -30,12 +30,12 @@ import * as React from 'react';
  */
 
 interface VerificationEmailProps {
-  firstName: string;
+  firstName: string | null;
   verificationUrl: string;
 }
 
 export default function VerificationEmail({
-  firstName = 'there', // Default fallback
+  firstName = "there", // Default fallback
   verificationUrl,
 }: VerificationEmailProps) {
   return (
@@ -47,13 +47,14 @@ export default function VerificationEmail({
         <Container style={container}>
           {/* Logo/Header */}
           <Heading style={h1}>💘 UBCupids</Heading>
-          
+
           {/* Greeting */}
           <Text style={text}>Hi {firstName},</Text>
-          
+
           {/* Main message */}
           <Text style={text}>
-            Welcome to UBCupids! Click the button below to verify your email address and activate your account.
+            Welcome to UBCupids! Click the button below to verify your email
+            address and activate your account.
           </Text>
 
           {/* Call-to-action button */}
@@ -73,7 +74,8 @@ export default function VerificationEmail({
 
           {/* Expiry notice */}
           <Text style={text}>
-            This link will expire in 24 hours. If you didn&apos;t create a UBCupids account, you can safely ignore this email.
+            This link will expire in 24 hours. If you didn&apos;t create a
+            UBCupids account, you can safely ignore this email.
           </Text>
 
           {/* Footer */}
@@ -91,62 +93,63 @@ export default function VerificationEmail({
 // ============================================
 
 const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  backgroundColor: "#f6f9fc",
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 };
 
 const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
+  backgroundColor: "#ffffff",
+  margin: "0 auto",
+  padding: "20px 0 48px",
+  marginBottom: "64px",
+  maxWidth: "600px",
 };
 
 const h1 = {
-  color: '#333',
-  fontSize: '32px',
-  fontWeight: 'bold',
-  textAlign: 'center' as const,
-  margin: '40px 0',
+  color: "#333",
+  fontSize: "32px",
+  fontWeight: "bold",
+  textAlign: "center" as const,
+  margin: "40px 0",
 };
 
 const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  margin: '16px 24px',
+  color: "#333",
+  fontSize: "16px",
+  lineHeight: "26px",
+  margin: "16px 24px",
 };
 
 const buttonContainer = {
-  textAlign: 'center' as const,
-  margin: '32px 0',
+  textAlign: "center" as const,
+  margin: "32px 0",
 };
 
 const button = {
-  backgroundColor: '#e63946', // UBCupids brand red (Valentine's theme)
-  borderRadius: '8px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'inline-block',
-  padding: '14px 32px',
+  backgroundColor: "#e63946", // UBCupids brand red (Valentine's theme)
+  borderRadius: "8px",
+  color: "#fff",
+  fontSize: "16px",
+  fontWeight: "bold",
+  textDecoration: "none",
+  textAlign: "center" as const,
+  display: "inline-block",
+  padding: "14px 32px",
 };
 
 const link = {
-  color: '#e63946',
-  fontSize: '14px',
-  textDecoration: 'underline',
-  wordBreak: 'break-all' as const,
-  margin: '0 24px',
+  color: "#e63946",
+  fontSize: "14px",
+  textDecoration: "underline",
+  wordBreak: "break-all" as const,
+  margin: "0 24px",
 };
 
 const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  margin: '32px 24px 0',
-  textAlign: 'center' as const,
+  color: "#8898aa",
+  fontSize: "12px",
+  lineHeight: "16px",
+  margin: "32px 24px 0",
+  textAlign: "center" as const,
 };
