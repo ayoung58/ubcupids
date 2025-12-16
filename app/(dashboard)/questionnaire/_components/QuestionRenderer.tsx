@@ -22,6 +22,7 @@ interface QuestionRendererProps {
   onImportanceChange: (importance: ImportanceLevel) => void;
   disabled?: boolean;
   validationError?: string; // Error message to display
+  questionNumber?: number; // Global question number
 }
 
 export function QuestionRenderer({
@@ -32,6 +33,7 @@ export function QuestionRenderer({
   onImportanceChange,
   disabled = false,
   validationError,
+  questionNumber,
 }: QuestionRendererProps) {
   const [otherText, setOtherText] = useState<string>("");
 
@@ -78,6 +80,9 @@ export function QuestionRenderer({
         id={`${question.id}-label`}
         className="text-base font-medium flex-1"
       >
+        {questionNumber !== undefined && (
+          <span className="text-gray-500 mr-2">{questionNumber}.</span>
+        )}
         {question.text}
         {question.required && (
           <span className="text-red-500 ml-1" aria-label="required">
@@ -94,6 +99,9 @@ export function QuestionRenderer({
     </div>
   ) : (
     <Label id={`${question.id}-label`} className="text-base font-medium">
+      {questionNumber !== undefined && (
+        <span className="text-gray-500 mr-2">{questionNumber}.</span>
+      )}
       {question.text}
       {question.required && (
         <span className="text-red-500 ml-1" aria-label="required">

@@ -306,7 +306,7 @@ export function QuestionnaireForm({
           <p className="text-sm md:text-base text-gray-600">
             {isSubmitted
               ? "Your responses have been submitted and are now locked."
-              : "Take your time answering these questions. Your progress is saved automatically."}
+              : "Take your time answering these questions. Your progress is saved automatically every 3 seconds."}
           </p>
           {lastSaved && !isSubmitted && (
             <p
@@ -328,18 +328,26 @@ export function QuestionnaireForm({
           role="form"
           aria-label="Compatibility questionnaire form"
         >
-          {config.sections.map((section) => (
-            <SectionRenderer
-              key={section.id}
-              section={section}
-              responses={responses}
-              importance={importance}
-              onChange={handleResponseChange}
-              onImportanceChange={handleImportanceChange}
-              disabled={isSubmitted}
-              validationErrors={validationErrors}
-            />
-          ))}
+          {(() => {
+            let questionIndex = 0;
+            return config.sections.map((section) => {
+              const startIdx = questionIndex;
+              questionIndex += section.questions.length;
+              return (
+                <SectionRenderer
+                  key={section.id}
+                  section={section}
+                  responses={responses}
+                  importance={importance}
+                  onChange={handleResponseChange}
+                  onImportanceChange={handleImportanceChange}
+                  disabled={isSubmitted}
+                  validationErrors={validationErrors}
+                  globalQuestionStartIndex={startIdx}
+                />
+              );
+            });
+          })()}
         </div>
         {/* Action Buttons */}
         {!isSubmitted && (

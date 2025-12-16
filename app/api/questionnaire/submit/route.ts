@@ -29,7 +29,13 @@ import { encryptJSON } from "@/lib/encryption";
 const submitSchema = z.object({
   responses: z.record(
     z.string(),
-    z.union([z.string(), z.array(z.string()), z.number()])
+    z.union([
+      z.string(), // Single-choice, text, textarea
+      z.array(z.string()), // Multi-choice, ranking
+      z.number(), // Scale
+      z.object({ value: z.string(), text: z.string() }), // Single-choice with text input
+      z.object({ minAge: z.number(), maxAge: z.number() }), // Age-range
+    ])
   ),
   importance: z
     .record(

@@ -7,6 +7,7 @@ import {
   ImportanceRatings,
   ImportanceLevel,
 } from "@/src/lib/questionnaire-types";
+import { Question } from "@/src/lib/questionnaire-types";
 import { QuestionRenderer } from "./QuestionRenderer";
 import {
   Card,
@@ -24,6 +25,7 @@ interface SectionRendererProps {
   onImportanceChange: (questionId: string, importance: ImportanceLevel) => void;
   disabled?: boolean;
   validationErrors?: Map<string, string>; // Map of questionId -> error message
+  globalQuestionStartIndex: number; // The starting index for this section's questions (0-based)
 }
 
 export function SectionRenderer({
@@ -34,6 +36,7 @@ export function SectionRenderer({
   onImportanceChange,
   disabled = false,
   validationErrors,
+  globalQuestionStartIndex,
 }: SectionRendererProps) {
   return (
     <Card className="mb-6 shadow-sm">
@@ -46,22 +49,26 @@ export function SectionRenderer({
         )}
       </CardHeader>
       <CardContent className="space-y-6 md:space-y-8 pt-4 md:pt-6 px-4 md:px-6">
-        {section.questions.map((question) => (
-          <div
-            key={question.id}
-            className="pb-6 border-b last:border-b-0 last:pb-0"
-          >
-            <QuestionRenderer
-              question={question}
-              value={responses[question.id]}
-              onChange={(value) => onChange(question.id, value)}
-              importance={importance[question.id] || 3}
-              onImportanceChange={(imp) => onImportanceChange(question.id, imp)}
-              disabled={disabled}
-              validationError={validationErrors?.get(question.id)}
-            />
-          </div>
-        ))}
+        {section.questions.map((question, idx) => {
+          const globalNumber = globalQuestionStartIndex + idx + 1;
+          return (
+            <div
+              key={question.id}
+              className="pb-6 border-b last:border-b-0 last:pb-0"
+            >
+              <QuestionRenderer
+                question={question}
+                value={responses[question.id]}
+                onChange={(value) => onChange(question.id, value)}
+                importance={importance[question.id] || 3}
+                onImportanceChange={(imp) => onImportanceChange(question.id, imp)}
+                disabled={disabled}
+                validationError={validationErrors?.get(question.id)}
+                questionNumber={globalNumber}
+              />
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
