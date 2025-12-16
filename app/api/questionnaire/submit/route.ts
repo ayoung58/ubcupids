@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       : undefined;
 
     // Submit questionnaire (lock responses)
-    await prisma.questionnaireResponse.upsert({
+    const result = await prisma.questionnaireResponse.upsert({
       where: { userId: session.user.id },
       update: {
         responses: encryptedResponses,
@@ -103,6 +103,12 @@ export async function POST(request: NextRequest) {
         submittedAt: new Date(),
       },
     });
+
+    console.log(
+      `✅ Questionnaire submitted successfully for user ${session.user.id}`
+    );
+    console.log(`   Response ID: ${result.id}`);
+    console.log(`   Submitted at: ${result.submittedAt}`);
 
     return NextResponse.json({
       success: true,

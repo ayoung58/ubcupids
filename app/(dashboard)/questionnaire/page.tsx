@@ -23,7 +23,14 @@ async function getQuestionnaireData(userId: string) {
       responses = decryptJSON<Responses>(existingResponse.responses);
     } catch (error) {
       console.error("Failed to decrypt responses:", error);
-      // If decryption fails, start fresh
+      // If decryption fails for submitted questionnaire, this is a critical error
+      // Don't silently return empty - the data exists but can't be read
+      if (existingResponse.isSubmitted) {
+        throw new Error(
+          "Unable to decrypt submitted questionnaire data. Please contact support."
+        );
+      }
+      // For drafts, we can start fresh
       responses = {};
     }
   }
@@ -33,7 +40,7 @@ async function getQuestionnaireData(userId: string) {
       importance = decryptJSON<ImportanceRatings>(existingResponse.importance);
     } catch (error) {
       console.error("Failed to decrypt importance:", error);
-      // If decryption fails, start fresh
+      // Importance ratings are optional, so we can continue without them
       importance = {};
     }
   }

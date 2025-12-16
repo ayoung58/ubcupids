@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,7 @@ export function RegisterForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [termsError, setTermsError] = useState(false);
+  const [hasExistingName, setHasExistingName] = useState(false);
 
   // Add styles for custom validation
   const customValidationStyles = `
@@ -60,6 +61,25 @@ export function RegisterForm({
     major: "",
     acceptedTerms: false,
   });
+
+  // Fetch current user data if linking to check if they have firstName/lastName
+  useEffect(() => {
+    if (isLinking) {
+      fetch("/api/profile")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.firstName && data.lastName) {
+            setHasExistingName(true);
+            setFormData((prev) => ({
+              ...prev,
+              firstName: data.firstName,
+              lastName: data.lastName,
+            }));
+          }
+        })
+        .catch((err) => console.error("Error fetching profile:", err));
+    }
+  }, [isLinking]);
 
   // Password strength validation (client-side preview)
   const getPasswordStrength = (password: string) => {
@@ -205,8 +225,9 @@ export function RegisterForm({
             </div>
           )}
 
-          {/* Name Fields (Side by Side) - Only for Match accounts */}
-          {accountType === "match" && (
+          {/* Name Fields (Side by Side) - Required for all new accounts */}
+          {/* For linking: only show if user doesn't have firstName/lastName yet */}
+          {(!isLinking || !hasExistingName) && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">
@@ -240,6 +261,17 @@ export function RegisterForm({
                   disabled={isLoading}
                 />
               </div>
+            </div>
+          )}
+
+          {/* Show message when using existing name */}
+          {isLinking && hasExistingName && (
+            <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-800">
+                Using your existing name: {formData.firstName}{" "}
+                {formData.lastName}
+              </p>
             </div>
           )}
 

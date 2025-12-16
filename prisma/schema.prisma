@@ -66,8 +66,8 @@ model User {
   emailVerified DateTime? // NULL until user verifies via email link
   
   // Required at Registration
-  firstName     String?   // Required for matching accounts, null for Cupids
-  lastName      String?   // Required for matching accounts, null for Cupids
+  firstName     String    // Required for all accounts
+  lastName      String    // Required for all accounts
   age           Int?      // User's age (required for matching, optional for Cupids)
   acceptedTerms DateTime  // NEW: Timestamp when user accepted T&C
   

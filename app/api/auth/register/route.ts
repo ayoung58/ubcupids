@@ -64,11 +64,11 @@ export async function POST(request: NextRequest) {
 
     if (!email) missingFields.push("Email");
     if (!password) missingFields.push("Password");
+    if (!firstName) missingFields.push("First Name");
+    if (!lastName) missingFields.push("Last Name");
 
-    // Name and age are only required for Match accounts
+    // Age is only required for Match accounts
     if (!isCupid) {
-      if (!firstName) missingFields.push("First Name");
-      if (!lastName) missingFields.push("Last Name");
       if (!age) missingFields.push("Age");
     }
 
@@ -210,12 +210,12 @@ export async function POST(request: NextRequest) {
       data: {
         email: normalizedEmail,
         password: hashedPassword,
-        firstName: isCupid ? null : firstName.trim(),
-        lastName: isCupid ? null : lastName.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
         age: isCupid ? null : parseInt(age),
         major: major?.trim() || null,
-        displayName: isCupid ? null : `${firstName.trim()} ${lastName.trim()}`,
-        cupidDisplayName: null, // Cupids can set this later in their profile
+        displayName: `${firstName.trim()} ${lastName.trim()}`,
+        cupidDisplayName: `${firstName.trim()} ${lastName.trim()}`, // Default to full name
         emailVerified: null, // Will be set when user clicks verification link
         acceptedTerms: new Date(), // Record timestamp of acceptance
         isCupid: isCupid,
