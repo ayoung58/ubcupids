@@ -61,7 +61,9 @@ export function SectionRenderer({
                 value={responses[question.id]}
                 onChange={(value) => onChange(question.id, value)}
                 importance={importance[question.id] || 3}
-                onImportanceChange={(imp) => onImportanceChange(question.id, imp)}
+                onImportanceChange={(imp) =>
+                  onImportanceChange(question.id, imp)
+                }
                 disabled={disabled}
                 validationError={validationErrors?.get(question.id)}
                 questionNumber={globalNumber}
