@@ -26,6 +26,7 @@ interface SectionRendererProps {
   disabled?: boolean;
   validationErrors?: Map<string, string>; // Map of questionId -> error message
   globalQuestionStartIndex: number; // The starting index for this section's questions (0-based)
+  sectionId?: string; // ID for the section element
 }
 
 export function SectionRenderer({
@@ -37,9 +38,10 @@ export function SectionRenderer({
   disabled = false,
   validationErrors,
   globalQuestionStartIndex,
+  sectionId,
 }: SectionRendererProps) {
   return (
-    <Card className="mb-6 shadow-sm">
+    <Card id={sectionId} className="mb-6 shadow-sm">
       <CardHeader className="bg-slate-50 px-4 md:px-6 py-4 md:py-6">
         <CardTitle className="text-xl md:text-2xl">{section.title}</CardTitle>
         {section.description && (

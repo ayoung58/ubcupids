@@ -13,6 +13,7 @@ import {
   calculateProgress,
   validateResponses,
   getTotalQuestions,
+  getSectionProgress,
 } from "@/src/lib/questionnaire-utils";
 import { SectionRenderer } from "./SectionRenderer";
 import { ProgressBar } from "./ProgressBar";
@@ -21,6 +22,7 @@ import { PreQuestionnaireAgreement } from "./PreQuestionnaireAgreement";
 import { InfoPanel } from "./InfoPanel";
 import { SkipLink } from "./SkipLink";
 import { Button } from "@/components/ui/button";
+import { Check, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Send } from "lucide-react";
 
@@ -293,6 +295,58 @@ export function QuestionnaireForm({
         answeredQuestions={answeredQuestions}
       />
 
+      {/* Section Progress */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="container max-w-7xl px-2 py-3 mx-auto">
+          <div className="flex items-center justify-center gap-2 text-xs">
+            {config.sections.map((section) => {
+              const sectionProgress = getSectionProgress(section.id, responses);
+              const isComplete = sectionProgress === 100;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => {
+                    const element = document.getElementById(
+                      `section-${section.id}`
+                    );
+                    if (element) {
+                      // Account for fixed headers (progress bar + section nav)
+                      const offset = 100; // Approximate height of fixed headers
+                      const elementPosition =
+                        element.getBoundingClientRect().top;
+                      const offsetPosition =
+                        elementPosition + window.pageYOffset - offset;
+                      window.scrollTo({
+                        top: offsetPosition,
+                        behavior: "smooth",
+                      });
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-gray-50 transition-colors focus:outline-none whitespace-nowrap"
+                >
+                  <div
+                    className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
+                      isComplete
+                        ? "bg-green-500 border-green-500 text-white"
+                        : "border-gray-300 text-gray-400"
+                    }`}
+                  >
+                    <Check className="w-2.5 h-2.5" />
+                  </div>
+                  <span
+                    className={`font-medium ${
+                      isComplete ? "text-green-600" : "text-gray-700"
+                    }`}
+                  >
+                    {section.title}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       <main
         id="main-content"
         className="container max-w-4xl py-6 md:py-8 px-4 mx-auto"
@@ -353,6 +407,7 @@ export function QuestionnaireForm({
                   disabled={isSubmitted}
                   validationErrors={validationErrors}
                   globalQuestionStartIndex={startIdx}
+                  sectionId={`section-${section.id}`}
                 />
               );
             });
@@ -404,6 +459,16 @@ export function QuestionnaireForm({
           </div>
         )}
       </main>
+
+      {/* Back to Top Button */}
+      <Button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="fixed bottom-6 right-6 w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none z-50"
+        size="sm"
+        aria-label="Back to top"
+      >
+        <ArrowUp className="w-5 h-5" />
+      </Button>
 
       {/* Submit Confirmation Dialog */}
       <SubmitConfirmDialog
