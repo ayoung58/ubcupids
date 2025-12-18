@@ -419,10 +419,13 @@ export function QuestionRenderer({
                   const inputValue = e.target.value;
                   const newMin = inputValue === "" ? -1 : Number(inputValue);
                   const newMax = ageRangeValue.maxAge;
-                  const newValue = newMin === -1 && newMax === -1 ? undefined : {
-                    minAge: newMin,
-                    maxAge: newMax,
-                  };
+                  const newValue =
+                    newMin === -1 && newMax === -1
+                      ? undefined
+                      : {
+                          minAge: newMin,
+                          maxAge: newMax,
+                        };
                   onChange(newValue);
                 }}
                 disabled={disabled}
@@ -445,10 +448,13 @@ export function QuestionRenderer({
                   const inputValue = e.target.value;
                   const newMax = inputValue === "" ? -1 : Number(inputValue);
                   const newMin = ageRangeValue.minAge;
-                  const newValue = newMin === -1 && newMax === -1 ? undefined : {
-                    minAge: newMin,
-                    maxAge: newMax,
-                  };
+                  const newValue =
+                    newMin === -1 && newMax === -1
+                      ? undefined
+                      : {
+                          minAge: newMin,
+                          maxAge: newMax,
+                        };
                   onChange(newValue);
                 }}
                 disabled={disabled}
