@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,13 +21,17 @@ import {
 import { ProfileFormData } from "@/types/profile";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function ProfileForm() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const initialProfileData = useRef<ProfileFormData | null>(null);
 
   // Custom validation styles
   const customValidationStyles = `
@@ -64,12 +68,28 @@ export function ProfileForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Prevent navigation when there are unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
   const fetchProfile = async () => {
     try {
       const response = await fetch("/api/profile");
       if (response.ok) {
         const data = await response.json();
-        setProfileData({
+        const profile = {
           firstName: data.firstName,
           lastName: data.lastName,
           displayName: data.displayName || data.firstName,
@@ -83,7 +103,9 @@ export function ProfileForm() {
           showBioToMatches: data.showBioToMatches ?? true,
           showProfilePicToMatches: data.showProfilePicToMatches ?? true,
           showInterestsToMatches: data.showInterestsToMatches ?? true,
-        });
+        };
+        setProfileData(profile);
+        initialProfileData.current = profile;
         setAccountInfo({
           isCupid: data.isCupid || false,
           isBeingMatched: data.isBeingMatched ?? true,
@@ -142,6 +164,7 @@ export function ProfileForm() {
       if (response.ok) {
         const data = await response.json();
         setProfileData((prev) => ({ ...prev, profilePicture: data.url }));
+        setHasUnsavedChanges(true);
         toast({
           title: "Success",
           description: "Profile picture uploaded successfully",
@@ -174,6 +197,7 @@ export function ProfileForm() {
 
       if (response.ok) {
         setProfileData((prev) => ({ ...prev, profilePicture: "" }));
+        setHasUnsavedChanges(true);
         toast({
           title: "Success",
           description: "Profile picture removed",
@@ -321,10 +345,16 @@ export function ProfileForm() {
       if (response.ok) {
         // Show success message and scroll to top
         setShowSuccess(true);
+        setHasUnsavedChanges(false);
+        // Update initial data to current saved state
+        initialProfileData.current = { ...profileData };
         window.scrollTo({ top: 0, behavior: "smooth" });
 
         // Hide success message after 5 seconds
         setTimeout(() => setShowSuccess(false), 5000);
+
+        // Refresh the page to update the profile button in header
+        router.refresh();
       } else {
         const error = await response.json();
         toast({
@@ -356,16 +386,46 @@ export function ProfileForm() {
   const initials =
     `${profileData.firstName.charAt(0)}${profileData.lastName.charAt(0)}`.toUpperCase();
 
+  const handleBackClick = (e: React.MouseEvent) => {
+    if (hasUnsavedChanges) {
+      const confirmed = window.confirm(
+        "You have unsaved changes. Are you sure you want to leave this page?"
+      );
+      if (!confirmed) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleProfileChange = (updates: Partial<ProfileFormData>) => {
+    setProfileData((prev) => ({ ...prev, ...updates }));
+    setHasUnsavedChanges(true);
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-4">
-        <Link href="/dashboard">
+      <div className="flex items-center justify-between mb-4">
+        <Link href="/dashboard" onClick={handleBackClick}>
           <Button variant="ghost" size="sm" className="hover:bg-slate-200">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
         </Link>
+        <Button
+          onClick={handleSubmit}
+          disabled={isSaving || !hasUnsavedChanges}
+          size="sm"
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
       </div>
 
       {/* Account Type Card - Moved to top for visibility */}
@@ -515,10 +575,9 @@ export function ProfileForm() {
                     id="showProfilePic"
                     checked={profileData.showProfilePicToMatches}
                     onCheckedChange={(checked) =>
-                      setProfileData((prev) => ({
-                        ...prev,
+                      handleProfileChange({
                         showProfilePicToMatches: checked as boolean,
-                      }))
+                      })
                     }
                   />
                   <Label
@@ -570,10 +629,7 @@ export function ProfileForm() {
                 id="displayName"
                 value={profileData.displayName}
                 onChange={(e) =>
-                  setProfileData((prev) => ({
-                    ...prev,
-                    displayName: e.target.value,
-                  }))
+                  handleProfileChange({ displayName: e.target.value })
                 }
                 maxLength={50}
                 required
@@ -594,10 +650,7 @@ export function ProfileForm() {
                   id="cupidDisplayName"
                   value={profileData.cupidDisplayName}
                   onChange={(e) =>
-                    setProfileData((prev) => ({
-                      ...prev,
-                      cupidDisplayName: e.target.value,
-                    }))
+                    handleProfileChange({ cupidDisplayName: e.target.value })
                   }
                   maxLength={50}
                   required
@@ -633,10 +686,7 @@ export function ProfileForm() {
                   max="100"
                   value={profileData.age}
                   onChange={(e) =>
-                    setProfileData((prev) => ({
-                      ...prev,
-                      age: parseInt(e.target.value) || 18,
-                    }))
+                    handleProfileChange({ age: parseInt(e.target.value) || 18 })
                   }
                   required
                   placeholder="18"
@@ -652,10 +702,7 @@ export function ProfileForm() {
                   id="major"
                   value={profileData.major}
                   onChange={(e) =>
-                    setProfileData((prev) => ({
-                      ...prev,
-                      major: e.target.value,
-                    }))
+                    handleProfileChange({ major: e.target.value })
                   }
                   placeholder="e.g., Computer Science"
                 />
@@ -669,10 +716,7 @@ export function ProfileForm() {
                 id="interests"
                 value={profileData.interests}
                 onChange={(e) =>
-                  setProfileData((prev) => ({
-                    ...prev,
-                    interests: e.target.value,
-                  }))
+                  handleProfileChange({ interests: e.target.value })
                 }
                 maxLength={300}
                 rows={4}
@@ -687,10 +731,9 @@ export function ProfileForm() {
                     id="showInterests"
                     checked={profileData.showInterestsToMatches}
                     onCheckedChange={(checked) =>
-                      setProfileData((prev) => ({
-                        ...prev,
+                      handleProfileChange({
                         showInterestsToMatches: checked as boolean,
-                      }))
+                      })
                     }
                   />
                   <Label
@@ -714,9 +757,7 @@ export function ProfileForm() {
               <Textarea
                 id="bio"
                 value={profileData.bio}
-                onChange={(e) =>
-                  setProfileData((prev) => ({ ...prev, bio: e.target.value }))
-                }
+                onChange={(e) => handleProfileChange({ bio: e.target.value })}
                 maxLength={300}
                 rows={4}
                 placeholder="Anything else you'd like to share about yourself..."
@@ -730,10 +771,9 @@ export function ProfileForm() {
                     id="showBio"
                     checked={profileData.showBioToMatches}
                     onCheckedChange={(checked) =>
-                      setProfileData((prev) => ({
-                        ...prev,
+                      handleProfileChange({
                         showBioToMatches: checked as boolean,
-                      }))
+                      })
                     }
                   />
                   <Label
@@ -750,23 +790,6 @@ export function ProfileForm() {
                 </div>
               </div>
             </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="w-full"
-              size="lg"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
           </form>
         </CardContent>
       </Card>

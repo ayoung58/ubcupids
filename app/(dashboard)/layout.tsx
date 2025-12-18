@@ -19,6 +19,7 @@ export default async function DashboardLayout({
     select: {
       isCupid: true,
       isBeingMatched: true,
+      profilePicture: true,
     },
   });
 
@@ -38,7 +39,7 @@ export default async function DashboardLayout({
             <ProfileButton
               firstName={session.user.name?.split(" ")[0] || ""}
               lastName={session.user.name?.split(" ")[1] || ""}
-              profilePicture={session.user.image || ""}
+              profilePicture={profile?.profilePicture || ""}
               isCupid={profile?.isCupid}
               isBeingMatched={profile?.isBeingMatched}
             />

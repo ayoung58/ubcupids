@@ -29,14 +29,17 @@ export function ProfileButton({
   const [isSwitching, setIsSwitching] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Sync with server-provided prop when it changes
+  useEffect(() => {
+    setProfilePicture(initialProfilePicture);
+  }, [initialProfilePicture]);
+
   // Fetch latest profile picture and account info
   useEffect(() => {
     fetch("/api/profile")
       .then((res) => res.json())
       .then((data) => {
-        if (data.profilePicture) {
-          setProfilePicture(data.profilePicture);
-        }
+        setProfilePicture(data.profilePicture || "");
         setIsCupid(data.isCupid || false);
         setIsBeingMatched(data.isBeingMatched ?? true);
       })
