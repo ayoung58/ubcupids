@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { ProfileButton } from "./_components/ProfileButton";
 
 async function getQuestionnaireStatus(userId: string) {
   try {
@@ -55,100 +54,87 @@ export default async function DashboardPage() {
   const displayName = profile?.displayName || session.user.name;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">
-              Welcome, {displayName}!
-            </h1>
-            <p className="text-slate-600 mt-1">{session.user.email}</p>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900">
+          Welcome, {displayName}!
+        </h1>
+        <p className="text-slate-600 mt-1">{session.user.email}</p>
+      </div>
 
-          {/* Profile Button with Dropdown */}
-          <ProfileButton
-            firstName={session.user.name?.split(" ")[0] || ""}
-            lastName={session.user.name?.split(" ")[1] || ""}
-            profilePicture={session.user.image || ""}
-            isCupid={profile?.isCupid}
-            isBeingMatched={profile?.isBeingMatched}
-          />
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Questionnaire</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
-              <p className="text-sm text-slate-600 mb-2">
-                {questionnaireStatus === "completed"
-                  ? "You've filled out your questionnaire! Matches to be revealed soon! 🎉"
-                  : "Fill out your compatibility questionnaire"}
-              </p>
-              <Link href="/questionnaire">
-                <Button className="w-full">
-                  {questionnaireStatus === "draft"
-                    ? "Continue"
-                    : questionnaireStatus === "completed"
-                      ? "View Responses"
-                      : "Start"}
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">My Matches</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
-              <p className="text-sm text-slate-600 mb-2">
-                View your Valentine&apos;s Day matches
-              </p>
-              <Link href="/matches">
-                <Button className="w-full" variant="outline">
-                  View Matches
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Submit Proof</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
-              <p className="text-sm text-slate-600 mb-2">
-                Upload date receipt for prize draw
-              </p>
-              <Link href="/submit-proof">
-                <Button className="w-full" variant="outline">
-                  Upload
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Next Steps Timeline */}
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Next Steps</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Questionnaire</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-slate-600">
-            <p>✅ Account created and verified</p>
-            <p>
+          <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
+            <p className="text-sm text-slate-600 mb-2">
               {questionnaireStatus === "completed"
-                ? "✅ Questionnaire completed"
-                : "⏳ Complete your questionnaire (opens January 15)"}
+                ? "You've filled out your questionnaire! Matches to be revealed soon! 🎉"
+                : "Fill out your compatibility questionnaire"}
             </p>
-            <p>⏳ Matches revealed February 1 & 7, 2026</p>
+            <Link href="/questionnaire">
+              <Button className="w-full">
+                {questionnaireStatus === "draft"
+                  ? "Continue"
+                  : questionnaireStatus === "completed"
+                    ? "View Responses"
+                    : "Start"}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">My Matches</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
+            <p className="text-sm text-slate-600 mb-2">
+              View your Valentine&apos;s Day matches
+            </p>
+            <Link href="/matches">
+              <Button className="w-full" variant="outline">
+                View Matches
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Submit Proof</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
+            <p className="text-sm text-slate-600 mb-2">
+              Upload date receipt for prize draw
+            </p>
+            <Link href="/submit-proof">
+              <Button className="w-full" variant="outline">
+                Upload
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
+
+      {/* Next Steps Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Next Steps</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-slate-600">
+          <p>✅ Account created and verified</p>
+          <p>
+            {questionnaireStatus === "completed"
+              ? "✅ Questionnaire completed"
+              : "⏳ Complete your questionnaire (opens January 15)"}
+          </p>
+          <p>⏳ Matches revealed February 1 & 7, 2026</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
