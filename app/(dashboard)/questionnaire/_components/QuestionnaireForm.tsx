@@ -322,7 +322,7 @@ export function QuestionnaireForm({
                       });
                     }
                   }}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-gray-50 transition-colors focus:outline-none whitespace-nowrap"
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-gray-100 transition-colors focus:outline-none whitespace-nowrap"
                 >
                   <div
                     className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
@@ -422,7 +422,7 @@ export function QuestionnaireForm({
                 disabled={isSaving}
                 variant="outline"
                 size="lg"
-                className="min-h-[44px] w-full sm:w-auto"
+                className="min-h-[44px] w-full sm:w-auto hover:bg-gray-200 hover:border-gray-300 transition-colors"
               >
                 {isSaving ? (
                   <>
