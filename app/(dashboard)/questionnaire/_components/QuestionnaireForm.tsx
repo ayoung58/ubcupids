@@ -93,10 +93,19 @@ export function QuestionnaireForm({
   const handleResponseChange = useCallback(
     (questionId: string, value: ResponseValue) => {
       if (isSubmitted) return;
-      setResponses((prev) => ({
-        ...prev,
-        [questionId]: value,
-      }));
+      setResponses((prev) => {
+        if (value === undefined) {
+          // Remove the entry entirely when value is undefined
+          const newResponses = { ...prev };
+          delete newResponses[questionId];
+          return newResponses;
+        } else {
+          return {
+            ...prev,
+            [questionId]: value,
+          };
+        }
+      });
       // Clear validation error for this question when user makes changes
       if (validationErrors.has(questionId)) {
         setValidationErrors((prev) => {

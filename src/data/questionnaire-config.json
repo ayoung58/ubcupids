@@ -102,10 +102,6 @@
             {
               "value": "productive",
               "label": "Catching up on work, hobbies, or side projects"
-            },
-            {
-              "value": "varies",
-              "label": "It varies wildly depending on my mood"
             }
           ]
         },
@@ -193,10 +189,6 @@
             {
               "value": "terrible",
               "label": "Terrible—I forget to reply for days"
-            },
-            {
-              "value": "depends",
-              "label": "Depends on who's texting and what's happening"
             }
           ]
         },
@@ -226,17 +218,38 @@
         {
           "id": "q10",
           "type": "single-choice",
-          "text": "If you could describe your humor style:",
+          "text": "Which type of humor makes you laugh the most? Pick the example that would actually make you chuckle:",
           "required": true,
           "rationale": "Humor compatibility, self-awareness",
           "options": [
-            { "value": "witty", "label": "Witty and sarcastic" },
-            { "value": "goofy", "label": "Goofy and silly" },
-            { "value": "dry", "label": "Dry and deadpan" },
-            { "value": "dark", "label": "Dark and edgy" },
             {
-              "value": "not-funny",
-              "label": "I'm not really funny, and that's okay"
+              "value": "clever-wordplay",
+              "label": "Clever wordplay or puns — \"I'm reading a book on anti-gravity. It's impossible to put down.\""
+            },
+            {
+              "value": "absurd-random",
+              "label": "Absurd or random humor — \"What if soy milk is just regular milk introducing itself in Spanish?\""
+            },
+            {
+              "value": "dark-edgy",
+              "label": "Dark or edgy jokes — \"I have a joke about trickle-down economics, but 99% of you will never get it.\""
+            },
+            {
+              "value": "wholesome-goofy",
+              "label": "Wholesome or goofy humor — \"Why don't scientists trust atoms? Because they make up everything!\""
+            },
+            {
+              "value": "sarcastic-dry",
+              "label": "Sarcastic or dry humor — \"I'd agree with you, but then we'd both be wrong.\""
+            },
+            {
+              "value": "self-deprecating",
+              "label": "Self-deprecating humor — \"I'm not saying I'm bad at multitasking, but I can't even fail at two things at once.\""
+            },
+            {
+              "value": "self-describe",
+              "label": "Actually, what I find funny is: _____ (self describe)",
+              "hasTextInput": true
             }
           ]
         },
@@ -344,7 +357,6 @@
           "required": true,
           "rationale": "Ambition, priorities, values",
           "options": [
-            { "value": "work-hard-play-hard", "label": "Work hard, play hard" },
             {
               "value": "career-focused",
               "label": "Career-focused, but I make time for loved ones"
@@ -466,10 +478,6 @@
             {
               "value": "live-moment",
               "label": "Live in the moment, I don't think much about saving"
-            },
-            {
-              "value": "figuring-out",
-              "label": "I'm still figuring out my relationship with money"
             }
           ]
         },
@@ -666,9 +674,8 @@
         {
           "id": "q30",
           "type": "ranking",
-          "text": "Rank your love languages (how you prefer to receive affection): Drag to rank from most to least important:",
+          "text": "Rank your top 3 love languages (how you prefer to receive affection). You can do a love language quiz if you want: The [Official] Love Language® Quiz is a good one",
           "required": true,
-          "helpText": "You can do a love language quiz if you want: The [Official] Love Language® Quiz",
           "options": [
             {
               "value": "physical-touch",
@@ -745,9 +752,35 @@
     {
       "id": "section-3",
       "title": "What I'm Looking For",
-      "description": "Help us understand what kind of partner you're hoping to meet.",
-      "questionsCount": 16,
+      "description": "Help us understand what kind of partner and relationship you'd prefer.",
+      "questionsCount": 27,
       "questions": [
+        {
+          "id": "q48",
+          "type": "single-choice",
+          "text": "Right now, I'm looking for:",
+          "required": true,
+          "rationale": "Relationship intent, expectations alignment",
+          "options": [
+            {
+              "value": "serious-long-term",
+              "label": "A serious, long-term relationship"
+            },
+            {
+              "value": "dating-potential",
+              "label": "Dating with potential for something serious"
+            },
+            { "value": "casual-fun", "label": "Something casual and fun" },
+            {
+              "value": "friendship-first",
+              "label": "Friendship first, see where it goes"
+            },
+            {
+              "value": "exploring",
+              "label": "Honestly, I'm just exploring and open to anything"
+            }
+          ]
+        },
         {
           "id": "q33",
           "type": "single-choice",
@@ -819,19 +852,26 @@
         {
           "id": "q37",
           "type": "single-choice",
-          "text": "I prefer someone whose texting style is:",
+          "text": "When I'm going through a hard time, I would like someone to:",
           "required": true,
-          "rationale": "Communication expectations",
+          "rationale": "Emotional support needs, complements q32 on support style given",
           "options": [
-            { "value": "quick", "label": "Quick and responsive" },
+            { "value": "help-solve", "label": "Help me solve the problem" },
             {
-              "value": "thoughtful",
-              "label": "Thoughtful, even if it takes time"
+              "value": "listen-support",
+              "label": "Listen and offer emotional support"
             },
-            { "value": "prefer-not-text", "label": "I'd prefer not to text" },
             {
-              "value": "doesnt-matter",
-              "label": "Doesn't matter, I'm flexible"
+              "value": "give-space",
+              "label": "Give me space unless I ask for help"
+            },
+            {
+              "value": "distract-cheer",
+              "label": "Distract me and cheer me up"
+            },
+            {
+              "value": "match-style",
+              "label": "Match what I do for others (from q32)"
             }
           ]
         },
@@ -1051,40 +1091,6 @@
           ]
         },
         {
-          "id": "q48",
-          "type": "single-choice",
-          "text": "Right now, I'm looking for:",
-          "required": true,
-          "rationale": "Relationship intent, expectations alignment",
-          "options": [
-            {
-              "value": "serious-long-term",
-              "label": "A serious, long-term relationship"
-            },
-            {
-              "value": "dating-potential",
-              "label": "Dating with potential for something serious"
-            },
-            { "value": "casual-fun", "label": "Something casual and fun" },
-            {
-              "value": "friendship-first",
-              "label": "Friendship first, see where it goes"
-            },
-            {
-              "value": "exploring",
-              "label": "Honestly, I'm just exploring and open to anything"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "section-4",
-      "title": "Relationship Dynamics",
-      "description": "Tell us about your relationship expectations and how you navigate connections.",
-      "questionsCount": 10,
-      "questions": [
-        {
           "id": "q49",
           "type": "single-choice",
           "text": "In a relationship, communication is:",
@@ -1261,8 +1267,7 @@
             { "value": "very", "label": "Very important" },
             { "value": "somewhat", "label": "Somewhat important" },
             { "value": "not-very", "label": "Not very important" },
-            { "value": "not-important", "label": "Not important" },
-            { "value": "prefer-not-answer", "label": "Prefer not to answer" }
+            { "value": "not-important", "label": "Not important" }
           ]
         },
         {
@@ -1304,41 +1309,12 @@
             },
             {
               "value": "not-sure",
-              "label": "Not sure / depends on the person"
-            },
-            { "value": "prefer-not-answer", "label": "Prefer not to answer" }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "section-5",
-      "title": "Dealbreakers / Core Values",
-      "description": "These questions help us understand your non-negotiables and major life goals.",
-      "questionsCount": 3,
-      "questions": [
-        {
-          "id": "q59",
-          "type": "single-choice",
-          "text": "In terms of having children:",
-          "required": true,
-          "rationale": "Major life decision, dealbreaker potential",
-          "options": [
-            {
-              "value": "definitely-want",
-              "label": "Definitely want them someday"
-            },
-            { "value": "open", "label": "Open to it, but not a requirement" },
-            { "value": "unsure", "label": "Unsure / still figuring it out" },
-            { "value": "probably-not", "label": "Probably not / leaning no" },
-            {
-              "value": "definitely-not",
-              "label": "Definitely do not want children"
+              "label": "I am not sure"
             }
           ]
         },
         {
-          "id": "q60",
+          "id": "q59",
           "type": "single-choice",
           "text": "My ideal distance for a relationship:",
           "required": true,
@@ -1358,9 +1334,17 @@
               "label": "Distance doesn't matter to me"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "section-5",
+      "title": "Open-Ended Text",
+      "description": "Share more about yourself in your own words. These help us understand your personality and give your matches conversation starters.",
+      "questionsCount": 4,
+      "questions": [
         {
-          "id": "q61",
+          "id": "q60",
           "type": "textarea",
           "text": "Something I absolutely cannot compromise on in a relationship:",
           "required": true,
@@ -1368,17 +1352,9 @@
           "placeholder": "Example: \"Honesty—I need complete transparency\" or \"Respect for my career ambitions\"",
           "minLength": 10,
           "maxLength": 200
-        }
-      ]
-    },
-    {
-      "id": "section-6",
-      "title": "Open-Ended Text",
-      "description": "Share more about yourself in your own words. These help us understand your personality and give your matches conversation starters.",
-      "questionsCount": 3,
-      "questions": [
+        },
         {
-          "id": "q62",
+          "id": "q61",
           "type": "textarea",
           "text": "What's something you're passionate about that people might not know?",
           "required": true,
@@ -1388,17 +1364,17 @@
           "maxLength": 300
         },
         {
-          "id": "q63",
+          "id": "q62",
           "type": "textarea",
           "text": "If you were matched, what is one thing you want the other person to know about you?",
           "required": true,
           "rationale": "Personality, vulnerability, setting expectations",
-          "placeholder": "Example: \"I'm really bad at texting first, but once we're talking I'm all in. Also, I make terrible puns and I'm not sorry about it.\"",
+          "placeholder": "Example: \"I take a little time to open up, but I'm thoughtful, loyal, and genuinely invested once I do.\"",
           "minLength": 20,
           "maxLength": 300
         },
         {
-          "id": "q64",
+          "id": "q63",
           "type": "textarea",
           "text": "Ask your match a question! Write one question you'd want your match to answer. This could be fun, deep, or anything in between.",
           "required": true,
@@ -1409,7 +1385,7 @@
             "What's something small that makes you unreasonably happy?",
             "What's the most valuable lesson a past relationship taught you?"
           ],
-          "placeholder": "Example: \"What's your biggest fear?\" or \"What's your favorite pizza topping?\"",
+          "placeholder": "Example: \"What's your biggest fear?\" or \"What's a belief you held strongly for a long time that you've completely changed your mind about?\"",
           "minLength": 10,
           "maxLength": 200
         }

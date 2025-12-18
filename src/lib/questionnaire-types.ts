@@ -35,6 +35,7 @@ export interface Question {
   minAge?: number; // Min age for age-range questions
   maxAge?: number; // Max age for age-range questions
   maxSelections?: number; // Max selections for multi-choice questions
+  helpText?: string; // Optional help text displayed below question
 }
 
 // Section grouping multiple questions
@@ -67,7 +68,8 @@ export type ResponseValue =
   | string[]
   | number
   | { value: string; text: string }
-  | { minAge: number; maxAge: number };
+  | { minAge: number; maxAge: number }
+  | undefined;
 
 // User's responses (questionId -> value)
 export type Responses = Record<string, ResponseValue>;

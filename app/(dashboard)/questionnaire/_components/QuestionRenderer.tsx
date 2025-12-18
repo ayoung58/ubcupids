@@ -119,6 +119,11 @@ export function QuestionRenderer({
     </div>
   );
 
+  // Help text display (subtitle under question)
+  const helpTextDisplay = question.helpText && (
+    <p className="text-sm text-gray-600 mt-1">{question.helpText}</p>
+  );
+
   switch (question.type) {
     case "single-choice":
       return wrapWithImportance(
@@ -303,6 +308,7 @@ export function QuestionRenderer({
           id={`question-${question.id}`}
         >
           {questionHeader}
+          {helpTextDisplay}
           {validationErrorDisplay}
           <p
             className="text-sm text-gray-600"
@@ -383,8 +389,8 @@ export function QuestionRenderer({
 
     case "age-range":
       const ageRangeValue = (value as { minAge: number; maxAge: number }) || {
-        minAge: 0,
-        maxAge: 0,
+        minAge: -1,
+        maxAge: -1,
       };
 
       return wrapWithImportance(
@@ -408,13 +414,16 @@ export function QuestionRenderer({
                 id={`${question.id}-min`}
                 type="number"
                 min={0}
-                value={ageRangeValue.minAge}
+                value={ageRangeValue.minAge === -1 ? "" : ageRangeValue.minAge}
                 onChange={(e) => {
-                  const newMin = Number(e.target.value);
-                  onChange({
+                  const inputValue = e.target.value;
+                  const newMin = inputValue === "" ? -1 : Number(inputValue);
+                  const newMax = ageRangeValue.maxAge;
+                  const newValue = newMin === -1 && newMax === -1 ? undefined : {
                     minAge: newMin,
-                    maxAge: ageRangeValue.maxAge,
-                  });
+                    maxAge: newMax,
+                  };
+                  onChange(newValue);
                 }}
                 disabled={disabled}
                 className="w-full"
@@ -431,13 +440,16 @@ export function QuestionRenderer({
                 id={`${question.id}-max`}
                 type="number"
                 min={0}
-                value={ageRangeValue.maxAge}
+                value={ageRangeValue.maxAge === -1 ? "" : ageRangeValue.maxAge}
                 onChange={(e) => {
-                  const newMax = Number(e.target.value);
-                  onChange({
-                    minAge: ageRangeValue.minAge,
+                  const inputValue = e.target.value;
+                  const newMax = inputValue === "" ? -1 : Number(inputValue);
+                  const newMin = ageRangeValue.minAge;
+                  const newValue = newMin === -1 && newMax === -1 ? undefined : {
+                    minAge: newMin,
                     maxAge: newMax,
-                  });
+                  };
+                  onChange(newValue);
                 }}
                 disabled={disabled}
                 className="w-full"
