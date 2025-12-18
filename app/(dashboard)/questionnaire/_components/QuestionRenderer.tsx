@@ -35,16 +35,19 @@ export function QuestionRenderer({
   validationError,
   questionNumber,
 }: QuestionRendererProps) {
-  const [otherText, setOtherText] = useState<string>("");
-
   // Initialize otherText from value if it's an object with text
+  const initialOtherText =
+    value && typeof value === "object" && "text" in value ? value.text : "";
+  const [otherText, setOtherText] = useState<string>(initialOtherText);
+
+  // Update otherText when value changes, but only if different
   useEffect(() => {
-    if (value && typeof value === "object" && "text" in value) {
-      setOtherText(value.text);
-    } else {
-      setOtherText("");
+    const newOtherText =
+      value && typeof value === "object" && "text" in value ? value.text : "";
+    if (newOtherText !== otherText) {
+      setOtherText(newOtherText);
     }
-  }, [value]);
+  }, [value]); // Removed otherText from dependency array to avoid infinite loop
 
   // Reusable CSS classes for consistent styling
   const questionContainerClass = "space-y-3";
