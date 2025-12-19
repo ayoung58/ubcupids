@@ -16,8 +16,11 @@ export * from "./filters";
 // Scoring
 export * from "./scoring";
 
-// Algorithm (to be implemented)
-// export * from './algorithm';
+// AI Integration
+export * from "./ai";
 
-// AI Integration (to be implemented)
-// export * from './ai';
+// Algorithm
+export * from "./algorithm";
+
+// Cupid System
+export * from "./cupid";
