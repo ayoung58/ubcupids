@@ -160,23 +160,45 @@ export function CupidMatchingPortal() {
   }
 
   if (!dashboard || dashboard.pendingPairs.length === 0) {
+    // Determine if this is because no pairs exist yet or all are reviewed
+    const hasReviewedPairs = dashboard && dashboard.reviewed > 0;
+    const isAllDone = hasReviewedPairs;
+
     return (
       <div className="min-h-screen bg-slate-50 p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <BackButton />
           <StatsHeader dashboard={dashboard} />
-          <Card className="border-2 border-green-200 bg-green-50">
-            <CardContent className="p-8 text-center">
-              <Check className="h-16 w-16 mx-auto text-green-500 mb-4" />
-              <h2 className="text-2xl font-bold text-green-700">All Done!</h2>
-              <p className="text-green-600 mt-2">
-                You&apos;ve reviewed all assigned pairs. Great work, Cupid! 💘
-              </p>
-              <Link href="/cupid-dashboard">
-                <Button className="mt-6">Back to Dashboard</Button>
-              </Link>
-            </CardContent>
-          </Card>
+          {isAllDone ? (
+            <Card className="border-2 border-green-200 bg-green-50">
+              <CardContent className="p-8 text-center">
+                <Check className="h-16 w-16 mx-auto text-green-500 mb-4" />
+                <h2 className="text-2xl font-bold text-green-700">All Done!</h2>
+                <p className="text-green-600 mt-2">
+                  You&apos;ve reviewed all assigned pairs. Great work, Cupid! 💘
+                </p>
+                <Link href="/cupid-dashboard">
+                  <Button className="mt-6">Back to Dashboard</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50">
+              <CardContent className="p-8 text-center">
+                <Users className="h-16 w-16 mx-auto text-blue-400 mb-4" />
+                <h2 className="text-2xl font-bold text-blue-700">
+                  Candidates Are Filling Out Questionnaires
+                </h2>
+                <p className="text-blue-600 mt-2">
+                  Cupids will receive assignments on January 27th! Stay tuned
+                  till then! ⏳
+                </p>
+                <Link href="/cupid-dashboard">
+                  <Button className="mt-6">Back to Dashboard</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     );

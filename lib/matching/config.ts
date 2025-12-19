@@ -13,7 +13,7 @@
  * Toggle to run the full matching algorithm for Batch 1
  * Set to true when ready to run matching (Feb 1 deadline)
  */
-export const BATCH_1_RUN_MATCHING = false;
+export const BATCH_1_RUN_MATCHING = true;
 
 /**
  * Toggle to run the full matching algorithm for Batch 2

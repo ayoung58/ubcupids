@@ -98,7 +98,7 @@ export async function GET() {
       cupidSentMatches,
       cupidReceivedMatches,
       batchNumber: CURRENT_BATCH,
-      isRevealed: batch?.revealedAt !== null,
+      isRevealed: batch !== null && batch.revealedAt !== null,
     };
 
     return NextResponse.json(response);

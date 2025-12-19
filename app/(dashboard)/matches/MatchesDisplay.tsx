@@ -1,11 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, Users, Sparkles, Clock, AlertCircle, Lock } from "lucide-react";
+import {
+  Heart,
+  Users,
+  Sparkles,
+  Clock,
+  AlertCircle,
+  ArrowLeft,
+  Hourglass,
+} from "lucide-react";
 
 interface MatchDisplay {
   matchId: string;
@@ -89,13 +98,13 @@ export function MatchesDisplay() {
           <Header />
           <Card className="border-2 border-pink-200 bg-gradient-to-br from-pink-50 to-purple-50">
             <CardContent className="p-12 text-center">
-              <Lock className="h-16 w-16 mx-auto text-pink-400 mb-6" />
+              <Hourglass className="h-16 w-16 mx-auto text-pink-400 mb-6" />
               <h2 className="text-2xl font-bold text-pink-700 mb-2">
-                Matches Not Yet Revealed
+                Matching in Progress
               </h2>
               <p className="text-pink-600 max-w-md mx-auto">
-                Your matches will be revealed on the scheduled date. Check back
-                soon to meet your matches! 💘
+                The cupids are working hard behind the scenes to match you up!
+                Matches will be revealed on Feb. 1, stay tuned! 💘
               </p>
               <div className="mt-6 flex items-center justify-center gap-2 text-slate-600">
                 <Clock className="h-4 w-4" />
@@ -176,6 +185,12 @@ export function MatchesDisplay() {
 function Header() {
   return (
     <div>
+      <Link href="/dashboard">
+        <Button variant="ghost" size="sm" className="hover:bg-slate-200 mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Button>
+      </Link>
       <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-3">
         <Heart className="h-8 w-8 text-pink-500" />
         My Matches

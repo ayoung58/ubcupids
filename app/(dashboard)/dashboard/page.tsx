@@ -95,11 +95,17 @@ export default async function DashboardPage() {
             <p className="text-sm text-slate-600 mb-2">
               View your Valentine&apos;s Day matches
             </p>
-            <Link href="/matches">
-              <Button className="w-full" variant="outline">
-                View Matches
+            {questionnaireStatus === "completed" ? (
+              <Link href="/matches">
+                <Button className="w-full" variant="outline">
+                  View Matches
+                </Button>
+              </Link>
+            ) : (
+              <Button className="w-full" variant="outline" disabled>
+                Complete Questionnaire First
               </Button>
-            </Link>
+            )}
           </CardContent>
         </Card>
 
