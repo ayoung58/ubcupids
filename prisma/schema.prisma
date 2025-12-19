@@ -103,13 +103,22 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  //Application Relations
+  // Application Relations
   questionnaire Questionnaire?
   questionnaireResponse QuestionnaireResponse?
   matchesGiven  Match[]   @relation("UserMatches")
   matchesReceived Match[] @relation("MatchedUser")
   uploads       Upload[]
   cupidProfile  CupidProfile?
+  
+  // Matching System Relations
+  compatibilityScoresGiven CompatibilityScore[] @relation("UserCompatibilityScores")
+  compatibilityScoresReceived CompatibilityScore[] @relation("TargetCompatibilityScores")
+  cupidAssignments CupidAssignment[] @relation("CupidAssignments")
+  assignedAsPairUser1 CupidAssignment[] @relation("AssignedPairUser1")
+  assignedAsPairUser2 CupidAssignment[] @relation("AssignedPairUser2")
+  textEmbeddings TextEmbedding[]
+  cupidProfileSummary CupidProfileSummary?
 
   @@index([email])
 }
@@ -157,17 +166,18 @@ model Match {
   matchedUserId   String
   matchedUser     User     @relation("MatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
   
-  compatibilityScore Float // Changed from Int to Float for decimal precision
-  cupidType          String // 'algorithm' | 'human'
-  cupidId            String?
-  batchNumber        Int    // 1 or 2 (Feb 1 or Feb 7)
+  // Match type: 'algorithm' | 'cupid_sent' | 'cupid_received'
+  matchType          String
+  compatibilityScore Float?   // Only for algorithm matches, null for cupid matches
+  cupidId            String?  // If cupid match, ID of cupid who made it
+  batchNumber        Int      // 1 or 2 (Feb 1 or Feb 7)
   
-  revealedAt      DateTime @default(now())
+  revealedAt      DateTime?  // Null until matches are revealed
   createdAt       DateTime @default(now())
 
-  @@unique([userId, matchedUserId, batchNumber]) // Prevent duplicate matches in same batch
-  @@index([userId])
-  @@index([matchedUserId])
+  @@unique([userId, matchedUserId, batchNumber, matchType]) // Prevent duplicate matches per type in same batch
+  @@index([userId, batchNumber])
+  @@index([matchedUserId, batchNumber])
 }
 
 model Upload {
@@ -227,4 +237,153 @@ model PasswordResetToken {
 
   @@index([email])
   @@index([token])
+}
+
+// ===========================================
+// MATCHING SYSTEM MODELS
+// ===========================================
+
+// Stores detailed compatibility breakdown between two users
+model CompatibilityScore {
+  id              String   @id @default(cuid())
+  
+  userId          String
+  user            User     @relation("UserCompatibilityScores", fields: [userId], references: [id], onDelete: Cascade)
+  
+  targetUserId    String
+  targetUser      User     @relation("TargetCompatibilityScores", fields: [targetUserId], references: [id], onDelete: Cascade)
+  
+  // Section scores (0-100 scale before weighting)
+  section1Score   Float    // Icebreakers & Fun
+  section2Score   Float    // What I'm Like  
+  section3Score   Float    // What I'm Looking For
+  section5Score   Float    // Open-Ended (text similarity)
+  
+  // Weighted total score (0-100)
+  totalScore      Float
+  
+  // Bidirectional average (with target's score toward user)
+  bidirectionalScore Float?
+  
+  batchNumber     Int      // 1 or 2
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([userId, targetUserId, batchNumber])
+  @@index([userId, batchNumber])
+  @@index([targetUserId, batchNumber])
+  @@index([totalScore])
+}
+
+// Tracks cupid assignments to user pairs
+model CupidAssignment {
+  id              String   @id @default(cuid())
+  
+  cupidUserId     String
+  cupidUser       User     @relation("CupidAssignments", fields: [cupidUserId], references: [id], onDelete: Cascade)
+  
+  // The pair of users assigned to this cupid
+  user1Id         String
+  user1           User     @relation("AssignedPairUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  
+  user2Id         String
+  user2           User     @relation("AssignedPairUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  
+  // Algorithm's bidirectional score for reference
+  algorithmScore  Float
+  
+  // Cupid's decision
+  decision        String?  // 'approve' | 'reject' | null (pending)
+  decisionReason  String?  @db.Text
+  
+  batchNumber     Int
+  
+  decidedAt       DateTime?
+  createdAt       DateTime @default(now())
+  
+  @@unique([cupidUserId, user1Id, user2Id, batchNumber])
+  @@index([cupidUserId, batchNumber])
+  @@index([user1Id, batchNumber])
+  @@index([user2Id, batchNumber])
+  @@index([decision])
+}
+
+// Stores text embeddings for open-ended questions
+model TextEmbedding {
+  id              String   @id @default(cuid())
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  questionId      String   // e.g., "Q60", "Q61", "Q62", "Q63"
+  
+  // Embedding vector stored as JSON array of floats
+  embedding       Json     // Float array from sentence-transformers
+  embeddingModel  String   @default("all-MiniLM-L6-v2")
+  
+  // Original text hash for cache invalidation
+  textHash        String
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([userId, questionId])
+  @@index([userId])
+  @@index([questionId])
+}
+
+// AI-generated profile summaries for cupids
+model CupidProfileSummary {
+  id              String   @id @default(cuid())
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // AI-generated summary of user's questionnaire responses
+  summary         String   @db.Text
+  
+  // Key traits extracted for quick reference
+  keyTraits       Json     // Array of trait strings
+  
+  // Relationship preferences summary
+  lookingFor      String   @db.Text
+  
+  // Model used for generation
+  aiModel         String   @default("gpt-3.5-turbo")
+  
+  // Version for cache invalidation
+  responseHash    String   // Hash of questionnaire responses used
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([userId])
+  @@index([userId])
+}
+
+// Tracks matching batch runs
+model MatchingBatch {
+  id              String   @id @default(cuid())
+  
+  batchNumber     Int      @unique  // 1 or 2
+  
+  // Status: 'pending' | 'scoring' | 'matching' | 'cupid_review' | 'completed'
+  status          String   @default("pending")
+  
+  // Stats
+  totalUsers      Int      @default(0)
+  totalPairs      Int      @default(0)  // Scored pairs
+  algorithmMatches Int     @default(0)
+  cupidMatches    Int      @default(0)
+  
+  // Timestamps
+  scoringStartedAt DateTime?
+  scoringCompletedAt DateTime?
+  matchingStartedAt DateTime?
+  matchingCompletedAt DateTime?
+  revealedAt      DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
