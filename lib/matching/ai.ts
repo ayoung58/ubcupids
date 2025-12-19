@@ -3,29 +3,30 @@
  *
  * Handles:
  * 1. Text embeddings for open-ended questions using Sentence-BERT
- * 2. AI-generated profile summaries for cupids using GPT-3.5-turbo
+ * 2. AI-generated profile summaries for cupids using Mistral-7B
  *
- * Uses free/low-cost models for MVP:
- * - Embeddings: Hugging Face Inference API (free tier)
- * - Summaries: OpenAI GPT-3.5-turbo (low cost)
+ * Uses FREE models for MVP:
+ * - Embeddings: Hugging Face Inference API (sentence-transformers/all-MiniLM-L6-v2)
+ * - Summaries: Hugging Face Inference API (mistralai/Mistral-7B-Instruct-v0.2)
  */
 
 import { prisma } from "../prisma";
 import { EMBEDDING_MODEL, SUMMARY_MODEL, DEBUG_SCORING } from "./config";
 import { DecryptedResponses, CupidProfileView } from "./types";
-import crypto from "crypto";
+import * as crypto from "crypto";
 
 // ===========================================
 // CONFIGURATION
 // ===========================================
 
-const HF_API_URL =
+const HF_EMBEDDING_URL =
   "https://api-inference.huggingface.co/pipeline/feature-extraction";
-const HF_MODEL = `sentence-transformers/${EMBEDDING_MODEL}`;
+const HF_TEXT_GEN_URL = "https://api-inference.huggingface.co/models";
+const HF_EMBEDDING_MODEL = `sentence-transformers/${EMBEDDING_MODEL}`;
+const HF_SUMMARY_MODEL = `mistralai/${SUMMARY_MODEL}`; // Mistral-7B-Instruct-v0.2
 
-// Get API keys from environment
+// Get API key from environment (only HuggingFace needed - it's free!)
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 // ===========================================
 // TEXT HASHING (for cache invalidation)
@@ -59,7 +60,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   }
 
   try {
-    const response = await fetch(`${HF_API_URL}/${HF_MODEL}`, {
+    const response = await fetch(`${HF_EMBEDDING_URL}/${HF_EMBEDDING_MODEL}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${HF_API_KEY}`,
@@ -304,9 +305,9 @@ export async function generateProfileSummary(
     };
   }
 
-  // Generate new summary
-  if (!OPENAI_API_KEY) {
-    console.warn("OPENAI_API_KEY not set, using fallback summary");
+  // Generate new summary using HuggingFace (FREE!)
+  if (!HF_API_KEY) {
+    console.warn("HUGGINGFACE_API_KEY not set, using fallback summary");
     return generateFallbackSummary(
       userId,
       responses,
@@ -319,32 +320,35 @@ export async function generateProfileSummary(
   try {
     const prompt = buildSummaryPrompt(responses);
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch(`${HF_TEXT_GEN_URL}/${HF_SUMMARY_MODEL}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${HF_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: SUMMARY_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: `You are a matchmaking assistant helping "Cupids" (human matchmakers) understand potential matches. Generate concise, insightful summaries that highlight personality, values, and relationship goals. Be positive but honest.`,
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 400,
+          temperature: 0.7,
+          top_p: 0.95,
+          return_full_text: false,
+        },
+        options: {
+          wait_for_model: true,
+        },
       }),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error("OpenAI API error:", error);
+      console.error("HuggingFace API error:", error);
+      // Model might be loading, wait and retry once
+      if (error.includes("loading")) {
+        console.log("Model is loading, waiting 20s and retrying...");
+        await new Promise((resolve) => setTimeout(resolve, 20000));
+        return generateProfileSummary(userId, responses, firstName, age);
+      }
       return generateFallbackSummary(
         userId,
         responses,
@@ -355,7 +359,7 @@ export async function generateProfileSummary(
     }
 
     const result = await response.json();
-    const content = result.choices[0]?.message?.content;
+    const content = result[0]?.generated_text || result.generated_text;
 
     if (!content) {
       return generateFallbackSummary(
@@ -438,18 +442,22 @@ function buildSummaryPrompt(responses: DecryptedResponses): string {
   if (responses["Q61"]) parts.push(`Hidden passion: ${responses["Q61"]}`);
   if (responses["Q62"]) parts.push(`Want matches to know: ${responses["Q62"]}`);
 
-  return `Based on these questionnaire responses, provide:
-1. A 2-3 sentence personality summary
-2. 3-5 key personality traits (single words or short phrases)
-3. A 1-2 sentence summary of what they're looking for in a relationship
+  // Mistral-7B-Instruct uses [INST] tags for instructions
+  return `[INST] You are a matchmaking assistant helping human matchmakers understand potential matches. Based on the questionnaire responses below, provide:
 
-Responses:
+1. SUMMARY: A 2-3 sentence personality summary
+2. TRAITS: List 3-5 key personality traits (comma-separated)
+3. LOOKING_FOR: A 1-2 sentence summary of what they want in a relationship
+
+Be concise, insightful, and positive.
+
+Questionnaire Responses:
 ${parts.join("\n")}
 
-Format your response as:
-SUMMARY: [personality summary]
-TRAITS: [trait1], [trait2], [trait3], ...
-LOOKING_FOR: [what they want]`;
+Provide your response in this exact format:
+SUMMARY: [your summary here]
+TRAITS: [trait1], [trait2], [trait3]
+LOOKING_FOR: [what they want] [/INST]`;
 }
 
 /**

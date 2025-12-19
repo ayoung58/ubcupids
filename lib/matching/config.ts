@@ -128,20 +128,15 @@ export const CUPID_PAIRS_MAX = 20;
 
 /**
  * Sentence-BERT model for text embeddings
- * Using all-MiniLM-L6-v2 for efficiency
+ * Using all-MiniLM-L6-v2 for efficiency (FREE on HuggingFace)
  */
 export const EMBEDDING_MODEL = "all-MiniLM-L6-v2";
 
 /**
  * Model for generating cupid summaries
+ * Using Mistral-7B-Instruct-v0.2 (FREE on HuggingFace)
  */
-export const SUMMARY_MODEL = "gpt-3.5-turbo";
-
-/**
- * OpenAI API endpoint (or compatible)
- */
-export const OPENAI_API_BASE =
-  process.env.OPENAI_API_BASE || "https://api.openai.com/v1";
+export const SUMMARY_MODEL = "Mistral-7B-Instruct-v0.2";
 
 // ===========================================
 // PERFORMANCE

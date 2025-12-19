@@ -28,9 +28,10 @@ Ensure these are set in your `.env` file:
 DATABASE_URL=your_neon_postgres_url
 ENCRYPTION_KEY=your_64_char_hex_key
 NEXTAUTH_SECRET=your_nextauth_secret
-HUGGINGFACE_API_KEY=your_hf_api_key      # For text embeddings
-OPENAI_API_KEY=your_openai_api_key        # For profile summaries
+HUGGINGFACE_API_KEY=your_hf_api_key      # For text embeddings AND profile summaries (both FREE!)
 ```
+
+**Note:** Only HuggingFace API key is needed - it's completely FREE! Get yours at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
 
 ### Start the Development Server
 
@@ -488,9 +489,11 @@ Section 3 (What I'm Looking For) should contribute most to scores:
 
 #### "AI summaries not generating"
 
-- Verify `OPENAI_API_KEY` is valid
-- Check rate limits haven't been exceeded
+- Verify `HUGGINGFACE_API_KEY` is valid
+- Check rate limits haven't been exceeded (free tier allows ~1000 requests/hour)
+- HuggingFace models may need to "warm up" on first use (can take 20-30 seconds)
 - Summaries are cached - regenerate with `generateProfileSummary(userId, true)`
+- If model is loading, the system will automatically retry after 20 seconds
 
 #### "Text embeddings failing"
 
