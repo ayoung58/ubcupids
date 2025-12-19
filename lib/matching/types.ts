@@ -1,11 +1,11 @@
 /**
  * Matching System Type Definitions
- * 
+ *
  * Comprehensive types for the matching algorithm, scoring,
  * and cupid review system.
  */
 
-import { User, QuestionnaireResponse, Match, CompatibilityScore, CupidAssignment } from '@prisma/client';
+import type { User, Match } from "@prisma/client";
 
 // ===========================================
 // QUESTIONNAIRE TYPES
@@ -14,13 +14,13 @@ import { User, QuestionnaireResponse, Match, CompatibilityScore, CupidAssignment
 /**
  * Question types from questionnaire-config.json
  */
-export type QuestionType = 
-  | 'radio'
-  | 'checkbox'
-  | 'slider'
-  | 'text'
-  | 'ranking'
-  | 'scale';
+export type QuestionType =
+  | "radio"
+  | "checkbox"
+  | "slider"
+  | "text"
+  | "ranking"
+  | "scale";
 
 /**
  * A single question from the questionnaire config
@@ -83,9 +83,9 @@ export interface UserForScoring {
  */
 export interface QuestionScore {
   questionId: string;
-  baseScore: number;        // 0-100 before importance weighting
+  baseScore: number; // 0-100 before importance weighting
   importanceWeight: number; // Multiplier from importance rating
-  weightedScore: number;    // baseScore * importanceWeight
+  weightedScore: number; // baseScore * importanceWeight
 }
 
 /**
@@ -94,10 +94,10 @@ export interface QuestionScore {
 export interface SectionScore {
   section: number;
   questions: QuestionScore[];
-  rawTotal: number;         // Sum of weighted scores
-  normalizedScore: number;  // 0-100 scale
-  weight: number;           // Section weight (from config)
-  weightedScore: number;    // normalizedScore * weight
+  rawTotal: number; // Sum of weighted scores
+  normalizedScore: number; // 0-100 scale
+  weight: number; // Section weight (from config)
+  weightedScore: number; // normalizedScore * weight
 }
 
 /**
@@ -106,21 +106,21 @@ export interface SectionScore {
 export interface CompatibilityCalculation {
   userId: string;
   targetUserId: string;
-  
+
   // Section breakdowns
   section1: SectionScore;
   section2: SectionScore;
   section3: SectionScore;
   section5: SectionScore;
-  
+
   // Total scores
-  totalScore: number;           // 0-100, weighted sum of sections
-  bidirectionalScore?: number;  // Average with reverse calculation
-  
+  totalScore: number; // 0-100, weighted sum of sections
+  bidirectionalScore?: number; // Average with reverse calculation
+
   // Filter results
   passesGenderFilter: boolean;
   passesAgeFilter: boolean;
-  isEligible: boolean;          // passesGenderFilter && passesAgeFilter
+  isEligible: boolean; // passesGenderFilter && passesAgeFilter
 }
 
 /**
@@ -129,10 +129,10 @@ export interface CompatibilityCalculation {
 export interface ScoredPair {
   user1Id: string;
   user2Id: string;
-  score1to2: number;            // User1's compatibility toward User2
-  score2to1: number;            // User2's compatibility toward User1
-  bidirectionalScore: number;   // (score1to2 + score2to1) / 2
-  passesFilters: boolean;       // Both directions pass filters
+  score1to2: number; // User1's compatibility toward User2
+  score2to1: number; // User2's compatibility toward User1
+  bidirectionalScore: number; // (score1to2 + score2to1) / 2
+  passesFilters: boolean; // Both directions pass filters
 }
 
 // ===========================================
@@ -142,14 +142,20 @@ export interface ScoredPair {
 /**
  * Match types
  */
-export type MatchType = 'algorithm' | 'cupid_sent' | 'cupid_received';
+export type MatchType = "algorithm" | "cupid_sent" | "cupid_received";
 
 /**
  * Match with related user data
  */
 export interface MatchWithUsers extends Match {
-  user: Pick<User, 'id' | 'firstName' | 'displayName' | 'profilePicture' | 'bio' | 'interests'>;
-  matchedUser: Pick<User, 'id' | 'firstName' | 'displayName' | 'profilePicture' | 'bio' | 'interests'>;
+  user: Pick<
+    User,
+    "id" | "firstName" | "displayName" | "profilePicture" | "bio" | "interests"
+  >;
+  matchedUser: Pick<
+    User,
+    "id" | "firstName" | "displayName" | "profilePicture" | "bio" | "interests"
+  >;
 }
 
 /**
@@ -159,7 +165,7 @@ export interface AlgorithmMatch {
   userId: string;
   matchedUserId: string;
   compatibilityScore: number;
-  matchType: 'algorithm';
+  matchType: "algorithm";
 }
 
 /**
@@ -187,12 +193,12 @@ export interface CupidProfileView {
   userId: string;
   firstName: string;
   age: number;
-  
+
   // AI-generated summary
   summary: string;
   keyTraits: string[];
   lookingFor: string;
-  
+
   // Selected questionnaire highlights
   highlights: {
     questionId: string;
@@ -207,13 +213,13 @@ export interface CupidProfileView {
 export interface CupidPairAssignment {
   assignmentId: string;
   cupidUserId: string;
-  
+
   user1: CupidProfileView;
   user2: CupidProfileView;
-  
+
   algorithmScore: number;
-  
-  decision: 'approve' | 'reject' | null;
+
+  decision: "approve" | "reject" | null;
   decisionReason: string | null;
 }
 
@@ -223,14 +229,14 @@ export interface CupidPairAssignment {
 export interface CupidDashboard {
   cupidId: string;
   cupidName: string;
-  
+
   // Stats
   totalAssigned: number;
   reviewed: number;
   approved: number;
   rejected: number;
   pending: number;
-  
+
   // Pending pairs for review
   pendingPairs: CupidPairAssignment[];
 }
@@ -242,12 +248,12 @@ export interface CupidDashboard {
 /**
  * Batch status values
  */
-export type BatchStatus = 
-  | 'pending'
-  | 'scoring'
-  | 'matching'
-  | 'cupid_review'
-  | 'completed';
+export type BatchStatus =
+  | "pending"
+  | "scoring"
+  | "matching"
+  | "cupid_review"
+  | "completed";
 
 /**
  * Batch progress info
@@ -255,18 +261,18 @@ export type BatchStatus =
 export interface BatchProgress {
   batchNumber: number;
   status: BatchStatus;
-  
+
   totalUsers: number;
   totalPairs: number;
   algorithmMatches: number;
   cupidMatches: number;
-  
+
   scoringProgress?: {
     completed: number;
     total: number;
     percentage: number;
   };
-  
+
   timestamps: {
     created: Date;
     scoringStarted?: Date;
@@ -288,7 +294,7 @@ export interface MatchDisplay {
   matchId: string;
   matchType: MatchType;
   compatibilityScore: number | null;
-  
+
   matchedUser: {
     firstName: string;
     displayName: string | null;
@@ -297,7 +303,7 @@ export interface MatchDisplay {
     bio: string | null;
     interests: string | null;
   };
-  
+
   revealedAt: Date | null;
   createdAt: Date;
 }
@@ -334,8 +340,8 @@ export interface TextEmbeddingData {
  */
 export interface TextSimilarity {
   questionId: string;
-  cosineSimilarity: number;  // -1 to 1, normalized to 0-100
-  normalizedScore: number;   // 0-100
+  cosineSimilarity: number; // -1 to 1, normalized to 0-100
+  normalizedScore: number; // 0-100
 }
 
 // ===========================================
@@ -348,9 +354,9 @@ export interface TextSimilarity {
 export interface GenderFilterResult {
   user1Id: string;
   user2Id: string;
-  user1PassesFilter: boolean;  // User1's preference satisfied by User2
-  user2PassesFilter: boolean;  // User2's preference satisfied by User1
-  bothPass: boolean;           // Mutual match
+  user1PassesFilter: boolean; // User1's preference satisfied by User2
+  user2PassesFilter: boolean; // User2's preference satisfied by User1
+  bothPass: boolean; // Mutual match
 }
 
 /**
