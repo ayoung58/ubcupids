@@ -25,6 +25,7 @@ export interface Question {
   type: QuestionType; // Type of question
   text: string; // Question text shown to user
   required: boolean; // Whether answer is required
+  hasImportance?: boolean; // Whether this question has importance rating selector
   options?: QuestionOption[]; // Options for single/multi choice
   placeholder?: string; // Placeholder for text inputs
   minLength?: number; // Min length for text inputs

@@ -59,16 +59,10 @@ export function QuestionRenderer({
   const textInputClass = "ml-6";
   const validationErrorClass =
     "flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm";
+
   const shouldShowImportance = () => {
-    // Don't show importance for textarea (open-ended) questions
-    if (question.type === "textarea") {
-      return false;
-    }
-    // Don't show importance for basic info questions (section 0)
-    if (question.id.startsWith("q0.")) {
-      return false;
-    }
-    return true;
+    // Use the hasImportance property from the question config
+    return question.hasImportance === true;
   };
 
   // Wrapper to include importance selector with each question type
