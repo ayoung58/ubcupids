@@ -61,6 +61,7 @@ export function ProfileForm() {
   const [accountInfo, setAccountInfo] = useState({
     isCupid: false,
     isBeingMatched: true,
+    lastActiveDashboard: "match" as "match" | "cupid",
   });
 
   useEffect(() => {
@@ -109,6 +110,7 @@ export function ProfileForm() {
         setAccountInfo({
           isCupid: data.isCupid || false,
           isBeingMatched: data.isBeingMatched ?? true,
+          lastActiveDashboard: data.lastActiveDashboard || "match",
         });
       }
     } catch (error) {
@@ -406,10 +408,21 @@ export function ProfileForm() {
     <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <Link href="/dashboard" onClick={handleBackClick}>
+        <Link
+          href={
+            accountInfo.lastActiveDashboard === "cupid" && accountInfo.isCupid
+              ? "/cupid-dashboard"
+              : "/dashboard"
+          }
+          onClick={handleBackClick}
+        >
           <Button variant="ghost" size="sm" className="hover:bg-slate-200">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            Back to{" "}
+            {accountInfo.lastActiveDashboard === "cupid" && accountInfo.isCupid
+              ? "Cupid "
+              : ""}
+            Dashboard
           </Button>
         </Link>
         <Button

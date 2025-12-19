@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { User, LogOut, ChevronDown, RefreshCw } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -22,12 +22,19 @@ export function ProfileButton({
   isBeingMatched: initialIsBeingMatched = true,
 }: ProfileButtonProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState(initialProfilePicture);
   const [isCupid, setIsCupid] = useState(initialIsCupid);
   const [isBeingMatched, setIsBeingMatched] = useState(initialIsBeingMatched);
   const [isSwitching, setIsSwitching] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Determine current dashboard based on pathname
+  const isOnCupidDashboard = pathname?.startsWith("/cupid-dashboard");
+  const currentDashboard: "cupid" | "match" = isOnCupidDashboard
+    ? "cupid"
+    : "match";
 
   // Sync with server-provided prop when it changes
   useEffect(() => {
@@ -69,6 +76,20 @@ export function ProfileButton({
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 
   const hasBothAccounts = isCupid && isBeingMatched;
+
+  const handleProfileClick = async (e: React.MouseEvent) => {
+    // Update lastActiveDashboard before navigating to profile
+    try {
+      await fetch("/api/profile/switch-dashboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dashboard: currentDashboard }),
+      });
+    } catch (error) {
+      console.error("Error updating dashboard preference:", error);
+    }
+    setIsOpen(false);
+  };
 
   const handleSwitchDashboard = async (targetDashboard: "cupid" | "match") => {
     setIsSwitching(true);
@@ -125,7 +146,7 @@ export function ProfileButton({
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50 animate-in slide-in-from-top-2 duration-200">
           <Link
             href="/profile"
-            onClick={() => setIsOpen(false)}
+            onClick={handleProfileClick}
             className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
           >
             <User className="h-4 w-4" />
@@ -138,11 +159,7 @@ export function ProfileButton({
               <div className="border-t border-slate-200 my-2" />
               <button
                 onClick={() =>
-                  handleSwitchDashboard(
-                    window.location.pathname.includes("cupid")
-                      ? "match"
-                      : "cupid"
-                  )
+                  handleSwitchDashboard(isOnCupidDashboard ? "match" : "cupid")
                 }
                 disabled={isSwitching}
                 className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors w-full text-left disabled:opacity-50"
@@ -150,9 +167,7 @@ export function ProfileButton({
                 <RefreshCw
                   className={`h-4 w-4 ${isSwitching ? "animate-spin" : ""}`}
                 />
-                Switch to{" "}
-                {window.location.pathname.includes("cupid") ? "Match" : "Cupid"}{" "}
-                Dashboard
+                Switch to {isOnCupidDashboard ? "Match" : "Cupid"} Dashboard
               </button>
             </>
           )}

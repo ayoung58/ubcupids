@@ -31,6 +31,7 @@ export async function GET() {
         showInterestsToMatches: true,
         isCupid: true,
         isBeingMatched: true,
+        lastActiveDashboard: true,
       },
     });
 
