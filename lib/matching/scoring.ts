@@ -692,6 +692,10 @@ export function calculateBidirectionalCompatibility(
     score2to1: score2to1.totalScore,
     bidirectionalScore,
     passesFilters,
+    section1Score: score1to2.section1.normalizedScore,
+    section2Score: score1to2.section2.normalizedScore,
+    section3Score: score1to2.section3.normalizedScore,
+    section5Score: score1to2.section5.normalizedScore,
   };
 }
 

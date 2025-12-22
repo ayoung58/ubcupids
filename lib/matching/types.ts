@@ -133,6 +133,11 @@ export interface ScoredPair {
   score2to1: number; // User2's compatibility toward User1
   bidirectionalScore: number; // (score1to2 + score2to1) / 2
   passesFilters: boolean; // Both directions pass filters
+  // Section scores from user1 -> user2
+  section1Score: number;
+  section2Score: number;
+  section3Score: number;
+  section5Score: number;
 }
 
 // ===========================================

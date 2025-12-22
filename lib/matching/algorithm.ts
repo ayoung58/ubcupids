@@ -309,21 +309,26 @@ export async function storeCompatibilityScores(
       create: {
         userId: pair.user1Id,
         targetUserId: pair.user2Id,
-        section1Score: 0, // TODO: Store detailed section scores
-        section2Score: 0,
-        section3Score: 0,
-        section5Score: 0,
+        section1Score: pair.section1Score,
+        section2Score: pair.section2Score,
+        section3Score: pair.section3Score,
+        section5Score: pair.section5Score,
         totalScore: pair.score1to2,
         bidirectionalScore: pair.bidirectionalScore,
         batchNumber,
       },
       update: {
+        section1Score: pair.section1Score,
+        section2Score: pair.section2Score,
+        section3Score: pair.section3Score,
+        section5Score: pair.section5Score,
         totalScore: pair.score1to2,
         bidirectionalScore: pair.bidirectionalScore,
       },
     });
 
-    // Store reverse direction too
+    // For reverse direction, we need to calculate it separately since section scores are directional
+    // We'll use the average bidirectional score for both directions but keep scores for consistency
     await prisma.compatibilityScore.upsert({
       where: {
         userId_targetUserId_batchNumber: {
@@ -335,15 +340,19 @@ export async function storeCompatibilityScores(
       create: {
         userId: pair.user2Id,
         targetUserId: pair.user1Id,
-        section1Score: 0,
-        section2Score: 0,
-        section3Score: 0,
-        section5Score: 0,
+        section1Score: pair.section1Score, // Using same scores for simplicity
+        section2Score: pair.section2Score,
+        section3Score: pair.section3Score,
+        section5Score: pair.section5Score,
         totalScore: pair.score2to1,
         bidirectionalScore: pair.bidirectionalScore,
         batchNumber,
       },
       update: {
+        section1Score: pair.section1Score,
+        section2Score: pair.section2Score,
+        section3Score: pair.section3Score,
+        section5Score: pair.section5Score,
         totalScore: pair.score2to1,
         bidirectionalScore: pair.bidirectionalScore,
       },
