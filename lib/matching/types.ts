@@ -208,19 +208,27 @@ export interface CupidProfileView {
 }
 
 /**
- * Pair assignment for cupid review
+ * Potential match option for cupid to choose from
  */
-export interface CupidPairAssignment {
+export interface PotentialMatch {
+  userId: string;
+  score: number;
+  profile: CupidProfileView;
+}
+
+/**
+ * Candidate assignment for cupid review
+ * Each cupid is assigned ONE candidate and must select the best match from top 5
+ */
+export interface CupidCandidateAssignment {
   assignmentId: string;
   cupidUserId: string;
 
-  user1: CupidProfileView;
-  user2: CupidProfileView;
+  candidate: CupidProfileView;
+  potentialMatches: PotentialMatch[];
 
-  algorithmScore: number;
-
-  decision: "approve" | "reject" | null;
-  decisionReason: string | null;
+  selectedMatchId: string | null;
+  selectionReason: string | null;
 }
 
 /**
@@ -231,15 +239,16 @@ export interface CupidDashboard {
   cupidName: string;
 
   // Stats
-  totalAssigned: number;
-  reviewed: number;
-  approved: number;
-  rejected: number;
-  pending: number;
+  totalAssigned: number; // Total candidates assigned
+  reviewed: number; // Candidates for which cupid made a selection
+  pending: number; // Candidates awaiting selection
 
-  // Pending pairs for review
-  pendingPairs: CupidPairAssignment[];
+  // Pending candidate assignments for review
+  pendingAssignments: CupidCandidateAssignment[];
 }
+
+// Legacy type for backwards compatibility during transition
+export type CupidPairAssignment = CupidCandidateAssignment;
 
 // ===========================================
 // BATCH STATUS TYPES
