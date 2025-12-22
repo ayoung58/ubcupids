@@ -115,8 +115,7 @@ model User {
   compatibilityScoresGiven CompatibilityScore[] @relation("UserCompatibilityScores")
   compatibilityScoresReceived CompatibilityScore[] @relation("TargetCompatibilityScores")
   cupidAssignments CupidAssignment[] @relation("CupidAssignments")
-  assignedAsPairUser1 CupidAssignment[] @relation("AssignedPairUser1")
-  assignedAsPairUser2 CupidAssignment[] @relation("AssignedPairUser2")
+  assignedAsCandidates CupidAssignment[] @relation("AssignedCandidates")
   textEmbeddings TextEmbedding[]
   cupidProfileSummary CupidProfileSummary?
 
@@ -276,37 +275,35 @@ model CompatibilityScore {
   @@index([totalScore])
 }
 
-// Tracks cupid assignments to user pairs
+// Tracks cupid assignments - each cupid is assigned ONE candidate
+// and must select the best match from the candidate's top 5 compatible people
 model CupidAssignment {
   id              String   @id @default(cuid())
   
   cupidUserId     String
   cupidUser       User     @relation("CupidAssignments", fields: [cupidUserId], references: [id], onDelete: Cascade)
   
-  // The pair of users assigned to this cupid
-  user1Id         String
-  user1           User     @relation("AssignedPairUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  // The candidate assigned to this cupid
+  candidateId     String
+  candidate       User     @relation("AssignedCandidates", fields: [candidateId], references: [id], onDelete: Cascade)
   
-  user2Id         String
-  user2           User     @relation("AssignedPairUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  // Top 5 potential matches for this candidate
+  // Stored as JSON array: [{ userId: "...", score: 85.5 }, { userId: "...", score: 82.3 }, ...]
+  potentialMatches Json
   
-  // Algorithm's bidirectional score for reference
-  algorithmScore  Float
-  
-  // Cupid's decision
-  decision        String?  // 'approve' | 'reject' | null (pending)
-  decisionReason  String?  @db.Text
+  // Cupid's selection - which userId from potentialMatches they chose
+  selectedMatchId String?
+  selectionReason String?  @db.Text
   
   batchNumber     Int
   
   decidedAt       DateTime?
   createdAt       DateTime @default(now())
   
-  @@unique([cupidUserId, user1Id, user2Id, batchNumber])
+  @@unique([cupidUserId, candidateId, batchNumber])
   @@index([cupidUserId, batchNumber])
-  @@index([user1Id, batchNumber])
-  @@index([user2Id, batchNumber])
-  @@index([decision])
+  @@index([candidateId, batchNumber])
+  @@index([selectedMatchId])
 }
 
 // Stores text embeddings for open-ended questions

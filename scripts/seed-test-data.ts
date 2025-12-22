@@ -287,7 +287,7 @@ const INTERESTS = [
 ];
 
 // Question option values from questionnaire-config.json
-const QUESTION_OPTIONS: Record<string, string[]> = {
+const QUESTION_OPTIONS: Record<string, string[] | string> = {
   q1: ["man", "woman", "non-binary"],
   q2: [
     "heterosexual",
@@ -548,13 +548,13 @@ function generateImportance(): number {
   return 3;
 }
 
-function generateAgeRange(userAge: number): { min: number; max: number } {
+function generateAgeRange(userAge: number): { minAge: number; maxAge: number } {
   // Generate reasonable age ranges based on user's age
   const minOffset = Math.floor(Math.random() * 3) + 1; // 1-3 years younger
   const maxOffset = Math.floor(Math.random() * 4) + 1; // 1-4 years older
   return {
-    min: Math.max(18, userAge - minOffset),
-    max: Math.min(35, userAge + maxOffset),
+    minAge: Math.max(18, userAge - minOffset),
+    maxAge: Math.min(35, userAge + maxOffset),
   };
 }
 
@@ -599,10 +599,13 @@ function generateQuestionnaireResponses(userAge: number): {
   for (const [questionId, optionsOrType] of Object.entries(QUESTION_OPTIONS)) {
     if (["q1", "q2", "q3"].includes(questionId)) continue;
 
-    if (optionsOrType === "age-range") {
+    if (typeof optionsOrType === "string" && optionsOrType === "age-range") {
       // q34 - age range
       responses[questionId] = generateAgeRange(userAge);
-    } else if (optionsOrType === "textarea") {
+    } else if (
+      typeof optionsOrType === "string" &&
+      optionsOrType === "textarea"
+    ) {
       // Open-ended questions
       switch (questionId) {
         case "q60":
@@ -618,23 +621,180 @@ function generateQuestionnaireResponses(userAge: number): {
           responses[questionId] = randomElement(MATCH_QUESTIONS);
           break;
       }
-    } else if (["q30", "q41"].includes(questionId)) {
-      // Ranking questions - select top 3
-      responses[questionId] = randomElements(optionsOrType as string[], 3);
-      importance[questionId] = generateImportance();
-    } else {
-      // Single-choice questions
-      responses[questionId] = randomElement(optionsOrType as string[]);
-      // Add importance for questions that have it (skip section 0 and section 5)
-      if (
-        !["q1", "q2", "q3", "q60", "q61", "q62", "q63"].includes(questionId)
-      ) {
+    } else if (Array.isArray(optionsOrType)) {
+      if (["q30", "q41"].includes(questionId)) {
+        // Ranking questions - select top 3
+        responses[questionId] = randomElements(optionsOrType, 3);
         importance[questionId] = generateImportance();
+      } else {
+        // Single-choice questions
+        responses[questionId] = randomElement(optionsOrType);
+        // Add importance for questions that have it (skip section 0 and section 5)
+        if (
+          !["q1", "q2", "q3", "q60", "q61", "q62", "q63"].includes(questionId)
+        ) {
+          importance[questionId] = generateImportance();
+        }
       }
     }
   }
 
   return { responses, importance };
+}
+
+// ============================================
+// Perfect Match User Generation
+// ============================================
+
+/**
+ * Create a pair of users designed to match well with each other
+ * Returns their questionnaire data
+ */
+function createPerfectMatchPair(baseAge: number): {
+  user1: {
+    responses: Record<string, unknown>;
+    importance: Record<string, number>;
+  };
+  user2: {
+    responses: Record<string, unknown>;
+    importance: Record<string, number>;
+  };
+} {
+  // Shared preferences for high compatibility
+  const sharedResponses = {
+    // Section 1: Icebreakers - Very similar
+    q4: "early-active",
+    q5: "talk-out",
+    q6: "confident",
+    q7: "organizer",
+    q8: "slow-thoughtful",
+    q9: "going-out",
+    q10: "clever-wordplay",
+    q11: "navigator",
+    q12: "thrive",
+    q13: "once-twice",
+
+    // Section 2: What I'm Like - Highly compatible
+    q14: "moderate",
+    q15: "balanced",
+    q16: "talk-immediately",
+    q17: "important",
+    q18: "moderate",
+    q19: "clean-enough",
+    q20: "save-regularly",
+    q21: "mid-day",
+    q22: "few-times",
+    q23: "direct",
+    q24: "healthy",
+    q25: "direct",
+    q26: "occasional",
+    q27: "open",
+    q28: "connection",
+    q29: "somewhat",
+    q30: ["quality-time", "words", "physical-touch"], // Ranking
+    q31: "time-trust",
+    q32: "listen",
+  };
+
+  // User 1: Woman looking for men
+  const user1Responses: Record<string, unknown> = {
+    ...sharedResponses,
+    q1: "woman",
+    q2: "heterosexual",
+    q3: ["men"],
+    q34: { minAge: baseAge - 2, maxAge: baseAge + 3 }, // Accepts baseAge
+
+    // Section 3: Preferences that match User 2's characteristics
+    q33: "moderate", // Wants moderate energy
+    q35: "somewhat-social", // Wants somewhat social
+    q36: "balanced", // Wants balanced ambition
+    q37: "listen-support", // Wants emotional support
+    q38: "could-deal", // Flexible on messiness
+    q39: "can-joke", // Wants humor but not constant
+    q40: "space-discuss", // Wants to take space then discuss
+    q41: ["quality-time", "words", "acts-service"], // Ranking
+    q42: "somewhat-open", // Wants somewhat vulnerable
+    q43: "some-activity", // Wants some activity
+    q44: "mix", // Wants mix of organized/spontaneous
+    q45: "same-direction", // Similar values
+    q46: "similar", // Similar experience
+    q47: "few-times", // Some dating experience
+    q48: "dating-potential", // Looking for serious potential
+    q49: "regular", // Regular communication
+    q50: "comfortable-excited", // Comfortable with intimacy
+    q51: "deep-conversations", // Quality time through conversations
+    q52: "equally-focused", // Balanced personal growth
+    q53: "healthy", // Healthy conflict is normal
+    q54: "balance", // Balance independence and togetherness
+    q55: "showing-up", // Commitment means showing up
+    q56: "very", // Physical attraction very important
+    q57: ["communication", "trust-honesty", "fun-laughter"], // Ranking
+    q58: "naturally", // Let physical intimacy develop
+    q59: "same-campus", // Wants someone on campus
+
+    // Open-ended
+    q60: "Honesty and trust - I can't be with someone who lies.",
+    q61: "I'm secretly really into astrophotography. I spend weekends driving to dark sky sites to capture the Milky Way.",
+    q62: "I take a while to open up, but once I do, I'm incredibly loyal and always there for my partner.",
+    q63: "What's a belief you held strongly 5 years ago that you've completely changed your mind about?",
+  };
+
+  // User 2: Man looking for women - designed to match User 1's preferences
+  const user2Responses: Record<string, unknown> = {
+    ...sharedResponses,
+    q1: "man",
+    q2: "heterosexual",
+    q3: ["women"],
+    q34: { minAge: baseAge - 3, maxAge: baseAge + 2 }, // Accepts baseAge
+
+    // Section 3: Matches what User 1 is looking for
+    q33: "moderate", // Has moderate energy (matches q33)
+    q35: "somewhat-social", // Is somewhat social (matches q35)
+    q36: "balanced", // Has balanced ambition (matches q36)
+    q37: "listen-support", // Gives emotional support (matches q37)
+    q38: "could-deal", // Flexible on messiness
+    q39: "can-joke", // Has good humor balance
+    q40: "space-discuss", // Handles conflict similarly
+    q41: ["quality-time", "words", "acts-service"], // Ranking
+    q42: "somewhat-open", // Is somewhat vulnerable
+    q43: "some-activity", // Likes some activity
+    q44: "mix", // Mix of organized/spontaneous
+    q45: "same-direction", // Similar values
+    q46: "similar", // Similar experience
+    q47: "few-times", // Some dating experience
+    q48: "dating-potential", // Looking for serious potential
+    q49: "regular", // Regular communication
+    q50: "comfortable-excited", // Comfortable with intimacy
+    q51: "deep-conversations", // Quality time through conversations
+    q52: "equally-focused", // Balanced personal growth
+    q53: "healthy", // Healthy conflict is normal
+    q54: "balance", // Balance independence and togetherness
+    q55: "showing-up", // Commitment means showing up
+    q56: "very", // Physical attraction very important
+    q57: ["communication", "trust-honesty", "fun-laughter"], // Ranking
+    q58: "naturally", // Let physical intimacy develop
+    q59: "same-campus", // Wants someone on campus
+
+    // Open-ended
+    q60: "Communication is essential. I need someone who talks through issues.",
+    q61: "I volunteer at a local animal shelter every weekend. I'm working on my foster license to help more animals find homes.",
+    q62: "I communicate directly and appreciate the same in return. No games, no guessing - just honest conversations about feelings.",
+    q63: "What's the most valuable lesson a past relationship taught you?",
+  };
+
+  // Generate importance ratings - high importance on compatibility factors
+  const importance: Record<string, number> = {};
+  for (const key of Object.keys(sharedResponses)) {
+    if (!["q1", "q2", "q3", "q60", "q61", "q62", "q63"].includes(key)) {
+      // High importance (4 or 5) for most questions
+      importance[key] = Math.random() > 0.3 ? 4 : 5;
+    }
+  }
+
+  return {
+    user1: { responses: user1Responses, importance },
+    user2: { responses: user2Responses, importance },
+  };
 }
 
 // ============================================
@@ -673,13 +833,101 @@ async function createTestUsers(hashedPassword: string): Promise<string[]> {
   console.log(`📝 Creating ${NUM_USERS} test users...`);
 
   const userIds: string[] = [];
-  const batchSize = 50;
 
-  for (let batch = 0; batch < NUM_USERS / batchSize; batch++) {
+  // First, create 10 perfect match pairs (20 users total)
+  console.log("  Creating 10 perfect match pairs...");
+  const perfectMatchPairs = [
+    { age: 20, femaleFirst: "Emma", maleFirst: "Liam" },
+    { age: 21, femaleFirst: "Olivia", maleFirst: "Noah" },
+    { age: 19, femaleFirst: "Sophia", maleFirst: "Oliver" },
+    { age: 22, femaleFirst: "Isabella", maleFirst: "Elijah" },
+    { age: 21, femaleFirst: "Ava", maleFirst: "James" },
+    { age: 20, femaleFirst: "Mia", maleFirst: "William" },
+    { age: 23, femaleFirst: "Charlotte", maleFirst: "Benjamin" },
+    { age: 21, femaleFirst: "Amelia", maleFirst: "Lucas" },
+    { age: 19, femaleFirst: "Harper", maleFirst: "Henry" },
+    { age: 22, femaleFirst: "Evelyn", maleFirst: "Alexander" },
+  ];
+
+  for (let i = 0; i < perfectMatchPairs.length; i++) {
+    const pair = perfectMatchPairs[i];
+    const matchData = createPerfectMatchPair(pair.age);
+    const lastName1 = randomElement(LAST_NAMES);
+    const lastName2 = randomElement(LAST_NAMES);
+
+    // Create female user
+    const femaleUser = await prisma.user.create({
+      data: {
+        email: `${pair.femaleFirst.toLowerCase()}.${lastName1.toLowerCase()}${i * 2}@student.ubc.ca`,
+        password: hashedPassword,
+        firstName: pair.femaleFirst,
+        lastName: lastName1,
+        age: pair.age,
+        emailVerified: new Date(),
+        acceptedTerms: new Date(),
+        isCupid: false,
+        isBeingMatched: true,
+        displayName: pair.femaleFirst,
+        major: randomElement(MAJORS),
+        interests: generateInterests(),
+      },
+    });
+
+    await prisma.questionnaireResponse.create({
+      data: {
+        userId: femaleUser.id,
+        responses: encryptJSON(matchData.user1.responses),
+        importance: encryptJSON(matchData.user1.importance),
+        isSubmitted: true,
+        submittedAt: new Date(),
+      },
+    });
+
+    userIds.push(femaleUser.id);
+
+    // Create male user
+    const maleUser = await prisma.user.create({
+      data: {
+        email: `${pair.maleFirst.toLowerCase()}.${lastName2.toLowerCase()}${i * 2 + 1}@student.ubc.ca`,
+        password: hashedPassword,
+        firstName: pair.maleFirst,
+        lastName: lastName2,
+        age: pair.age,
+        emailVerified: new Date(),
+        acceptedTerms: new Date(),
+        isCupid: false,
+        isBeingMatched: true,
+        displayName: pair.maleFirst,
+        major: randomElement(MAJORS),
+        interests: generateInterests(),
+      },
+    });
+
+    await prisma.questionnaireResponse.create({
+      data: {
+        userId: maleUser.id,
+        responses: encryptJSON(matchData.user2.responses),
+        importance: encryptJSON(matchData.user2.importance),
+        isSubmitted: true,
+        submittedAt: new Date(),
+      },
+    });
+
+    userIds.push(maleUser.id);
+  }
+
+  console.log("  ✅ Created 10 perfect match pairs (20 users)");
+
+  // Now create remaining random users
+  const remainingUsers = NUM_USERS - 20;
+  const batchSize = 50;
+  console.log(`  Creating ${remainingUsers} random users...`);
+
+  for (let batch = 0; batch < remainingUsers / batchSize; batch++) {
     const usersToCreate = [];
 
     for (let i = 0; i < batchSize; i++) {
-      const index = batch * batchSize + i;
+      const index = batch * batchSize + i + 20; // Offset by 20 for perfect pairs
       const isMale = Math.random() > 0.5;
       const firstName = isMale
         ? randomElement(FIRST_NAMES_MALE)
@@ -727,11 +975,11 @@ async function createTestUsers(hashedPassword: string): Promise<string[]> {
       userIds.push(user.id);
     }
 
-    console.log(`  Batch ${batch + 1}/${NUM_USERS / batchSize} complete`);
+    console.log(`  Batch ${batch + 1}/${remainingUsers / batchSize} complete`);
   }
 
   console.log(
-    `✅ Created ${userIds.length} test users with questionnaire responses`
+    `✅ Created ${userIds.length} test users (20 perfect pairs + ${remainingUsers} random) with questionnaire responses`
   );
   return userIds;
 }
