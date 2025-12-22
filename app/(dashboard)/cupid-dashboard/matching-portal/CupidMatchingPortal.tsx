@@ -261,11 +261,7 @@ export function CupidMatchingPortal() {
       <div className="min-h-screen bg-slate-50 p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <BackButton />
-          <StatsHeader
-            dashboard={dashboard}
-            showScores={showScores}
-            setShowScores={setShowScores}
-          />
+          <StatsHeader dashboard={dashboard} />
           {isAllDone ? (
             <Card className="border-2 border-green-200 bg-green-50">
               <CardContent className="p-8 text-center">
@@ -306,11 +302,7 @@ export function CupidMatchingPortal() {
     <div className="min-h-screen bg-slate-50 p-4">
       <div className="max-w-[1800px] mx-auto space-y-4">
         <BackButton />
-        <StatsHeader
-          dashboard={dashboard}
-          showScores={showScores}
-          setShowScores={setShowScores}
-        />
+        <StatsHeader dashboard={dashboard} />
 
         {/* Candidate Navigation */}
         <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
@@ -374,15 +366,30 @@ export function CupidMatchingPortal() {
                   </span>
                 )}
               </div>
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
-                onClick={() => setShowConfirmDialog(true)}
-                disabled={!selectedMatchId || isSubmitting}
-              >
-                <Check className="h-5 w-5 mr-2" />
-                Confirm Selection
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowScores(!showScores)}
+                  className="flex items-center gap-2"
+                >
+                  {showScores ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  {showScores ? "Hide" : "Show"} Compatibility Score
+                </Button>
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={!selectedMatchId || isSubmitting}
+                >
+                  <Check className="h-5 w-5 mr-2" />
+                  Confirm Selection
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -567,15 +574,7 @@ function BackButton() {
   );
 }
 
-function StatsHeader({
-  dashboard,
-  showScores,
-  setShowScores,
-}: {
-  dashboard: CupidDashboard | null;
-  showScores: boolean;
-  setShowScores: (show: boolean) => void;
-}) {
+function StatsHeader({ dashboard }: { dashboard: CupidDashboard | null }) {
   if (!dashboard) return null;
 
   return (
@@ -589,33 +588,14 @@ function StatsHeader({
           candidate.
         </p>
       </div>
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowScores(!showScores)}
-          className="flex items-center gap-2"
-        >
-          {showScores ? (
-            <EyeOff className="h-4 w-4" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
-          {showScores ? "Hide" : "Show"} Scores
-        </Button>
-        <div className="flex gap-3 text-sm">
-          <div className="bg-slate-50 px-3 py-2 rounded-lg">
-            <span className="text-slate-500">Pending: </span>
-            <span className="font-bold text-orange-600">
-              {dashboard.pending}
-            </span>
-          </div>
-          <div className="bg-slate-50 px-3 py-2 rounded-lg">
-            <span className="text-slate-500">Reviewed: </span>
-            <span className="font-bold text-green-600">
-              {dashboard.reviewed}
-            </span>
-          </div>
+      <div className="flex gap-3 text-sm">
+        <div className="bg-slate-50 px-3 py-2 rounded-lg">
+          <span className="text-slate-500">Pending: </span>
+          <span className="font-bold text-orange-600">{dashboard.pending}</span>
+        </div>
+        <div className="bg-slate-50 px-3 py-2 rounded-lg">
+          <span className="text-slate-500">Reviewed: </span>
+          <span className="font-bold text-green-600">{dashboard.reviewed}</span>
         </div>
       </div>
     </div>
