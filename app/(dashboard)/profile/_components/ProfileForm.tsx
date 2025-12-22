@@ -53,9 +53,11 @@ export function ProfileForm() {
     interests: "",
     bio: "",
     profilePicture: "",
+    pointOfContact: "",
     showBioToMatches: true,
     showProfilePicToMatches: true,
     showInterestsToMatches: true,
+    showPointOfContactToMatches: true,
   });
 
   const [accountInfo, setAccountInfo] = useState({
@@ -101,9 +103,11 @@ export function ProfileForm() {
           interests: data.interests || "",
           bio: data.bio || "",
           profilePicture: data.profilePicture || "",
+          pointOfContact: data.pointOfContact || "",
           showBioToMatches: data.showBioToMatches ?? true,
           showProfilePicToMatches: data.showProfilePicToMatches ?? true,
           showInterestsToMatches: data.showInterestsToMatches ?? true,
+          showPointOfContactToMatches: data.showPointOfContactToMatches ?? true,
         };
         setProfileData(profile);
         initialProfileData.current = profile;
@@ -338,9 +342,11 @@ export function ProfileForm() {
           major: profileData.major,
           interests: profileData.interests,
           bio: profileData.bio,
+          pointOfContact: profileData.pointOfContact,
           showBioToMatches: profileData.showBioToMatches,
           showProfilePicToMatches: profileData.showProfilePicToMatches,
           showInterestsToMatches: profileData.showInterestsToMatches,
+          showPointOfContactToMatches: profileData.showPointOfContactToMatches,
         }),
       });
 
@@ -794,6 +800,54 @@ export function ProfileForm() {
                     className="text-sm font-normal cursor-pointer flex items-center gap-1"
                   >
                     {profileData.showBioToMatches ? (
+                      <Eye className="h-3 w-3" />
+                    ) : (
+                      <EyeOff className="h-3 w-3" />
+                    )}
+                    Show to matches
+                  </Label>
+                </div>
+              </div>
+            </div>
+
+            {/* Point of Contact */}
+            <div className="space-y-2">
+              <Label htmlFor="pointOfContact">
+                Point of Contact (Optional)
+              </Label>
+              <Input
+                id="pointOfContact"
+                value={profileData.pointOfContact}
+                onChange={(e) =>
+                  handleProfileChange({ pointOfContact: e.target.value })
+                }
+                maxLength={100}
+                placeholder="e.g., @instagram_handle, Discord: username#1234, or personal email"
+              />
+              <p className="text-xs text-slate-500">
+                Social media handle, email, or other preferred contact method
+              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-600">
+                  <Info className="h-3 w-3 inline mr-1" />
+                  If this is blank or not shown to matches, your student email
+                  will be shared instead
+                </p>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="showPointOfContact"
+                    checked={profileData.showPointOfContactToMatches}
+                    onCheckedChange={(checked) =>
+                      handleProfileChange({
+                        showPointOfContactToMatches: checked as boolean,
+                      })
+                    }
+                  />
+                  <Label
+                    htmlFor="showPointOfContact"
+                    className="text-sm font-normal cursor-pointer flex items-center gap-1"
+                  >
+                    {profileData.showPointOfContactToMatches ? (
                       <Eye className="h-3 w-3" />
                     ) : (
                       <EyeOff className="h-3 w-3" />

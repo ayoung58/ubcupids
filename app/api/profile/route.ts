@@ -26,9 +26,11 @@ export async function GET() {
         interests: true,
         bio: true,
         profilePicture: true,
+        pointOfContact: true,
         showBioToMatches: true,
         showProfilePicToMatches: true,
         showInterestsToMatches: true,
+        showPointOfContactToMatches: true,
         isCupid: true,
         isBeingMatched: true,
         lastActiveDashboard: true,
@@ -69,9 +71,11 @@ export async function POST(request: NextRequest) {
       major,
       interests,
       bio,
+      pointOfContact,
       showBioToMatches,
       showProfilePicToMatches,
       showInterestsToMatches,
+      showPointOfContactToMatches,
     } = body;
 
     // Validate required fields
@@ -118,6 +122,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (pointOfContact && pointOfContact.length > 100) {
+      return NextResponse.json(
+        { error: "Point of contact must be 100 characters or less" },
+        { status: 400 }
+      );
+    }
+
     // Update user profile
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
@@ -128,9 +139,11 @@ export async function POST(request: NextRequest) {
         major: major?.trim() || null,
         interests: interests?.trim() || null,
         bio: bio?.trim() || null,
+        pointOfContact: pointOfContact?.trim() || null,
         showBioToMatches: showBioToMatches ?? true,
         showProfilePicToMatches: showProfilePicToMatches ?? true,
         showInterestsToMatches: showInterestsToMatches ?? true,
+        showPointOfContactToMatches: showPointOfContactToMatches ?? true,
       },
       select: {
         firstName: true,
@@ -142,9 +155,11 @@ export async function POST(request: NextRequest) {
         interests: true,
         bio: true,
         profilePicture: true,
+        pointOfContact: true,
         showBioToMatches: true,
         showProfilePicToMatches: true,
         showInterestsToMatches: true,
+        showPointOfContactToMatches: true,
       },
     });
 

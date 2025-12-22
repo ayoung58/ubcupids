@@ -36,12 +36,15 @@ export async function GET() {
             firstName: true,
             displayName: true,
             age: true,
+            email: true,
             profilePicture: true,
             bio: true,
             interests: true,
+            pointOfContact: true,
             showBioToMatches: true,
             showProfilePicToMatches: true,
             showInterestsToMatches: true,
+            showPointOfContactToMatches: true,
           },
         },
       },
@@ -62,12 +65,16 @@ export async function GET() {
         firstName: match.matchedUser.firstName,
         displayName: match.matchedUser.displayName,
         age: match.matchedUser.age || 0,
+        email: match.matchedUser.email,
         profilePicture: match.matchedUser.showProfilePicToMatches
           ? match.matchedUser.profilePicture
           : null,
         bio: match.matchedUser.showBioToMatches ? match.matchedUser.bio : null,
         interests: match.matchedUser.showInterestsToMatches
           ? match.matchedUser.interests
+          : null,
+        pointOfContact: match.matchedUser.showPointOfContactToMatches
+          ? match.matchedUser.pointOfContact
           : null,
       },
       revealedAt: match.revealedAt,

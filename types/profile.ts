@@ -10,9 +10,11 @@ export interface ProfileData {
   interests?: string;
   bio?: string;
   profilePicture?: string;
+  pointOfContact?: string;
   showBioToMatches: boolean;
   showProfilePicToMatches: boolean;
   showInterestsToMatches: boolean;
+  showPointOfContactToMatches: boolean;
 }
 
 export interface ProfileFormData extends ProfileData {
@@ -27,9 +29,11 @@ export interface ProfileUpdateRequest {
   major?: string;
   interests?: string;
   bio?: string;
+  pointOfContact?: string;
   showBioToMatches: boolean;
   showProfilePicToMatches: boolean;
   showInterestsToMatches: boolean;
+  showPointOfContactToMatches: boolean;
 }
 
 export interface ProfilePictureUploadResponse {

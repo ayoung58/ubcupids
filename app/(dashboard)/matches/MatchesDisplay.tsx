@@ -10,7 +10,6 @@ import {
   Heart,
   Users,
   Sparkles,
-  Clock,
   AlertCircle,
   ArrowLeft,
   Hourglass,
@@ -24,9 +23,11 @@ interface MatchDisplay {
     firstName: string;
     displayName: string | null;
     age: number;
+    email: string;
     profilePicture: string | null;
     bio: string | null;
     interests: string | null;
+    pointOfContact: string | null;
   };
   revealedAt: string | null;
   createdAt: string;
@@ -46,6 +47,9 @@ export function MatchesDisplay() {
   const [data, setData] = useState<UserMatchesData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<
+    "all" | "algorithm" | "cupid_sent" | "cupid_received"
+  >("all");
 
   useEffect(() => {
     fetchMatches();
@@ -146,40 +150,72 @@ export function MatchesDisplay() {
       <div className="max-w-4xl mx-auto space-y-6">
         <Header />
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard
-            icon={<Heart className="h-5 w-5 text-pink-500" />}
-            label="Total Matches"
-            value={data.totalMatches}
-          />
-          <StatCard
-            icon={<Sparkles className="h-5 w-5 text-purple-500" />}
-            label="Algorithm"
-            value={data.algorithmMatches}
-          />
-          <StatCard
-            icon={<Users className="h-5 w-5 text-blue-500" />}
-            label="Cupid Sent"
-            value={data.cupidSentMatches}
-          />
-          <StatCard
-            icon={<Users className="h-5 w-5 text-green-500" />}
-            label="Cupid Received"
-            value={data.cupidReceivedMatches}
-          />
+        {/* Filter Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Button
+            onClick={() => setFilterType("all")}
+            variant={filterType === "all" ? "default" : "outline"}
+            className="flex items-center gap-2"
+          >
+            <Heart className="h-4 w-4" />
+            All ({data.totalMatches})
+          </Button>
+          <Button
+            onClick={() => setFilterType("cupid_sent")}
+            variant={filterType === "cupid_sent" ? "default" : "outline"}
+            className="flex items-center gap-2"
+          >
+            <Users className="h-4 w-4 text-blue-500" />
+            Your Cupid's Choice ({data.cupidSentMatches})
+          </Button>
+          <Button
+            onClick={() => setFilterType("algorithm")}
+            variant={filterType === "algorithm" ? "default" : "outline"}
+            className="flex items-center gap-2"
+          >
+            <Sparkles className="h-4 w-4 text-purple-500" />
+            Algorithm ({data.algorithmMatches})
+          </Button>
+          <Button
+            onClick={() => setFilterType("cupid_received")}
+            variant={filterType === "cupid_received" ? "default" : "outline"}
+            className="flex items-center gap-2"
+          >
+            <Users className="h-4 w-4 text-green-500" />
+            Other Cupids' Choice ({data.cupidReceivedMatches})
+          </Button>
         </div>
 
         {/* Match Cards */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-slate-900">Your Matches</h2>
-          {data.matches.map((match) => (
-            <MatchCard key={match.matchId} match={match} />
-          ))}
+          {getSortedAndFilteredMatches(data.matches, filterType).map(
+            (match) => (
+              <MatchCard key={match.matchId} match={match} />
+            )
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+// Helper function to sort and filter matches
+function getSortedAndFilteredMatches(
+  matches: MatchDisplay[],
+  filterType: "all" | "algorithm" | "cupid_sent" | "cupid_received"
+): MatchDisplay[] {
+  // Filter matches
+  const filtered =
+    filterType === "all"
+      ? matches
+      : matches.filter((m) => m.matchType === filterType);
+
+  // Sort: cupid_sent > algorithm > cupid_received
+  return filtered.sort((a, b) => {
+    const order = { cupid_sent: 1, algorithm: 2, cupid_received: 3 };
+    return order[a.matchType] - order[b.matchType];
+  });
 }
 
 function Header() {
@@ -202,28 +238,6 @@ function Header() {
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-}) {
-  return (
-    <Card>
-      <CardContent className="p-4 flex items-center gap-3">
-        {icon}
-        <div>
-          <p className="text-2xl font-bold text-slate-900">{value}</p>
-          <p className="text-xs text-slate-500">{label}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function MatchCard({ match }: { match: MatchDisplay }) {
   const displayName =
     match.matchedUser.displayName || match.matchedUser.firstName;
@@ -235,18 +249,27 @@ function MatchCard({ match }: { match: MatchDisplay }) {
 
   const matchTypeLabel = {
     algorithm: "Algorithm Match",
-    cupid_sent: "Cupid Match",
-    cupid_received: "Cupid Match",
+    cupid_sent: "Your Cupid's Choice",
+    cupid_received: "Other Cupids' Choice",
   }[match.matchType];
 
   const matchTypeColor = {
     algorithm: "bg-purple-100 text-purple-700",
-    cupid_sent: "bg-pink-100 text-pink-700",
-    cupid_received: "bg-pink-100 text-pink-700",
+    cupid_sent: "bg-blue-100 text-blue-700",
+    cupid_received: "bg-green-100 text-green-700",
   }[match.matchType];
 
+  const matchTypeBorder = {
+    algorithm: "border-l-4 border-l-purple-500",
+    cupid_sent: "border-l-4 border-l-blue-500",
+    cupid_received: "border-l-4 border-l-green-500",
+  }[match.matchType];
+
+  // Determine which contact info to show
+  const contactInfo = match.matchedUser.pointOfContact || match.matchedUser.email;
+
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className={`hover:shadow-lg transition-shadow ${matchTypeBorder}`}>
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <Avatar className="h-16 w-16">
@@ -273,15 +296,16 @@ function MatchCard({ match }: { match: MatchDisplay }) {
                   {matchTypeLabel}
                 </span>
               </div>
+            </div>
 
-              {match.compatibilityScore && (
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-pink-600">
-                    {match.compatibilityScore.toFixed(0)}%
-                  </div>
-                  <div className="text-xs text-slate-500">compatibility</div>
-                </div>
-              )}
+            {/* Contact Info */}
+            <div className="mt-3 p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm font-medium text-slate-700 mb-1">
+                Contact:
+              </p>
+              <p className="text-sm text-slate-900 font-mono">
+                {contactInfo}
+              </p>
             </div>
 
             {match.matchedUser.bio && (
@@ -298,18 +322,6 @@ function MatchCard({ match }: { match: MatchDisplay }) {
                 </p>
               </div>
             )}
-
-            <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
-              <Clock className="h-3 w-3" />
-              <span>
-                Matched{" "}
-                {new Date(match.createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
           </div>
         </div>
       </CardContent>

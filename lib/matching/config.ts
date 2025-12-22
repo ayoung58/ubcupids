@@ -96,7 +96,7 @@ export const MINIMUM_MATCH_SCORE = 30;
 /**
  * Number of matches to generate per user via algorithm
  */
-export const ALGORITHM_MATCHES_PER_USER = 3;
+export const ALGORITHM_MATCHES_PER_USER = 1;
 
 /**
  * Maximum cupid-sent matches a user can receive

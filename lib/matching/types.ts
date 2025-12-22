@@ -313,9 +313,11 @@ export interface MatchDisplay {
     firstName: string;
     displayName: string | null;
     age: number;
+    email: string;
     profilePicture: string | null;
     bio: string | null;
     interests: string | null;
+    pointOfContact: string | null;
   };
 
   revealedAt: Date | null;
