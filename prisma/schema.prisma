@@ -83,11 +83,13 @@ model User {
   interests     String?   @db.Text // Hobbies and interests (used for matching)
   bio           String?   @db.Text // Short bio (used minimally for matching)
   profilePicture String?  // Cloudinary URL for profile picture
+  pointOfContact String?  // Optional contact info (social media, email, etc.) to show to matches
   
   // Profile Visibility Settings
   showBioToMatches Boolean @default(true)  // Whether to display bio to matches
   showProfilePicToMatches Boolean @default(true) // Whether to display profile pic to matches
   showInterestsToMatches Boolean @default(true)  // Whether to display interests to matches
+  showPointOfContactToMatches Boolean @default(true) // Whether to display point of contact to matches
   
   // Legacy fields (keeping for backwards compatibility)
   yearOfStudy   Int?
