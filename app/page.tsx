@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
 import { getCurrentUser } from "@/lib/get-session";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Home Page
@@ -26,6 +27,16 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   // IMPORTANT: Show sign-out message even if session still exists
   // (JWT cookie might not be cleared immediately in browser)
   const showSignOutMessage = signedout === "true";
+
+  // Determine correct dashboard URL if user is logged in
+  let dashboardUrl = "/dashboard";
+  if (session?.user && !showSignOutMessage) {
+    const profile = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isCupid: true },
+    });
+    dashboardUrl = profile?.isCupid ? "/cupid-dashboard" : "/dashboard";
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
@@ -71,7 +82,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </>
           ) : session?.user ? (
             // User is logged in (normal state)
-            <Link href="/dashboard">
+            <Link href={dashboardUrl}>
               <Button size="lg" className="px-8">
                 Go to Dashboard
               </Button>

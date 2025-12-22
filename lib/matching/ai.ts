@@ -194,7 +194,11 @@ export async function generateUserEmbeddings(
   const embeddings = new Map<string, number[]>();
 
   for (const questionId of textQuestions) {
-    const text = responses[questionId] as string | undefined;
+    // Handle case-insensitive lookup
+    const lowerQuestionId = questionId.toLowerCase();
+    const text = (responses[questionId] ?? responses[lowerQuestionId]) as
+      | string
+      | undefined;
 
     if (text && typeof text === "string" && text.trim()) {
       const embedding = await getOrGenerateEmbedding(userId, questionId, text);

@@ -51,6 +51,11 @@ export default async function DashboardPage() {
     },
   });
 
+  // Redirect cupids to cupid dashboard
+  if (profile?.isCupid) {
+    redirect("/cupid-dashboard");
+  }
+
   const displayName = profile?.displayName || session.user.name;
 
   return (
