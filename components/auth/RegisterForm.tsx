@@ -59,6 +59,7 @@ export function RegisterForm({
     lastName: "",
     age: "",
     major: "",
+    preferredCandidateEmail: "",
     acceptedTerms: false,
   });
 
@@ -369,6 +370,32 @@ export function RegisterForm({
                 }
                 disabled={isLoading}
               />
+            </div>
+          )}
+
+          {/* Preferred Candidate Email - Only for Cupid accounts */}
+          {accountType === "cupid" && (
+            <div className="space-y-2">
+              <Label htmlFor="preferredCandidateEmail">
+                Preferred Candidate Email (Optional)
+              </Label>
+              <Input
+                id="preferredCandidateEmail"
+                type="email"
+                placeholder="someone@student.ubc.ca"
+                value={formData.preferredCandidateEmail}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    preferredCandidateEmail: e.target.value,
+                  })
+                }
+                disabled={isLoading}
+              />
+              <p className="text-xs text-slate-500">
+                If you have someone you&apos;d like to match, enter their
+                student email
+              </p>
             </div>
           )}
 

@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       lastName,
       age,
       major,
+      preferredCandidateEmail,
       acceptedTerms,
       accountType,
     } = body;
@@ -204,6 +205,65 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await hashPassword(password);
 
     // ============================================
+    // 8.5. VALIDATE PREFERRED CANDIDATE EMAIL (if provided)
+    // ============================================
+    let validatedPreferredEmail: string | null = null;
+    if (isCupid && preferredCandidateEmail && preferredCandidateEmail.trim()) {
+      const normalizedPreferredEmail = normalizeEmail(
+        preferredCandidateEmail.trim()
+      );
+
+      // Check if it's a valid UBC email
+      if (!isValidUBCEmail(normalizedPreferredEmail)) {
+        return NextResponse.json(
+          {
+            error: "Preferred candidate email must be a valid UBC email",
+            hint: "Please use a @student.ubc.ca or @alumni.ubc.ca email address.",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Check if user is trying to match themselves
+      if (normalizedPreferredEmail === normalizedEmail) {
+        return NextResponse.json(
+          {
+            error: "You cannot set yourself as your preferred candidate",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Check if the preferred candidate exists
+      const preferredCandidate = await prisma.user.findUnique({
+        where: { email: normalizedPreferredEmail },
+        select: { id: true, isBeingMatched: true },
+      });
+
+      if (!preferredCandidate) {
+        return NextResponse.json(
+          {
+            error: "Preferred candidate email not found",
+            hint: "Please make sure the user has registered an account.",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (!preferredCandidate.isBeingMatched) {
+        return NextResponse.json(
+          {
+            error: "This user is not participating in matching",
+            hint: "The preferred candidate must have a Match account.",
+          },
+          { status: 400 }
+        );
+      }
+
+      validatedPreferredEmail = normalizedPreferredEmail;
+    }
+
+    // ============================================
     // 9. CREATE USER (emailVerified = null)
     // ============================================
     const user = await prisma.user.create({
@@ -220,6 +280,7 @@ export async function POST(request: NextRequest) {
         acceptedTerms: new Date(), // Record timestamp of acceptance
         isCupid: isCupid,
         isBeingMatched: !isCupid, // Cupids are not being matched by default
+        preferredCandidateEmail: validatedPreferredEmail,
       },
       select: {
         id: true,

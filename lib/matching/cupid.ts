@@ -84,11 +84,27 @@ export async function assignCandidatesToCupids(
   totalCupids: number;
   candidatesPerCupid: number;
   skippedCandidates: number;
+  preferredAssignments: number;
 }> {
   console.log(`Assigning candidates to cupids for batch ${batchNumber}...`);
 
-  // Get approved cupids
-  const cupids = await getApprovedCupids();
+  // Get approved cupids with their preferred candidate emails
+  const cupids = await prisma.cupidProfile.findMany({
+    where: {
+      status: "approved",
+      user: {
+        emailVerified: { not: null },
+      },
+    },
+    select: {
+      userId: true,
+      user: {
+        select: {
+          preferredCandidateEmail: true,
+        },
+      },
+    },
+  });
 
   if (cupids.length === 0) {
     console.log("No approved cupids available");
@@ -98,6 +114,7 @@ export async function assignCandidatesToCupids(
       totalCupids: 0,
       candidatesPerCupid: 0,
       skippedCandidates: 0,
+      preferredAssignments: 0,
     };
   }
 
@@ -111,6 +128,7 @@ export async function assignCandidatesToCupids(
     },
     select: {
       id: true,
+      email: true,
     },
   });
 
@@ -118,10 +136,104 @@ export async function assignCandidatesToCupids(
 
   let assignedCount = 0;
   let skippedCount = 0;
+  let preferredCount = 0;
+  const assignedCandidateIds = new Set<string>();
+
+  // PHASE 1: Handle preferred candidate assignments
+  console.log("Phase 1: Assigning preferred candidates...");
+  for (const cupid of cupids) {
+    const preferredEmail = cupid.user.preferredCandidateEmail;
+
+    if (!preferredEmail) {
+      continue;
+    }
+
+    // Find the preferred candidate
+    const preferredCandidate = candidates.find(
+      (c) => c.email.toLowerCase() === preferredEmail.toLowerCase()
+    );
+
+    if (!preferredCandidate) {
+      console.log(
+        `Cupid ${cupid.userId}'s preferred candidate (${preferredEmail}) not found or not eligible`
+      );
+      continue;
+    }
+
+    // Check if this candidate is already assigned
+    if (assignedCandidateIds.has(preferredCandidate.id)) {
+      console.log(
+        `Preferred candidate ${preferredCandidate.id} already assigned to another cupid`
+      );
+      continue;
+    }
+
+    // Get top compatible matches for this candidate
+    const topMatches = await prisma.compatibilityScore.findMany({
+      where: {
+        userId: preferredCandidate.id,
+        batchNumber,
+        bidirectionalScore: { not: null },
+        targetUser: {
+          questionnaireResponse: {
+            isSubmitted: true,
+          },
+        },
+      },
+      orderBy: {
+        bidirectionalScore: "desc",
+      },
+      take: 5,
+      select: {
+        targetUserId: true,
+        bidirectionalScore: true,
+      },
+    });
+
+    // Skip if insufficient matches
+    if (topMatches.length < 5) {
+      console.log(
+        `Skipping preferred candidate ${preferredCandidate.id} - only has ${topMatches.length} compatible matches (need 5)`
+      );
+      continue;
+    }
+
+    // Prepare potential matches data
+    const potentialMatches = topMatches.map((match) => ({
+      userId: match.targetUserId,
+      score: match.bidirectionalScore || 0,
+    }));
+
+    // Create assignment
+    await prisma.cupidAssignment.create({
+      data: {
+        cupidUserId: cupid.userId,
+        candidateId: preferredCandidate.id,
+        potentialMatches: potentialMatches,
+        batchNumber,
+      },
+    });
+
+    assignedCandidateIds.add(preferredCandidate.id);
+    assignedCount++;
+    preferredCount++;
+
+    console.log(
+      `✓ Assigned preferred candidate ${preferredCandidate.id} to cupid ${cupid.userId}`
+    );
+  }
+
+  // PHASE 2: Round-robin assignment for remaining candidates
+  console.log("Phase 2: Round-robin assignment for remaining candidates...");
   let cupidIndex = 0;
 
   for (const candidate of candidates) {
-    // Get top compatible matches for this candidate (only those with completed questionnaires)
+    // Skip if already assigned in Phase 1
+    if (assignedCandidateIds.has(candidate.id)) {
+      continue;
+    }
+
+    // Get top compatible matches for this candidate
     const topMatches = await prisma.compatibilityScore.findMany({
       where: {
         userId: candidate.id,
@@ -143,10 +255,10 @@ export async function assignCandidatesToCupids(
       },
     });
 
-    // Skip candidates with fewer than 5 compatible matches (who also have questionnaires)
+    // Skip candidates with fewer than 5 compatible matches
     if (topMatches.length < 5) {
       console.log(
-        `Skipping candidate ${candidate.id} - only has ${topMatches.length} compatible matches with completed questionnaires (need 5)`
+        `Skipping candidate ${candidate.id} - only has ${topMatches.length} compatible matches (need 5)`
       );
       skippedCount++;
       continue;
@@ -158,33 +270,75 @@ export async function assignCandidatesToCupids(
       score: match.bidirectionalScore || 0,
     }));
 
-    // Assign to next cupid
-    const assignedCupid = cupids[cupidIndex];
+    // Find next cupid who doesn't already have an assignment
+    let assignedToExistingCupid = false;
+    for (let i = 0; i < cupids.length; i++) {
+      const cupid = cupids[cupidIndex];
 
-    // Create assignment
-    await prisma.cupidAssignment.create({
-      data: {
-        cupidUserId: assignedCupid.userId,
-        candidateId: candidate.id,
-        potentialMatches: potentialMatches,
-        batchNumber,
-      },
-    });
+      // Check if this cupid already has an assignment
+      const existingAssignment = await prisma.cupidAssignment.findFirst({
+        where: {
+          cupidUserId: cupid.userId,
+          batchNumber,
+        },
+      });
 
-    console.log(
-      `Assigned candidate ${candidate.id} to cupid ${assignedCupid.userId} with ${topMatches.length} potential matches`
-    );
+      if (!existingAssignment) {
+        // Assign to this cupid
+        await prisma.cupidAssignment.create({
+          data: {
+            cupidUserId: cupid.userId,
+            candidateId: candidate.id,
+            potentialMatches: potentialMatches,
+            batchNumber,
+          },
+        });
 
-    assignedCount++;
-    cupidIndex = (cupidIndex + 1) % cupids.length;
+        console.log(
+          `Assigned candidate ${candidate.id} to cupid ${cupid.userId}`
+        );
+
+        assignedCount++;
+        assignedToExistingCupid = true;
+        cupidIndex = (cupidIndex + 1) % cupids.length;
+        break;
+      }
+
+      cupidIndex = (cupidIndex + 1) % cupids.length;
+    }
+
+    // If all cupids have assignments, we can still assign more (cupids can have multiple)
+    if (!assignedToExistingCupid) {
+      const cupid = cupids[cupidIndex];
+
+      await prisma.cupidAssignment.create({
+        data: {
+          cupidUserId: cupid.userId,
+          candidateId: candidate.id,
+          potentialMatches: potentialMatches,
+          batchNumber,
+        },
+      });
+
+      console.log(
+        `Assigned additional candidate ${candidate.id} to cupid ${cupid.userId}`
+      );
+
+      assignedCount++;
+      cupidIndex = (cupidIndex + 1) % cupids.length;
+    }
   }
 
   const candidatesPerCupid = Math.ceil(assignedCount / cupids.length);
 
-  console.log(
-    `Assigned ${assignedCount} candidates to ${cupids.length} cupids (~${candidatesPerCupid} each)`
-  );
-  console.log(`Skipped ${skippedCount} candidates with insufficient matches`);
+  console.log(`\n=== Assignment Summary ===`);
+  console.log(`Total candidates: ${candidates.length}`);
+  console.log(`Assigned candidates: ${assignedCount}`);
+  console.log(`  - Preferred assignments: ${preferredCount}`);
+  console.log(`  - Regular assignments: ${assignedCount - preferredCount}`);
+  console.log(`Skipped candidates: ${skippedCount}`);
+  console.log(`Total cupids: ${cupids.length}`);
+  console.log(`Candidates per cupid: ~${candidatesPerCupid}`);
 
   return {
     totalCandidates: candidates.length,
@@ -192,6 +346,7 @@ export async function assignCandidatesToCupids(
     totalCupids: cupids.length,
     candidatesPerCupid,
     skippedCandidates: skippedCount,
+    preferredAssignments: preferredCount,
   };
 }
 

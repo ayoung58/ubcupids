@@ -64,6 +64,8 @@ export function ProfileForm() {
     isCupid: false,
     isBeingMatched: true,
     lastActiveDashboard: "match" as "match" | "cupid",
+    email: "",
+    preferredCandidateEmail: "",
   });
 
   useEffect(() => {
@@ -115,6 +117,8 @@ export function ProfileForm() {
           isCupid: data.isCupid || false,
           isBeingMatched: data.isBeingMatched ?? true,
           lastActiveDashboard: data.lastActiveDashboard || "match",
+          email: data.email || "",
+          preferredCandidateEmail: data.preferredCandidateEmail || "",
         });
       }
     } catch (error) {
@@ -329,6 +333,27 @@ export function ProfileForm() {
       return;
     }
 
+    // Validate preferred candidate email for cupids
+    if (
+      accountInfo.isCupid &&
+      accountInfo.preferredCandidateEmail &&
+      accountInfo.preferredCandidateEmail.trim()
+    ) {
+      const normalizedPreferred = accountInfo.preferredCandidateEmail
+        .trim()
+        .toLowerCase();
+      const normalizedOwn = accountInfo.email.trim().toLowerCase();
+
+      if (normalizedPreferred === normalizedOwn) {
+        toast({
+          title: "Validation error",
+          description: "You cannot set yourself as your preferred candidate",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setIsSaving(true);
 
     try {
@@ -343,6 +368,7 @@ export function ProfileForm() {
           interests: profileData.interests,
           bio: profileData.bio,
           pointOfContact: profileData.pointOfContact,
+          preferredCandidateEmail: accountInfo.preferredCandidateEmail,
           showBioToMatches: profileData.showBioToMatches,
           showProfilePicToMatches: profileData.showProfilePicToMatches,
           showInterestsToMatches: profileData.showInterestsToMatches,
@@ -681,6 +707,31 @@ export function ProfileForm() {
                 <p className="text-xs text-slate-600">
                   This name is shown when you're acting as a Cupid in the
                   matching portal.
+                </p>
+              </div>
+            )}
+
+            {/* Preferred Candidate Email - Only for Cupid accounts */}
+            {accountInfo.isCupid && (
+              <div className="space-y-2">
+                <Label htmlFor="preferredCandidateEmail">
+                  Preferred Candidate Email (Optional)
+                </Label>
+                <Input
+                  id="preferredCandidateEmail"
+                  type="email"
+                  value={accountInfo.preferredCandidateEmail}
+                  onChange={(e) =>
+                    setAccountInfo({
+                      ...accountInfo,
+                      preferredCandidateEmail: e.target.value,
+                    })
+                  }
+                  placeholder="someone@student.ubc.ca"
+                />
+                <p className="text-xs text-slate-600">
+                  If you have someone you&apos;d like to match, enter their
+                  student email. You cannot use your own email.
                 </p>
               </div>
             )}

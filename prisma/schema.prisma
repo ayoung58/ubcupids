@@ -75,6 +75,7 @@ model User {
   isCupid       Boolean   @default(false) // Can create matches for others
   isBeingMatched Boolean  @default(true)  // Participating in matching (default true for new users)
   lastActiveDashboard String @default("match") // 'match' or 'cupid' - tracks which dashboard was last active
+  preferredCandidateEmail String? // Cupid's preferred candidate email (optional)
   
   // Profile Information
   displayName   String?   // Shown to matches, defaults to firstName

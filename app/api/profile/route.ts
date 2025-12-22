@@ -17,6 +17,7 @@ export async function GET() {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
+        email: true,
         firstName: true,
         lastName: true,
         displayName: true,
@@ -27,6 +28,7 @@ export async function GET() {
         bio: true,
         profilePicture: true,
         pointOfContact: true,
+        preferredCandidateEmail: true,
         showBioToMatches: true,
         showProfilePicToMatches: true,
         showInterestsToMatches: true,
@@ -72,6 +74,7 @@ export async function POST(request: NextRequest) {
       interests,
       bio,
       pointOfContact,
+      preferredCandidateEmail,
       showBioToMatches,
       showProfilePicToMatches,
       showInterestsToMatches,
@@ -129,6 +132,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate preferred candidate email
+    let validatedPreferredEmail: string | null = null;
+    if (preferredCandidateEmail && preferredCandidateEmail.trim()) {
+      const normalizedPreferredEmail = preferredCandidateEmail
+        .trim()
+        .toLowerCase();
+
+      // Get current user's email
+      const currentUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { email: true, isCupid: true },
+      });
+
+      if (!currentUser) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      // Only cupids can set a preferred candidate
+      if (!currentUser.isCupid) {
+        return NextResponse.json(
+          { error: "Only cupids can set a preferred candidate" },
+          { status: 403 }
+        );
+      }
+
+      // Check if user is trying to set themselves
+      if (normalizedPreferredEmail === currentUser.email.toLowerCase()) {
+        return NextResponse.json(
+          { error: "You cannot set yourself as your preferred candidate" },
+          { status: 400 }
+        );
+      }
+
+      // Check if preferred candidate exists and is a match account
+      const preferredCandidate = await prisma.user.findUnique({
+        where: { email: normalizedPreferredEmail },
+        select: { id: true, isBeingMatched: true },
+      });
+
+      if (!preferredCandidate) {
+        return NextResponse.json(
+          { error: "Preferred candidate email not found" },
+          { status: 400 }
+        );
+      }
+
+      if (!preferredCandidate.isBeingMatched) {
+        return NextResponse.json(
+          { error: "This user is not participating in matching" },
+          { status: 400 }
+        );
+      }
+
+      validatedPreferredEmail = normalizedPreferredEmail;
+    }
+
     // Update user profile
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
@@ -140,6 +199,7 @@ export async function POST(request: NextRequest) {
         interests: interests?.trim() || null,
         bio: bio?.trim() || null,
         pointOfContact: pointOfContact?.trim() || null,
+        preferredCandidateEmail: validatedPreferredEmail,
         showBioToMatches: showBioToMatches ?? true,
         showProfilePicToMatches: showProfilePicToMatches ?? true,
         showInterestsToMatches: showInterestsToMatches ?? true,
@@ -156,6 +216,7 @@ export async function POST(request: NextRequest) {
         bio: true,
         profilePicture: true,
         pointOfContact: true,
+        preferredCandidateEmail: true,
         showBioToMatches: true,
         showProfilePicToMatches: true,
         showInterestsToMatches: true,
