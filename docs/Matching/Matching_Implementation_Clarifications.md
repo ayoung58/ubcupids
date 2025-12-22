@@ -415,7 +415,7 @@ Create a backend configuration variable that can be changed to start matching:
 export const MATCHING_CONFIG = {
   BATCH_1_RUN_MATCHING: false, // Set to true to trigger Batch 1 matching
   BATCH_2_RUN_MATCHING: false, // Set to true to trigger Batch 2 matching
-  TEST_MODE_REVEAL: false, // Set to true to bypass date-based reveal
+  TEST_MODE_REVEAL: true, // Set to true to bypass date-based reveal
   BATCH_1_REVEAL_DATE: new Date("2026-02-01T00:00:00Z"),
   BATCH_2_REVEAL_DATE: new Date("2026-02-07T00:00:00Z"),
 };

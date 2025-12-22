@@ -667,7 +667,7 @@ export async function revealMatches(
   const result = await prisma.match.updateMany({
     where: {
       batchNumber,
-      revealedAt: null,
+      // revealedAt: null,
     },
     data: {
       revealedAt: new Date(),
