@@ -1,15 +1,15 @@
 /**
- * Cupid Decision API
+ * Cupid Selection API
  *
  * POST /api/cupid/decide
- * Submit a decision for an assigned pair
+ * Submit a match selection for an assigned candidate
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
-import { submitCupidDecision } from "@/lib/matching/cupid";
+import { submitCupidSelection } from "@/lib/matching/cupid";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { assignmentId, decision, reason } = body;
+    const { assignmentId, selectedMatchId, reason } = body;
 
     if (!assignmentId) {
       return NextResponse.json(
@@ -45,18 +45,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (decision !== "approve" && decision !== "reject") {
+    if (!selectedMatchId) {
       return NextResponse.json(
-        { error: 'Decision must be "approve" or "reject"' },
+        { error: "Missing selectedMatchId - must select a match" },
         { status: 400 }
       );
     }
 
-    // Submit the decision
-    const result = await submitCupidDecision(
+    // Submit the selection
+    const result = await submitCupidSelection(
       assignmentId,
       userId,
-      decision,
+      selectedMatchId,
       reason
     );
 
@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
       message: result.message,
     });
   } catch (error) {
-    console.error("Error submitting cupid decision:", error);
+    console.error("Error submitting cupid selection:", error);
     return NextResponse.json(
-      { error: "Failed to submit decision" },
+      { error: "Failed to submit selection" },
       { status: 500 }
     );
   }
