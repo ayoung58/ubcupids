@@ -6,25 +6,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
 import {
   ArrowLeft,
   Check,
-  X,
   ChevronLeft,
   ChevronRight,
   Users,
   Heart,
   AlertCircle,
-  Sparkles,
+  Target,
+  Eye,
+  EyeOff,
+  X,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import questionnaireConfig from "@/src/data/questionnaire-config.json";
+import type {
+  Responses,
+  ImportanceRatings,
+} from "@/src/lib/questionnaire-types";
 
-// Types matching the API response
-interface ProfileHighlight {
-  questionId: string;
-  question: string;
-  answer: string;
-}
-
+// Types
 interface CupidProfileView {
   userId: string;
   firstName: string;
@@ -32,17 +44,22 @@ interface CupidProfileView {
   summary: string;
   keyTraits: string[];
   lookingFor: string;
-  highlights: ProfileHighlight[];
+  highlights: string[];
 }
 
-interface CupidPairAssignment {
+interface PotentialMatch {
+  userId: string;
+  score: number;
+  profile: CupidProfileView;
+}
+
+interface CupidCandidateAssignment {
   assignmentId: string;
   cupidUserId: string;
-  user1: CupidProfileView;
-  user2: CupidProfileView;
-  algorithmScore: number;
-  decision: "approve" | "reject" | null;
-  decisionReason: string | null;
+  candidate: CupidProfileView;
+  potentialMatches: PotentialMatch[];
+  selectedMatchId: string | null;
+  selectionReason: string | null;
 }
 
 interface CupidDashboard {
@@ -50,21 +67,30 @@ interface CupidDashboard {
   cupidName: string;
   totalAssigned: number;
   reviewed: number;
-  approved: number;
-  rejected: number;
   pending: number;
-  pendingPairs: CupidPairAssignment[];
+  pendingAssignments: CupidCandidateAssignment[];
 }
 
 export function CupidMatchingPortal() {
   const [dashboard, setDashboard] = useState<CupidDashboard | null>(null);
-  const [currentPairIndex, setCurrentPairIndex] = useState(0);
+  const [currentAssignmentIndex, setCurrentAssignmentIndex] = useState(0);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showScores, setShowScores] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [candidateResponses, setCandidateResponses] =
+    useState<Responses | null>(null);
+  const [candidateImportance, setCandidateImportance] =
+    useState<ImportanceRatings | null>(null);
+  const [matchResponses, setMatchResponses] = useState<Responses | null>(null);
+  const [matchImportance, setMatchImportance] =
+    useState<ImportanceRatings | null>(null);
+  const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(false);
 
-  // Fetch dashboard data
   useEffect(() => {
     fetchDashboard();
   }, []);
@@ -73,21 +99,78 @@ export function CupidMatchingPortal() {
     try {
       setIsLoading(true);
       const res = await fetch("/api/cupid/dashboard");
-      if (!res.ok) {
-        throw new Error("Failed to fetch dashboard");
-      }
+      if (!res.ok) throw new Error("Failed to fetch dashboard");
       const data = await res.json();
       setDashboard(data);
     } catch (err) {
-      setError("Failed to load pairs. Please try again.");
+      setError("Failed to load assignments. Please try again.");
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const submitDecision = async (decision: "approve" | "reject") => {
-    if (!dashboard || !currentPair) return;
+  useEffect(() => {
+    const loadData = async () => {
+      if (currentAssignment) {
+        await loadQuestionnaireData();
+      }
+    };
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAssignmentIndex, currentMatchIndex, dashboard]);
+
+  const loadQuestionnaireData = async () => {
+    if (!currentAssignment) return;
+
+    setLoadingQuestionnaires(true);
+    try {
+      // Load candidate questionnaire
+      const candidateRes = await fetch(
+        `/api/questionnaire/view?userId=${currentAssignment.candidate.userId}`
+      );
+      if (candidateRes.ok) {
+        const candidateData = await candidateRes.json();
+        setCandidateResponses(candidateData.responses);
+        setCandidateImportance(candidateData.importance);
+      } else {
+        console.error(
+          `Failed to load candidate questionnaire: ${candidateRes.status}`,
+          await candidateRes.text()
+        );
+        setCandidateResponses(null);
+        setCandidateImportance(null);
+      }
+
+      // Load match questionnaire
+      const currentMatch =
+        currentAssignment.potentialMatches[currentMatchIndex];
+      if (currentMatch) {
+        const matchRes = await fetch(
+          `/api/questionnaire/view?userId=${currentMatch.userId}`
+        );
+        if (matchRes.ok) {
+          const matchData = await matchRes.json();
+          setMatchResponses(matchData.responses);
+          setMatchImportance(matchData.importance);
+        } else {
+          console.error(
+            `Failed to load match questionnaire for ${currentMatch.userId}: ${matchRes.status}`,
+            await matchRes.text()
+          );
+          setMatchResponses(null);
+          setMatchImportance(null);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading questionnaire data:", err);
+    } finally {
+      setLoadingQuestionnaires(false);
+    }
+  };
+
+  const submitSelection = async () => {
+    if (!dashboard || !currentAssignment || !selectedMatchId) return;
 
     setIsSubmitting(true);
     try {
@@ -95,38 +178,35 @@ export function CupidMatchingPortal() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          assignmentId: currentPair.assignmentId,
-          decision,
+          assignmentId: currentAssignment.assignmentId,
+          selectedMatchId,
           reason: reason || undefined,
         }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to submit decision");
+        throw new Error(data.error || "Failed to submit selection");
       }
 
-      // Remove the reviewed pair and move to next
       setDashboard((prev) => {
         if (!prev) return null;
         return {
           ...prev,
-          pendingPairs: prev.pendingPairs.filter(
-            (p) => p.assignmentId !== currentPair.assignmentId
+          pendingAssignments: prev.pendingAssignments.filter(
+            (a) => a.assignmentId !== currentAssignment.assignmentId
           ),
           reviewed: prev.reviewed + 1,
-          approved: decision === "approve" ? prev.approved + 1 : prev.approved,
-          rejected: decision === "reject" ? prev.rejected + 1 : prev.rejected,
           pending: prev.pending - 1,
         };
       });
 
-      // Reset reason field
+      setSelectedMatchId(null);
       setReason("");
+      setCurrentMatchIndex(0);
 
-      // Adjust index if needed
-      if (currentPairIndex >= dashboard.pendingPairs.length - 1) {
-        setCurrentPairIndex(Math.max(0, currentPairIndex - 1));
+      if (currentAssignmentIndex >= dashboard.pendingAssignments.length - 1) {
+        setCurrentAssignmentIndex(Math.max(0, currentAssignmentIndex - 1));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit");
@@ -135,7 +215,22 @@ export function CupidMatchingPortal() {
     }
   };
 
-  const currentPair = dashboard?.pendingPairs[currentPairIndex];
+  const navigateMatch = (direction: "prev" | "next") => {
+    if (!currentAssignment) return;
+
+    if (direction === "prev" && currentMatchIndex > 0) {
+      setCurrentMatchIndex(currentMatchIndex - 1);
+    } else if (
+      direction === "next" &&
+      currentMatchIndex < currentAssignment.potentialMatches.length - 1
+    ) {
+      setCurrentMatchIndex(currentMatchIndex + 1);
+    }
+  };
+
+  const currentAssignment =
+    dashboard?.pendingAssignments[currentAssignmentIndex];
+  const currentMatch = currentAssignment?.potentialMatches[currentMatchIndex];
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -159,23 +254,26 @@ export function CupidMatchingPortal() {
     );
   }
 
-  if (!dashboard || dashboard.pendingPairs.length === 0) {
-    // Determine if this is because no pairs exist yet or all are reviewed
-    const hasReviewedPairs = dashboard && dashboard.reviewed > 0;
-    const isAllDone = hasReviewedPairs;
+  if (!dashboard || dashboard.pendingAssignments.length === 0) {
+    const isAllDone = dashboard && dashboard.reviewed > 0;
 
     return (
       <div className="min-h-screen bg-slate-50 p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <BackButton />
-          <StatsHeader dashboard={dashboard} />
+          <StatsHeader
+            dashboard={dashboard}
+            showScores={showScores}
+            setShowScores={setShowScores}
+          />
           {isAllDone ? (
             <Card className="border-2 border-green-200 bg-green-50">
               <CardContent className="p-8 text-center">
                 <Check className="h-16 w-16 mx-auto text-green-500 mb-4" />
                 <h2 className="text-2xl font-bold text-green-700">All Done!</h2>
                 <p className="text-green-600 mt-2">
-                  You&apos;ve reviewed all assigned pairs. Great work, Cupid! 💘
+                  You&apos;ve reviewed all assigned candidates. Great work,
+                  Cupid! 💘
                 </p>
                 <Link href="/cupid-dashboard">
                   <Button className="mt-6">Back to Dashboard</Button>
@@ -205,243 +303,432 @@ export function CupidMatchingPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-50 p-4">
+      <div className="max-w-[1800px] mx-auto space-y-4">
         <BackButton />
-        <StatsHeader dashboard={dashboard} />
+        <StatsHeader
+          dashboard={dashboard}
+          showScores={showScores}
+          setShowScores={setShowScores}
+        />
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between">
+        {/* Candidate Navigation */}
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
           <Button
             variant="outline"
-            onClick={() => setCurrentPairIndex((i) => Math.max(0, i - 1))}
-            disabled={currentPairIndex === 0}
+            onClick={() => setCurrentAssignmentIndex((i) => Math.max(0, i - 1))}
+            disabled={currentAssignmentIndex === 0}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            Previous Candidate
           </Button>
-          <span className="text-slate-600">
-            Pair {currentPairIndex + 1} of {dashboard.pendingPairs.length}
+          <span className="text-slate-700 font-semibold">
+            Candidate {currentAssignmentIndex + 1} of{" "}
+            {dashboard.pendingAssignments.length}
           </span>
           <Button
             variant="outline"
             onClick={() =>
-              setCurrentPairIndex((i) =>
-                Math.min(dashboard.pendingPairs.length - 1, i + 1)
+              setCurrentAssignmentIndex((i) =>
+                Math.min(dashboard.pendingAssignments.length - 1, i + 1)
               )
             }
-            disabled={currentPairIndex === dashboard.pendingPairs.length - 1}
+            disabled={
+              currentAssignmentIndex === dashboard.pendingAssignments.length - 1
+            }
           >
-            Next
+            Next Candidate
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
 
-        {/* Algorithm Score Banner */}
-        {currentPair && (
-          <Card className="bg-gradient-to-r from-pink-50 to-purple-50 border-pink-200">
-            <CardContent className="p-4 flex items-center justify-center gap-3">
-              <Sparkles className="h-5 w-5 text-pink-500" />
-              <span className="font-medium">
-                Algorithm Compatibility Score:{" "}
-                <span className="text-lg font-bold text-pink-600">
-                  {currentPair.algorithmScore.toFixed(1)}%
-                </span>
-              </span>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Split Screen Comparison */}
-        {currentPair && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ProfileCard profile={currentPair.user1} side="left" />
-            <ProfileCard profile={currentPair.user2} side="right" />
-          </div>
-        )}
-
-        {/* Decision Area */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5 text-pink-500" />
-              Your Decision
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
-              placeholder="Optional: Add a note about why you're approving or rejecting this match..."
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="min-h-[80px]"
-            />
-            <div className="flex gap-4 justify-center">
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
-                onClick={() => submitDecision("reject")}
-                disabled={isSubmitting}
-              >
-                <X className="h-5 w-5 mr-2" />
-                Reject Match
-              </Button>
+        {/* Confirm Selection Area */}
+        <Card className="bg-gradient-to-r from-pink-50 to-rose-50 border-pink-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                {selectedMatchId ? (
+                  <div className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <span className="font-medium text-green-700">
+                      Match selected:{" "}
+                      {
+                        currentAssignment?.potentialMatches.find(
+                          (m) => m.userId === selectedMatchId
+                        )?.profile.firstName
+                      }
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedMatchId(null)}
+                      className="text-slate-600 hover:text-slate-900"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Undo
+                    </Button>
+                  </div>
+                ) : (
+                  <span className="text-slate-600">
+                    Select a match from the right panel to continue
+                  </span>
+                )}
+              </div>
               <Button
                 size="lg"
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => submitDecision("approve")}
-                disabled={isSubmitting}
+                className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
+                onClick={() => setShowConfirmDialog(true)}
+                disabled={!selectedMatchId || isSubmitting}
               >
                 <Check className="h-5 w-5 mr-2" />
-                Approve Match
+                Confirm Selection
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Split Screen */}
+        {currentAssignment && currentMatch && (
+          <div className="grid grid-cols-2 gap-4 h-[calc(100vh-320px)]">
+            {/* Left: Candidate */}
+            <Card className="border-2 border-blue-400 overflow-hidden flex flex-col">
+              <CardHeader className="bg-blue-50 border-b border-blue-200 flex-shrink-0">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Target className="h-5 w-5 text-blue-600" />
+                  Your Candidate: {currentAssignment.candidate.firstName},{" "}
+                  {currentAssignment.candidate.age}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto p-0">
+                {loadingQuestionnaires ? (
+                  <LoadingQuestionnairesSkeleton />
+                ) : (
+                  <QuestionnaireDisplay
+                    responses={candidateResponses}
+                    importance={candidateImportance}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Right: Potential Match */}
+            <Card
+              className={`overflow-hidden flex flex-col border-2 ${
+                selectedMatchId === currentMatch.userId
+                  ? "border-pink-500 bg-pink-50"
+                  : "border-slate-300"
+              }`}
+            >
+              <CardHeader
+                className={`border-b flex-shrink-0 ${
+                  selectedMatchId === currentMatch.userId
+                    ? "bg-pink-100 border-pink-300"
+                    : "bg-slate-50 border-slate-200"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Heart className="h-5 w-5 text-pink-500" />
+                    <div>
+                      <div className="text-sm font-medium text-slate-600">
+                        Match {currentMatchIndex + 1} of{" "}
+                        {currentAssignment.potentialMatches.length}
+                      </div>
+                      <div className="text-lg font-semibold text-slate-900">
+                        {currentMatch.profile.firstName},{" "}
+                        {currentMatch.profile.age}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {showScores && (
+                      <span className="text-sm font-medium text-pink-600 mr-2">
+                        {currentMatch.score.toFixed(1)}%
+                      </span>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateMatch("prev")}
+                      disabled={currentMatchIndex === 0}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateMatch("next")}
+                      disabled={
+                        currentMatchIndex ===
+                        currentAssignment.potentialMatches.length - 1
+                      }
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    {selectedMatchId === currentMatch.userId ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-pink-500 text-pink-700 bg-pink-100 hover:bg-pink-200"
+                        onClick={() => setSelectedMatchId(null)}
+                      >
+                        <Check className="h-4 w-4 mr-1" />
+                        Selected
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="bg-pink-500 hover:bg-pink-600 text-white"
+                        onClick={() => setSelectedMatchId(currentMatch.userId)}
+                        disabled={selectedMatchId !== null}
+                      >
+                        <Heart className="h-4 w-4 mr-1" />
+                        Select
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto p-0">
+                {loadingQuestionnaires ? (
+                  <LoadingQuestionnairesSkeleton />
+                ) : (
+                  <QuestionnaireDisplay
+                    responses={matchResponses}
+                    importance={matchImportance}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Match Selection</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to select{" "}
+              <strong>
+                {
+                  currentAssignment?.potentialMatches.find(
+                    (m) => m.userId === selectedMatchId
+                  )?.profile.firstName
+                }
+              </strong>{" "}
+              as the match for{" "}
+              <strong>{currentAssignment?.candidate.firstName}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="dialog-reason" className="text-sm font-medium">
+              Optional reasoning:
+            </Label>
+            <Textarea
+              id="dialog-reason"
+              placeholder="Why is this the best match?"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="mt-2 min-h-[100px]"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowConfirmDialog(false);
+                submitSelection();
+              }}
+              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
+              disabled={isSubmitting}
+            >
+              Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
-
-// Sub-components
 
 function BackButton() {
   return (
-    <div className="flex items-center gap-4">
-      <Link href="/cupid-dashboard">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
-        </Button>
-      </Link>
-    </div>
+    <Link href="/cupid-dashboard">
+      <Button variant="ghost" size="sm">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Dashboard
+      </Button>
+    </Link>
   );
 }
 
-function StatsHeader({ dashboard }: { dashboard: CupidDashboard | null }) {
+function StatsHeader({
+  dashboard,
+  showScores,
+  setShowScores,
+}: {
+  dashboard: CupidDashboard | null;
+  showScores: boolean;
+  setShowScores: (show: boolean) => void;
+}) {
   if (!dashboard) return null;
 
   return (
-    <div className="flex flex-wrap gap-4 items-center justify-between">
+    <div className="flex flex-wrap gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+        <h1 className="text-2xl font-bold text-slate-900">
           🎯 Matching Portal
         </h1>
         <p className="text-slate-600">
-          Welcome, {dashboard.cupidName}! Review pairs and create matches.
+          Welcome, {dashboard.cupidName}! Select the best match for each
+          candidate.
         </p>
       </div>
-      <div className="flex gap-4 text-sm">
-        <div className="bg-white px-4 py-2 rounded-lg shadow-sm">
-          <span className="text-slate-500">Pending: </span>
-          <span className="font-bold text-orange-600">{dashboard.pending}</span>
-        </div>
-        <div className="bg-white px-4 py-2 rounded-lg shadow-sm">
-          <span className="text-slate-500">Approved: </span>
-          <span className="font-bold text-green-600">{dashboard.approved}</span>
-        </div>
-        <div className="bg-white px-4 py-2 rounded-lg shadow-sm">
-          <span className="text-slate-500">Rejected: </span>
-          <span className="font-bold text-red-600">{dashboard.rejected}</span>
+      <div className="flex items-center gap-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowScores(!showScores)}
+          className="flex items-center gap-2"
+        >
+          {showScores ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+          {showScores ? "Hide" : "Show"} Scores
+        </Button>
+        <div className="flex gap-3 text-sm">
+          <div className="bg-slate-50 px-3 py-2 rounded-lg">
+            <span className="text-slate-500">Pending: </span>
+            <span className="font-bold text-orange-600">
+              {dashboard.pending}
+            </span>
+          </div>
+          <div className="bg-slate-50 px-3 py-2 rounded-lg">
+            <span className="text-slate-500">Reviewed: </span>
+            <span className="font-bold text-green-600">
+              {dashboard.reviewed}
+            </span>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function ProfileCard({
-  profile,
-  side,
+function QuestionnaireDisplay({
+  responses,
+  importance,
 }: {
-  profile: CupidProfileView;
-  side: "left" | "right";
+  responses: Responses | null;
+  importance: ImportanceRatings | null;
 }) {
-  const borderColor =
-    side === "left" ? "border-l-blue-500" : "border-l-pink-500";
+  if (!responses) {
+    return (
+      <div className="text-center text-slate-500">
+        No questionnaire data available
+      </div>
+    );
+  }
 
   return (
-    <Card className={`border-l-4 ${borderColor}`}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl">
-              {profile.firstName}, {profile.age}
-            </CardTitle>
+    <div className="space-y-0">
+      {questionnaireConfig.sections.map((section) => (
+        <div key={section.id} className="space-y-0">
+          <div className="sticky top-0 bg-white border-b border-slate-200 py-3 px-4 z-10">
+            <h3 className="font-bold text-slate-800">{section.title}</h3>
           </div>
-          <Users className="h-5 w-5 text-slate-400" />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* AI Summary */}
-        <div className="bg-slate-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-purple-500" />
-            AI Summary
-          </h4>
-          <p className="text-slate-600 text-sm">{profile.summary}</p>
-        </div>
+          <div className="px-4 py-4 space-y-4">
+            {section.questions.map((question) => {
+              const response =
+                responses[question.id] || responses[question.id.toUpperCase()];
+              const importanceValue =
+                importance?.[question.id] ||
+                importance?.[question.id.toUpperCase()];
 
-        {/* Key Traits */}
-        <div>
-          <h4 className="font-semibold text-slate-700 mb-2">Key Traits</h4>
-          <div className="flex flex-wrap gap-2">
-            {profile.keyTraits.map((trait, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
-              >
-                {trait}
-              </span>
-            ))}
-          </div>
-        </div>
+              if (!response) return null;
 
-        {/* Looking For */}
-        <div>
-          <h4 className="font-semibold text-slate-700 mb-2">Looking For</h4>
-          <p className="text-slate-600 text-sm">{profile.lookingFor}</p>
-        </div>
-
-        {/* Question Highlights */}
-        {profile.highlights.length > 0 && (
-          <div>
-            <h4 className="font-semibold text-slate-700 mb-2">
-              Response Highlights
-            </h4>
-            <div className="space-y-3">
-              {profile.highlights.map((h, i) => (
-                <div key={i} className="border-l-2 border-slate-200 pl-3">
-                  <p className="text-xs text-slate-500">{h.question}</p>
-                  <p className="text-sm text-slate-700">{h.answer}</p>
+              return (
+                <div
+                  key={question.id}
+                  className="bg-slate-50 p-3 rounded-lg space-y-2"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-medium text-slate-700">
+                      {question.text}
+                    </p>
+                    {question.hasImportance && importanceValue && (
+                      <span className="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded whitespace-nowrap">
+                        Importance: {importanceValue}/5
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-slate-900">
+                    {formatResponse(response)}
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      ))}
+    </div>
   );
+}
+
+function formatResponse(
+  response:
+    | string
+    | string[]
+    | number
+    | { value: string; text: string }
+    | { minAge: number; maxAge: number }
+    | undefined
+): string {
+  if (response === undefined || response === null) return "No answer";
+  if (Array.isArray(response)) {
+    return response.join(", ");
+  }
+  if (typeof response === "object" && response !== null) {
+    if ("minAge" in response && "maxAge" in response) {
+      return `${response.minAge} - ${response.maxAge} years old`;
+    }
+    return JSON.stringify(response);
+  }
+  return String(response);
 }
 
 function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-[1800px] mx-auto space-y-6">
         <Skeleton className="h-10 w-40" />
-        <div className="flex justify-between">
-          <Skeleton className="h-12 w-60" />
-          <div className="flex gap-4">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-24" />
-          </div>
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-[600px]" />
+          <Skeleton className="h-[600px]" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-96" />
-          <Skeleton className="h-96" />
-        </div>
-        <Skeleton className="h-40" />
       </div>
+    </div>
+  );
+}
+
+function LoadingQuestionnairesSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-8 w-full" />
+        </div>
+      ))}
     </div>
   );
 }
