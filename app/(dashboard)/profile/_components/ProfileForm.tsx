@@ -30,6 +30,7 @@ export function ProfileForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const initialProfileData = useRef<ProfileFormData | null>(null);
 
@@ -344,12 +345,20 @@ export function ProfileForm() {
         .toLowerCase();
       const normalizedOwn = accountInfo.email.trim().toLowerCase();
 
+      // Check if it's a valid UBC email
+      const ubcEmailRegex =
+        /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i;
+      if (!ubcEmailRegex.test(normalizedPreferred)) {
+        setShowError(
+          "Preferred candidate email must be a valid UBC email (@student.ubc.ca or @alumni.ubc.ca)"
+        );
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
       if (normalizedPreferred === normalizedOwn) {
-        toast({
-          title: "Validation error",
-          description: "You cannot set yourself as your preferred candidate",
-          variant: "destructive",
-        });
+        setShowError("You cannot set yourself as the person you want to match");
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
     }
@@ -378,6 +387,7 @@ export function ProfileForm() {
 
       if (response.ok) {
         // Show success message and scroll to top
+        setShowError(null);
         setShowSuccess(true);
         setHasUnsavedChanges(false);
         // Update initial data to current saved state
@@ -391,19 +401,15 @@ export function ProfileForm() {
         router.refresh();
       } else {
         const error = await response.json();
-        toast({
-          title: "Error",
-          description: error.error || "Failed to update profile",
-          variant: "destructive",
-        });
+        setShowSuccess(false);
+        setShowError(error.error || "Failed to update profile");
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      });
+      setShowSuccess(false);
+      setShowError("Failed to update profile");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setIsSaving(false);
     }
@@ -563,6 +569,14 @@ export function ProfileForm() {
             </div>
           )}
 
+          {/* Error Message */}
+          {showError && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center justify-center gap-2">
+              <X className="h-5 w-5 text-red-600" />
+              <p className="text-red-900 font-medium">{showError}</p>
+            </div>
+          )}
+
           <style>{customValidationStyles}</style>
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Profile Picture */}
@@ -715,24 +729,25 @@ export function ProfileForm() {
             {accountInfo.isCupid && (
               <div className="space-y-2">
                 <Label htmlFor="preferredCandidateEmail">
-                  Preferred Candidate Email (Optional)
+                  If you have someone you&apos;d like to match (your preferred
+                  candidate), enter their student email.
+                  <br />
+                  (it cannot be your own) (Optional)
                 </Label>
                 <Input
                   id="preferredCandidateEmail"
                   type="email"
                   value={accountInfo.preferredCandidateEmail}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setAccountInfo({
                       ...accountInfo,
                       preferredCandidateEmail: e.target.value,
-                    })
-                  }
+                    });
+                    setHasUnsavedChanges(true);
+                    setShowError(null); // Clear error when user starts typing
+                  }}
                   placeholder="someone@student.ubc.ca"
                 />
-                <p className="text-xs text-slate-600">
-                  If you have someone you&apos;d like to match, enter their
-                  student email. You cannot use your own email.
-                </p>
               </div>
             )}
 

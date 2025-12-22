@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
       // Check if user is trying to set themselves
       if (normalizedPreferredEmail === currentUser.email.toLowerCase()) {
         return NextResponse.json(
-          { error: "You cannot set yourself as your preferred candidate" },
+          { error: "You cannot set yourself as the person you want to match" },
           { status: 400 }
         );
       }

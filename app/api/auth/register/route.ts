@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
       if (normalizedPreferredEmail === normalizedEmail) {
         return NextResponse.json(
           {
-            error: "You cannot set yourself as your preferred candidate",
+            error: "You cannot set yourself as the person you want to match",
           },
           { status: 400 }
         );

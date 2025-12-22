@@ -377,7 +377,8 @@ export function RegisterForm({
           {accountType === "cupid" && (
             <div className="space-y-2">
               <Label htmlFor="preferredCandidateEmail">
-                Preferred Candidate Email (Optional)
+                If you have someone you&apos;d like to match (your preferred
+                candidate), enter their student email (Optional)
               </Label>
               <Input
                 id="preferredCandidateEmail"
@@ -392,10 +393,6 @@ export function RegisterForm({
                 }
                 disabled={isLoading}
               />
-              <p className="text-xs text-slate-500">
-                If you have someone you&apos;d like to match, enter their
-                student email
-              </p>
             </div>
           )}
 
