@@ -25,7 +25,12 @@ import questionnaireConfig from "../../src/data/questionnaire-config.json";
 // QUESTION TYPE DEFINITIONS
 // ===========================================
 
-type QuestionType = "single-choice" | "multi-choice" | "ranking" | "textarea";
+type QuestionType =
+  | "single-choice"
+  | "multi-choice"
+  | "ranking"
+  | "textarea"
+  | "age-range";
 
 interface QuestionOption {
   value: string;
@@ -217,6 +222,69 @@ function scoreRanking(
 }
 
 // ===========================================
+// AGE-RANGE SCORING
+// ===========================================
+
+/**
+ * Calculate score for age-range preference compatibility
+ *
+ * This scores how well a user's age fits within the other's preferred range.
+ * Note: This is different from the age filter - this is about scoring,
+ * not hard filtering. The age filter in filters.ts handles hard cutoffs.
+ *
+ * For age-range questions, we score based on whether the partner's age
+ * falls within the user's acceptable range.
+ */
+function scoreAgeRange(
+  user1Range:
+    | { min?: number; max?: number; minAge?: number; maxAge?: number }
+    | undefined,
+  user2Range:
+    | { min?: number; max?: number; minAge?: number; maxAge?: number }
+    | undefined
+): number {
+  // Normalize to min/max format
+  const normalize = (
+    range: typeof user1Range
+  ): { min: number; max: number } | null => {
+    if (!range) return null;
+    return {
+      min: range.min ?? range.minAge ?? 18,
+      max: range.max ?? range.maxAge ?? 35,
+    };
+  };
+
+  const range1 = normalize(user1Range);
+  const range2 = normalize(user2Range);
+
+  // If either range is missing, return neutral score
+  if (!range1 || !range2) {
+    return 50;
+  }
+
+  // Calculate overlap between ranges
+  const overlapStart = Math.max(range1.min, range2.min);
+  const overlapEnd = Math.min(range1.max, range2.max);
+
+  if (overlapStart > overlapEnd) {
+    // No overlap - low score but not zero (they might still work)
+    return 10;
+  }
+
+  // Calculate overlap percentage relative to both ranges
+  const user1RangeSize = range1.max - range1.min + 1;
+  const user2RangeSize = range2.max - range2.min + 1;
+  const overlapSize = overlapEnd - overlapStart + 1;
+
+  const overlapPercent1 = overlapSize / user1RangeSize;
+  const overlapPercent2 = overlapSize / user2RangeSize;
+  const avgOverlap = (overlapPercent1 + overlapPercent2) / 2;
+
+  // Scale to 0-100
+  return avgOverlap * 100;
+}
+
+// ===========================================
 // TEXT SIMILARITY (PLACEHOLDER)
 // ===========================================
 
@@ -298,6 +366,12 @@ function scoreQuestion(
         embeddingSimilarity
       );
 
+    case "age-range":
+      return scoreAgeRange(
+        user1Response as { min: number; max: number } | undefined,
+        user2Response as { min: number; max: number } | undefined
+      );
+
     default:
       console.warn(`Unhandled question type: ${question.type}`);
       return 0;
@@ -326,7 +400,14 @@ function getImportanceMultiplier(
     return IMPORTANCE_MULTIPLIERS[3]; // Baseline
   }
 
-  const rating = importance[questionId] as 1 | 2 | 3 | 4 | 5;
+  // Handle case-insensitive importance lookup
+  const lowerQuestionId = questionId.toLowerCase();
+  const rating = (importance[questionId] ?? importance[lowerQuestionId]) as
+    | 1
+    | 2
+    | 3
+    | 4
+    | 5;
 
   if (!rating || rating < 1 || rating > 5) {
     return IMPORTANCE_MULTIPLIERS[3]; // Default to baseline
@@ -367,12 +448,19 @@ function calculateSectionScore(
     const question = QUESTION_MAP.get(questionId);
     if (!question) continue;
 
+    // Handle case-insensitive response lookup (responses may use lowercase keys)
+    const lowerQuestionId = questionId.toLowerCase();
+    const user1Response =
+      user1Responses[questionId] ?? user1Responses[lowerQuestionId];
+    const user2Response =
+      user2Responses[questionId] ?? user2Responses[lowerQuestionId];
+
     // Get base score for this question
     const embeddingSim = embeddingSimilarities?.get(questionId);
     const baseScore = scoreQuestion(
       questionId,
-      user1Responses[questionId],
-      user2Responses[questionId],
+      user1Response,
+      user2Response,
       embeddingSim
     );
 
@@ -453,7 +541,14 @@ export function calculateCompatibility(
     user1Id,
     user2Id
   );
-  const ageFilter = checkAgeFilter(user1Age, user2Age, user1Id, user2Id);
+  const ageFilter = checkAgeFilter(
+    user1Responses,
+    user2Responses,
+    user1Age,
+    user2Age,
+    user1Id,
+    user2Id
+  );
 
   // Calculate section scores
   const section1 = calculateSectionScore(
@@ -511,6 +606,7 @@ export function calculateCompatibility(
       section5: section5.normalizedScore.toFixed(1),
       total: totalScore.toFixed(1),
       genderPass: genderFilter.bothPass,
+      agePass: ageFilter.bothPass,
     });
   }
 
@@ -613,6 +709,7 @@ export {
   scoreMultiChoice,
   scoreRanking,
   scoreText,
+  scoreAgeRange,
   scoreQuestion,
   getImportanceMultiplier,
   calculateSectionScore,
