@@ -41,18 +41,20 @@ export default async function DashboardPage() {
 
   const questionnaireStatus = await getQuestionnaireStatus(session.user.id);
 
-  // Fetch user profile for display name
+  // Fetch user profile for display name and account types
   const profile = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
       displayName: true,
       isCupid: true,
       isBeingMatched: true,
+      lastActiveDashboard: true,
     },
   });
 
-  // Redirect cupids to cupid dashboard
-  if (profile?.isCupid) {
+  // Redirect cupids who are NOT being matched to cupid dashboard
+  // (Users with both accounts can access either dashboard)
+  if (profile?.isCupid && !profile?.isBeingMatched) {
     redirect("/cupid-dashboard");
   }
 

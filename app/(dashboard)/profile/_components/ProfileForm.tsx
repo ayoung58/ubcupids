@@ -719,7 +719,7 @@ export function ProfileForm() {
                   {(profileData.cupidDisplayName || "").length}/50 characters
                 </p>
                 <p className="text-xs text-slate-600">
-                  This name is shown when you're acting as a Cupid in the
+                  This name is shown when you&apos;re acting as a Cupid in the
                   matching portal.
                 </p>
               </div>
