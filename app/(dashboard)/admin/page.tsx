@@ -32,13 +32,37 @@ export default async function AdminDashboardPage() {
     redirect("/dashboard");
   }
 
-  // Get current batch status
+  // Get current batch status and check for existing data
   const batches = await prisma.matchingBatch.findMany({
     orderBy: { batchNumber: "asc" },
   });
 
   const batch1 = batches.find((b) => b.batchNumber === 1);
   const batch2 = batches.find((b) => b.batchNumber === 2);
+
+  // Check if matches exist for each batch
+  const batch1MatchCount = await prisma.match.count({
+    where: { batchNumber: 1 },
+  });
+  const batch2MatchCount = await prisma.match.count({
+    where: { batchNumber: 2 },
+  });
+
+  // Check if cupid assignments exist
+  const batch1AssignmentCount = await prisma.cupidAssignment.count({
+    where: { batchNumber: 1 },
+  });
+  const batch2AssignmentCount = await prisma.cupidAssignment.count({
+    where: { batchNumber: 2 },
+  });
+
+  // Check if matches have been revealed
+  const batch1RevealedCount = await prisma.match.count({
+    where: { batchNumber: 1, revealedAt: { not: null } },
+  });
+  const batch2RevealedCount = await prisma.match.count({
+    where: { batchNumber: 2, revealedAt: { not: null } },
+  });
 
   // Determine current active batch (default to 1 if no batches exist)
   let currentBatch = 1;
@@ -57,6 +81,16 @@ export default async function AdminDashboardPage() {
       currentBatch={currentBatch}
       batch1Status={batch1?.status || "pending"}
       batch2Status={batch2?.status || "pending"}
+      batch1State={{
+        hasMatches: batch1MatchCount > 0,
+        hasAssignments: batch1AssignmentCount > 0,
+        hasRevealed: batch1RevealedCount > 0,
+      }}
+      batch2State={{
+        hasMatches: batch2MatchCount > 0,
+        hasAssignments: batch2AssignmentCount > 0,
+        hasRevealed: batch2RevealedCount > 0,
+      }}
     />
   );
 }

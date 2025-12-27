@@ -36,6 +36,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if matches exist for this batch
+    const matchCount = await prisma.match.count({
+      where: { batchNumber },
+    });
+
+    if (matchCount === 0) {
+      return NextResponse.json(
+        { error: "No matches found for this batch. Create matches first." },
+        { status: 400 }
+      );
+    }
+
     // Update all matches for this batch to set revealedAt timestamp
     const result = await prisma.match.updateMany({
       where: {

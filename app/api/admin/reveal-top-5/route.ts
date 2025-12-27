@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get all cupid assignments for this batch
+    // Check if cupid assignments exist
     const assignments = await prisma.cupidAssignment.findMany({
       where: { batchNumber },
       select: {
@@ -47,7 +47,10 @@ export async function POST(request: NextRequest) {
 
     if (assignments.length === 0) {
       return NextResponse.json(
-        { error: "No cupid assignments found for this batch" },
+        {
+          error:
+            "No cupid assignments found for this batch. Pair cupids with candidates first.",
+        },
         { status: 400 }
       );
     }

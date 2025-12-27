@@ -37,6 +37,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if matches exist for this batch (matching must be run first)
+    const matchCount = await prisma.match.count({
+      where: { batchNumber },
+    });
+
+    if (matchCount === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "No matches found for this batch. Run the matching algorithm first.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if matches have been revealed
+    const revealedMatches = await prisma.match.count({
+      where: { batchNumber, revealedAt: { not: null } },
+    });
+
+    if (revealedMatches > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Matches have already been revealed for this batch. Clear matches first to pair cupids again.",
+        },
+        { status: 400 }
+      );
+    }
+
     // Run cupid assignment
     const result = await assignCandidatesToCupids(batchNumber);
 

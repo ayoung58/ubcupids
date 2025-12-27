@@ -15,11 +15,19 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+interface BatchState {
+  hasMatches: boolean;
+  hasAssignments: boolean;
+  hasRevealed: boolean;
+}
+
 interface AdminDashboardClientProps {
   adminName: string;
   currentBatch: number;
   batch1Status: string;
   batch2Status: string;
+  batch1State: BatchState;
+  batch2State: BatchState;
 }
 
 export function AdminDashboardClient({
@@ -27,6 +35,8 @@ export function AdminDashboardClient({
   currentBatch: initialBatch,
   batch1Status: initialBatch1Status,
   batch2Status: initialBatch2Status,
+  batch1State,
+  batch2State,
 }: AdminDashboardClientProps) {
   const { toast } = useToast();
   const router = useRouter();
@@ -103,16 +113,100 @@ export function AdminDashboardClient({
           <CardTitle>Batch Status</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-slate-50 rounded-lg">
+          <div className="p-4 bg-slate-50 rounded-lg space-y-2">
             <div className="text-sm font-medium text-slate-600">Batch 1</div>
-            <div className="text-lg font-semibold capitalize mt-1">
+            <div className="text-lg font-semibold capitalize">
               {batch1Status}
             </div>
+            <div className="text-xs space-y-1 pt-2 border-t">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full ${batch1State.hasMatches ? "bg-green-500" : "bg-slate-300"}`}
+                />
+                <span
+                  className={
+                    batch1State.hasMatches ? "text-slate-700" : "text-slate-400"
+                  }
+                >
+                  Matches Created
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full ${batch1State.hasAssignments ? "bg-green-500" : "bg-slate-300"}`}
+                />
+                <span
+                  className={
+                    batch1State.hasAssignments
+                      ? "text-slate-700"
+                      : "text-slate-400"
+                  }
+                >
+                  Cupids Paired
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full ${batch1State.hasRevealed ? "bg-green-500" : "bg-slate-300"}`}
+                />
+                <span
+                  className={
+                    batch1State.hasRevealed
+                      ? "text-slate-700"
+                      : "text-slate-400"
+                  }
+                >
+                  Matches Revealed
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="p-4 bg-slate-50 rounded-lg">
+          <div className="p-4 bg-slate-50 rounded-lg space-y-2">
             <div className="text-sm font-medium text-slate-600">Batch 2</div>
-            <div className="text-lg font-semibold capitalize mt-1">
+            <div className="text-lg font-semibold capitalize">
               {batch2Status}
+            </div>
+            <div className="text-xs space-y-1 pt-2 border-t">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full ${batch2State.hasMatches ? "bg-green-500" : "bg-slate-300"}`}
+                />
+                <span
+                  className={
+                    batch2State.hasMatches ? "text-slate-700" : "text-slate-400"
+                  }
+                >
+                  Matches Created
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full ${batch2State.hasAssignments ? "bg-green-500" : "bg-slate-300"}`}
+                />
+                <span
+                  className={
+                    batch2State.hasAssignments
+                      ? "text-slate-700"
+                      : "text-slate-400"
+                  }
+                >
+                  Cupids Paired
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full ${batch2State.hasRevealed ? "bg-green-500" : "bg-slate-300"}`}
+                />
+                <span
+                  className={
+                    batch2State.hasRevealed
+                      ? "text-slate-700"
+                      : "text-slate-400"
+                  }
+                >
+                  Matches Revealed
+                </span>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -131,8 +225,17 @@ export function AdminDashboardClient({
             onClick={() =>
               handleAction("start-matching", "/api/admin/start-matching", 1)
             }
-            disabled={loadingAction !== null}
+            disabled={
+              loadingAction !== null ||
+              batch1State.hasAssignments ||
+              batch1State.hasRevealed
+            }
             className="h-20"
+            title={
+              batch1State.hasAssignments || batch1State.hasRevealed
+                ? "Clear matches first to run matching again"
+                : ""
+            }
           >
             {loadingAction === "start-matching-1" ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -145,8 +248,20 @@ export function AdminDashboardClient({
             onClick={() =>
               handleAction("start-matching", "/api/admin/start-matching", 2)
             }
-            disabled={loadingAction !== null || !batch2Enabled}
+            disabled={
+              loadingAction !== null ||
+              !batch2Enabled ||
+              batch2State.hasAssignments ||
+              batch2State.hasRevealed
+            }
             className="h-20"
+            title={
+              batch2State.hasAssignments || batch2State.hasRevealed
+                ? "Clear matches first to run matching again"
+                : !batch2Enabled
+                  ? "Complete batch 1 first"
+                  : ""
+            }
           >
             {loadingAction === "start-matching-2" ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -171,9 +286,20 @@ export function AdminDashboardClient({
             onClick={() =>
               handleAction("pair-cupids", "/api/admin/pair-cupids", 1)
             }
-            disabled={loadingAction !== null}
+            disabled={
+              loadingAction !== null ||
+              !batch1State.hasMatches ||
+              batch1State.hasRevealed
+            }
             className="h-20"
             variant="outline"
+            title={
+              !batch1State.hasMatches
+                ? "Run matching algorithm first"
+                : batch1State.hasRevealed
+                  ? "Clear matches first to pair cupids again"
+                  : ""
+            }
           >
             {loadingAction === "pair-cupids-1" ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -186,9 +312,23 @@ export function AdminDashboardClient({
             onClick={() =>
               handleAction("pair-cupids", "/api/admin/pair-cupids", 2)
             }
-            disabled={loadingAction !== null || !batch2Enabled}
+            disabled={
+              loadingAction !== null ||
+              !batch2Enabled ||
+              !batch2State.hasMatches ||
+              batch2State.hasRevealed
+            }
             className="h-20"
             variant="outline"
+            title={
+              !batch2State.hasMatches
+                ? "Run matching algorithm first"
+                : batch2State.hasRevealed
+                  ? "Clear matches first to pair cupids again"
+                  : !batch2Enabled
+                    ? "Complete batch 1 first"
+                    : ""
+            }
           >
             {loadingAction === "pair-cupids-2" ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -214,9 +354,16 @@ export function AdminDashboardClient({
               onClick={() =>
                 handleAction("reveal-top-5", "/api/admin/reveal-top-5", 1)
               }
-              disabled={loadingAction !== null}
+              disabled={
+                loadingAction !== null || !batch1State.hasAssignments
+              }
               className="h-20"
               variant="secondary"
+              title={
+                !batch1State.hasAssignments
+                  ? "Pair cupids with candidates first"
+                  : ""
+              }
             >
               {loadingAction === "reveal-top-5-1" ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -229,9 +376,20 @@ export function AdminDashboardClient({
               onClick={() =>
                 handleAction("reveal-top-5", "/api/admin/reveal-top-5", 2)
               }
-              disabled={loadingAction !== null || !batch2Enabled}
+              disabled={
+                loadingAction !== null ||
+                !batch2Enabled ||
+                !batch2State.hasAssignments
+              }
               className="h-20"
               variant="secondary"
+              title={
+                !batch2State.hasAssignments
+                  ? "Pair cupids with candidates first"
+                  : !batch2Enabled
+                    ? "Complete batch 1 first"
+                    : ""
+              }
             >
               {loadingAction === "reveal-top-5-2" ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -246,9 +404,12 @@ export function AdminDashboardClient({
               onClick={() =>
                 handleAction("reveal-matches", "/api/admin/reveal-matches", 1)
               }
-              disabled={loadingAction !== null}
+              disabled={loadingAction !== null || !batch1State.hasMatches}
               className="h-20"
               variant="secondary"
+              title={
+                !batch1State.hasMatches ? "Create matches first" : ""
+              }
             >
               {loadingAction === "reveal-matches-1" ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -261,9 +422,20 @@ export function AdminDashboardClient({
               onClick={() =>
                 handleAction("reveal-matches", "/api/admin/reveal-matches", 2)
               }
-              disabled={loadingAction !== null || !batch2Enabled}
+              disabled={
+                loadingAction !== null ||
+                !batch2Enabled ||
+                !batch2State.hasMatches
+              }
               className="h-20"
               variant="secondary"
+              title={
+                !batch2State.hasMatches
+                  ? "Create matches first"
+                  : !batch2Enabled
+                    ? "Complete batch 1 first"
+                    : ""
+              }
             >
               {loadingAction === "reveal-matches-2" ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />

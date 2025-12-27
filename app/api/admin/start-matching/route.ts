@@ -51,6 +51,36 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Check if cupid assignments already exist for this batch
+    const existingAssignments = await prisma.cupidAssignment.count({
+      where: { batchNumber },
+    });
+
+    if (existingAssignments > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Cupid assignments already exist for this batch. Clear matches first to run matching again.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if matches have been revealed
+    const revealedMatches = await prisma.match.count({
+      where: { batchNumber, revealedAt: { not: null } },
+    });
+
+    if (revealedMatches > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Matches have already been revealed for this batch. Clear matches first to run matching again.",
+        },
+        { status: 400 }
+      );
+    }
+
     // Run the matching algorithm
     const result = await runMatching(batchNumber);
 
