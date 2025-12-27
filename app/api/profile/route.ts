@@ -35,6 +35,7 @@ export async function GET() {
         showPointOfContactToMatches: true,
         isCupid: true,
         isBeingMatched: true,
+        isAdmin: true,
         lastActiveDashboard: true,
       },
     });

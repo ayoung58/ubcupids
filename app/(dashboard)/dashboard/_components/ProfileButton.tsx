@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { User, LogOut, ChevronDown, RefreshCw } from "lucide-react";
+import { User, LogOut, ChevronDown, RefreshCw, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ProfileButtonProps {
@@ -27,6 +27,7 @@ export function ProfileButton({
   const [profilePicture, setProfilePicture] = useState(initialProfilePicture);
   const [isCupid, setIsCupid] = useState(initialIsCupid);
   const [isBeingMatched, setIsBeingMatched] = useState(initialIsBeingMatched);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -49,6 +50,7 @@ export function ProfileButton({
         setProfilePicture(data.profilePicture || "");
         setIsCupid(data.isCupid || false);
         setIsBeingMatched(data.isBeingMatched ?? true);
+        setIsAdmin(data.isAdmin || false);
       })
       .catch((error) => console.error("Error fetching profile:", error));
   }, []);
@@ -152,6 +154,18 @@ export function ProfileButton({
             <User className="h-4 w-4" />
             Profile
           </Link>
+
+          {/* Admin Dashboard - Only show for admins */}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors font-medium"
+            >
+              <Shield className="h-4 w-4" />
+              Admin Dashboard
+            </Link>
+          )}
 
           {/* Dashboard Switching - Only show if user has both accounts */}
           {hasBothAccounts && (
