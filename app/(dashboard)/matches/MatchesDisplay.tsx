@@ -267,7 +267,8 @@ function MatchCard({ match }: { match: MatchDisplay }) {
   }[match.matchType];
 
   // Determine which contact info to show
-  const contactInfo = match.matchedUser.pointOfContact || match.matchedUser.email;
+  const contactInfo =
+    match.matchedUser.pointOfContact || match.matchedUser.email;
 
   return (
     <Card className={`hover:shadow-lg transition-shadow ${matchTypeBorder}`}>
@@ -304,9 +305,7 @@ function MatchCard({ match }: { match: MatchDisplay }) {
               <p className="text-sm font-medium text-slate-700 mb-1">
                 Contact:
               </p>
-              <p className="text-sm text-slate-900 font-mono">
-                {contactInfo}
-              </p>
+              <p className="text-sm text-slate-900 font-mono">{contactInfo}</p>
             </div>
 
             {match.matchedUser.bio && (
