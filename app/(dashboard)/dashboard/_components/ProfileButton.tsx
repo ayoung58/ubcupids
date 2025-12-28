@@ -128,6 +128,7 @@ export function ProfileButton({
         className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         aria-label="Profile menu"
         aria-expanded={isOpen}
+        data-tutorial="profile-button"
       >
         <Avatar className="h-10 w-10 border-2 border-slate-200">
           <AvatarImage

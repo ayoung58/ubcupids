@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { DashboardTutorial } from "./_components/DashboardTutorial";
 
 async function getQuestionnaireStatus(userId: string) {
   try {
@@ -62,6 +63,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Tutorial for match users */}
+      {profile?.isBeingMatched && <DashboardTutorial />}
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900">
@@ -72,7 +76,7 @@ export default async function DashboardPage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card data-tutorial="questionnaire-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Questionnaire</CardTitle>
           </CardHeader>
@@ -94,7 +98,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-tutorial="matches-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">My Matches</CardTitle>
           </CardHeader>

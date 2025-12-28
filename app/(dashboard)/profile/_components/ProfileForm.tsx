@@ -22,6 +22,7 @@ import { ProfileFormData } from "@/types/profile";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ProfileTutorial } from "./ProfileTutorial";
 
 export function ProfileForm() {
   const { toast } = useToast();
@@ -444,6 +445,9 @@ export function ProfileForm() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Tutorial for match users */}
+      {accountInfo.isBeingMatched && <ProfileTutorial />}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <Link
@@ -467,6 +471,7 @@ export function ProfileForm() {
           onClick={handleSubmit}
           disabled={isSaving || !hasUnsavedChanges}
           size="sm"
+          data-tutorial="save-button"
         >
           {isSaving ? (
             <>
@@ -580,7 +585,10 @@ export function ProfileForm() {
           <style>{customValidationStyles}</style>
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Profile Picture */}
-            <div className="flex flex-col items-center gap-4">
+            <div
+              className="flex flex-col items-center gap-4"
+              data-tutorial="profile-picture"
+            >
               <div className="relative">
                 <Avatar className="h-32 w-32 border-4 border-slate-200">
                   <AvatarImage src={profileData.profilePicture || undefined} />
@@ -680,7 +688,7 @@ export function ProfileForm() {
             )}
 
             {/* Display Name */}
-            <div className="space-y-2">
+            <div className="space-y-2" data-tutorial="display-name">
               <Label htmlFor="displayName">
                 Display Name <span className="text-red-500">*</span>
               </Label>
@@ -727,7 +735,7 @@ export function ProfileForm() {
 
             {/* Preferred Candidate Email - Only for Cupid accounts */}
             {accountInfo.isCupid && (
-              <div className="space-y-2">
+              <div className="space-y-2" data-tutorial="preferred-email">
                 <Label htmlFor="preferredCandidateEmail">
                   If you have someone you&apos;d like to match (your preferred
                   candidate), enter their student email.
@@ -837,7 +845,7 @@ export function ProfileForm() {
             </div>
 
             {/* Bio */}
-            <div className="space-y-2">
+            <div className="space-y-2" data-tutorial="bio">
               <Label htmlFor="bio">Short Bio (Optional)</Label>
               <Textarea
                 id="bio"
@@ -851,7 +859,10 @@ export function ProfileForm() {
                 <p className="text-xs text-slate-500">
                   {(profileData.bio || "").length}/300 characters
                 </p>
-                <div className="flex items-center space-x-2">
+                <div
+                  className="flex items-center space-x-2"
+                  data-tutorial="show-bio"
+                >
                   <Checkbox
                     id="showBio"
                     checked={profileData.showBioToMatches}
