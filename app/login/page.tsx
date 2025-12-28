@@ -45,7 +45,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               💘 UBCupids
             </h1>
           </Link>
-          <p className="mt-2 text-sm text-slate-600">Sign in to your account</p>
+          <p className="mt-2 text-sm text-slate-600">
+            Sign in to your match or cupid account
+          </p>
         </div>
 
         {/* Success Messages */}
