@@ -37,6 +37,8 @@ export async function GET() {
         isBeingMatched: true,
         isAdmin: true,
         lastActiveDashboard: true,
+        dashboardTutorialCompleted: true,
+        profileTutorialCompleted: true,
       },
     });
 

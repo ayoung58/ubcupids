@@ -68,6 +68,7 @@ export function ProfileForm() {
     lastActiveDashboard: "match" as "match" | "cupid",
     email: "",
     preferredCandidateEmail: "",
+    profileTutorialCompleted: false,
   });
 
   useEffect(() => {
@@ -121,6 +122,7 @@ export function ProfileForm() {
           lastActiveDashboard: data.lastActiveDashboard || "match",
           email: data.email || "",
           preferredCandidateEmail: data.preferredCandidateEmail || "",
+          profileTutorialCompleted: data.profileTutorialCompleted || false,
         });
       }
     } catch (error) {
@@ -446,7 +448,11 @@ export function ProfileForm() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Tutorial for match users */}
-      {accountInfo.isBeingMatched && <ProfileTutorial />}
+      {accountInfo.isBeingMatched && (
+        <ProfileTutorial
+          initialCompleted={accountInfo.profileTutorialCompleted}
+        />
+      )}
 
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -832,6 +838,7 @@ export function ProfileForm() {
                   <Label
                     htmlFor="showInterests"
                     className="text-sm font-normal cursor-pointer flex items-center gap-1"
+                    data-tutorial="show-interests"
                   >
                     {profileData.showInterestsToMatches ? (
                       <Eye className="h-3 w-3" />
@@ -888,7 +895,7 @@ export function ProfileForm() {
             </div>
 
             {/* Point of Contact */}
-            <div className="space-y-2">
+            <div className="space-y-2" data-tutorial="point-of-contact">
               <Label htmlFor="pointOfContact">
                 Point of Contact (Optional)
               </Label>
@@ -901,9 +908,6 @@ export function ProfileForm() {
                 maxLength={100}
                 placeholder="e.g., @instagram_handle, Discord: username#1234, or personal email"
               />
-              <p className="text-xs text-slate-500">
-                Social media handle, email, or other preferred contact method
-              </p>
               <div className="flex items-center justify-between">
                 <p className="text-xs text-slate-600">
                   <Info className="h-3 w-3 inline mr-1" />

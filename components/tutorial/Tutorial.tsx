@@ -17,6 +17,7 @@ export interface TutorialStep {
 interface TutorialProps {
   steps: TutorialStep[];
   tutorialId: string; // Unique ID to track completion
+  initialCompleted?: boolean; // Server-provided completion status
   onComplete?: () => void;
   onSkip?: () => void;
 }
@@ -24,20 +25,17 @@ interface TutorialProps {
 export function Tutorial({
   steps,
   tutorialId,
+  initialCompleted = false,
   onComplete,
   onSkip,
 }: TutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  // Check if tutorial has been completed on initialization
-  const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window !== "undefined") {
-      const completed = localStorage.getItem(`tutorial-${tutorialId}`);
-      return !completed;
-    }
-    return false;
-  });
+  // Use server-provided completion status
+  const [isVisible, setIsVisible] = useState(!initialCompleted);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
+  const [arrowPosition, setArrowPosition] = useState<
+    "top" | "bottom" | "left" | "right"
+  >("bottom");
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,7 +46,6 @@ export function Tutorial({
       const targetElement = document.querySelector(step.target);
       if (targetElement) {
         const rect = targetElement.getBoundingClientRect();
-        setHighlightRect(rect);
 
         // Calculate tooltip position
         const tooltipElement = tooltipRef.current;
@@ -64,21 +61,25 @@ export function Tutorial({
               top = rect.top - tooltipRect.height - 20 + offset.y;
               left =
                 rect.left + rect.width / 2 - tooltipRect.width / 2 + offset.x;
+              setArrowPosition("bottom");
               break;
             case "bottom":
               top = rect.bottom + 20 + offset.y;
               left =
                 rect.left + rect.width / 2 - tooltipRect.width / 2 + offset.x;
+              setArrowPosition("top");
               break;
             case "left":
               top =
                 rect.top + rect.height / 2 - tooltipRect.height / 2 + offset.y;
               left = rect.left - tooltipRect.width - 20 + offset.x;
+              setArrowPosition("right");
               break;
             case "right":
               top =
                 rect.top + rect.height / 2 - tooltipRect.height / 2 + offset.y;
               left = rect.right + 20 + offset.x;
+              setArrowPosition("left");
               break;
           }
 
@@ -97,6 +98,16 @@ export function Tutorial({
       }
     };
 
+    // Scroll element into view first
+    const targetElement = document.querySelector(step.target);
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    }
+
     // Initial position calculation
     setTimeout(updatePosition, 100);
 
@@ -109,6 +120,16 @@ export function Tutorial({
       window.removeEventListener("resize", updatePosition);
     };
   }, [currentStep, isVisible, steps]);
+
+  // Block body scroll when tutorial is active
+  useEffect(() => {
+    if (isVisible) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isVisible]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -124,15 +145,37 @@ export function Tutorial({
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     setIsVisible(false);
-    localStorage.setItem(`tutorial-${tutorialId}`, "skipped");
+
+    // Update server
+    try {
+      await fetch("/api/tutorial/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tutorialId }),
+      });
+    } catch (error) {
+      console.error("Error updating tutorial completion:", error);
+    }
+
     onSkip?.();
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     setIsVisible(false);
-    localStorage.setItem(`tutorial-${tutorialId}`, "completed");
+
+    // Update server
+    try {
+      await fetch("/api/tutorial/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tutorialId }),
+      });
+    } catch (error) {
+      console.error("Error updating tutorial completion:", error);
+    }
+
     onComplete?.();
   };
 
@@ -140,28 +183,17 @@ export function Tutorial({
 
   const step = steps[currentStep];
 
+  // Get arrow character based on position (arrow points from tooltip to target)
+  const getArrowChar = (pos: string) => {
+    if (pos.includes("left")) return "→"; // tooltip is left, points right to element
+    if (pos.includes("right")) return "←"; // tooltip is right, points left to element
+    if (pos.includes("top")) return "↓"; // tooltip is above, points down to element
+    if (pos.includes("bottom")) return "↑"; // tooltip is below, points up to element
+    return "";
+  };
+
   return (
     <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/60 z-[9998]"
-        style={{ pointerEvents: "none" }}
-      />
-
-      {/* Highlight cutout */}
-      {highlightRect && (
-        <div
-          className="fixed border-4 border-white rounded-lg shadow-2xl z-[9999] pointer-events-none"
-          style={{
-            top: highlightRect.top - 4,
-            left: highlightRect.left - 4,
-            width: highlightRect.width + 8,
-            height: highlightRect.height + 8,
-            boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.6)",
-          }}
-        />
-      )}
-
       {/* Tooltip */}
       <Card
         ref={tooltipRef}
@@ -174,7 +206,7 @@ export function Tutorial({
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-3">
             <h3 className="text-lg font-semibold text-slate-900">
-              {step.title}
+              {getArrowChar(step.position || "bottom")} {step.title}
             </h3>
             <Button
               variant="ghost"

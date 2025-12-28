@@ -93,6 +93,10 @@ model User {
   showInterestsToMatches Boolean @default(true)  // Whether to display interests to matches
   showPointOfContactToMatches Boolean @default(true) // Whether to display point of contact to matches
   
+  // Tutorial Completion Tracking (per-user)
+  dashboardTutorialCompleted Boolean @default(false) // Match dashboard tutorial
+  profileTutorialCompleted Boolean @default(false)   // Profile page tutorial
+  
   // Legacy fields (keeping for backwards compatibility)
   yearOfStudy   Int?
   

@@ -8,7 +8,7 @@ const dashboardSteps: TutorialStep[] = [
     title: "Welcome to UBCupids! 💘",
     content:
       "You can return to the homepage at any time by clicking on the UBCupids logo at the top of the page.",
-    target: "h1", // The logo/title
+    target: "[data-tutorial='logo']",
     position: "bottom",
   },
   {
@@ -45,6 +45,18 @@ const dashboardSteps: TutorialStep[] = [
   },
 ];
 
-export function DashboardTutorial() {
-  return <Tutorial steps={dashboardSteps} tutorialId="match-dashboard" />;
+interface DashboardTutorialProps {
+  initialCompleted: boolean;
+}
+
+export function DashboardTutorial({
+  initialCompleted,
+}: DashboardTutorialProps) {
+  return (
+    <Tutorial
+      steps={dashboardSteps}
+      tutorialId="match-dashboard"
+      initialCompleted={initialCompleted}
+    />
+  );
 }

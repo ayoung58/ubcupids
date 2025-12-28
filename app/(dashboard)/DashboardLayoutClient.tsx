@@ -31,7 +31,7 @@ export function DashboardLayoutClient({
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 py-4 relative">
             <div className="text-center">
-              <Link href="/">
+              <Link href="/" data-tutorial="logo">
                 <h1 className="text-3xl font-bold text-slate-900 cursor-pointer hover:text-slate-700 transition-colors">
                   💘 UBCupids
                 </h1>

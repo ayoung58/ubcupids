@@ -21,25 +21,25 @@ const profileSteps: TutorialStep[] = [
   },
   {
     id: "show-to-matches",
-    title: "Privacy Settings",
+    title: "Visibility Settings",
     content:
-      "Control what information you want to share with your matches using these toggle buttons.",
-    target: "[data-tutorial='show-bio']",
-    position: "right",
+      'Control what information you want to share with your matches using these "Show to Matches" buttons.',
+    target: "[data-tutorial='show-interests']",
+    position: "bottom",
   },
   {
     id: "additional-contact",
     title: "Additional Point of Contact",
     content:
-      "Add an email for your preferred candidate to reach you if needed.",
-    target: "[data-tutorial='preferred-email']",
+      "Add an email for your matches to reach you at. The default is your ubc email.",
+    target: "[data-tutorial='point-of-contact']",
     position: "right",
   },
   {
     id: "other-fields",
     title: "Additional Information",
     content:
-      "Fill in your bio, interests, major, and other details to help your matches get to know you better!",
+      "Fill in your bio, interests, major, and other details to help your matches and your human cupid get to know you better!",
     target: "[data-tutorial='bio']",
     position: "right",
   },
@@ -49,10 +49,20 @@ const profileSteps: TutorialStep[] = [
     content:
       "Don't forget to save your changes when you're done! The button will be enabled when you make edits.",
     target: "[data-tutorial='save-button']",
-    position: "top",
+    position: "bottom",
   },
 ];
 
-export function ProfileTutorial() {
-  return <Tutorial steps={profileSteps} tutorialId="match-profile" />;
+interface ProfileTutorialProps {
+  initialCompleted: boolean;
+}
+
+export function ProfileTutorial({ initialCompleted }: ProfileTutorialProps) {
+  return (
+    <Tutorial
+      steps={profileSteps}
+      tutorialId="match-profile"
+      initialCompleted={initialCompleted}
+    />
+  );
 }

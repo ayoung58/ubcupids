@@ -50,6 +50,7 @@ export default async function DashboardPage() {
       isCupid: true,
       isBeingMatched: true,
       lastActiveDashboard: true,
+      dashboardTutorialCompleted: true,
     },
   });
 
@@ -64,7 +65,11 @@ export default async function DashboardPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Tutorial for match users */}
-      {profile?.isBeingMatched && <DashboardTutorial />}
+      {profile?.isBeingMatched && (
+        <DashboardTutorial
+          initialCompleted={profile.dashboardTutorialCompleted}
+        />
+      )}
 
       {/* Header */}
       <div>
