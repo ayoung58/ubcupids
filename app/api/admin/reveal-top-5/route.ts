@@ -66,32 +66,17 @@ export async function POST(request: NextRequest) {
           batchNumber,
         },
         orderBy: {
-          score: "desc",
+          totalScore: "desc",
         },
         take: 5,
         select: {
           userId: true,
           targetUserId: true,
-          score: true,
+          totalScore: true,
         },
       });
 
-      // Update or create the scores with revealedToCupidAt timestamp
-      for (const score of topScores) {
-        await prisma.compatibilityScore.update({
-          where: {
-            userId_targetUserId_batchNumber: {
-              userId: score.userId,
-              targetUserId: score.targetUserId,
-              batchNumber,
-            },
-          },
-          data: {
-            revealedToCupidAt: new Date(),
-          },
-        });
-        revealed++;
-      }
+      revealed += topScores.length;
     }
 
     return NextResponse.json({
