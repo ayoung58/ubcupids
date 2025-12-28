@@ -23,6 +23,8 @@ import {
   CupidDashboard,
   CupidPairAssignment,
   CupidProfileView,
+  PotentialMatch,
+  CupidCandidateAssignment,
 } from "./types";
 import { generateProfileSummary } from "./ai";
 
@@ -91,7 +93,7 @@ export async function assignCandidatesToCupids(
   // Get approved cupids with their preferred candidate emails
   const cupids = await prisma.cupidProfile.findMany({
     where: {
-      status: "approved",
+      approved: true,
       user: {
         emailVerified: { not: null },
       },
@@ -402,7 +404,7 @@ export async function getCupidDashboard(
   const pendingAssignments = assignments.filter(
     (a) => a.selectedMatchId === null
   );
-  const pendingCandidateAssignments: CupidCandidateAssignment[] = [];
+  const pendingCandidateAssignments: CupidPairAssignment[] = [];
 
   for (const assignment of pendingAssignments) {
     const candidateAssignment = await getCandidateAssignmentDetails(
@@ -496,7 +498,13 @@ async function getPairDetails(
   user2Id: string,
   algorithmScore: number,
   cupidUserId: string
-): Promise<Omit<CupidPairAssignment, "decision" | "decisionReason"> | null> {
+): Promise<{
+  assignmentId: string;
+  cupidUserId: string;
+  user1: CupidProfileView;
+  user2: CupidProfileView;
+  algorithmScore: number;
+} | null> {
   // Get both users with their questionnaire data
   const [user1, user2] = await Promise.all([
     getUserProfileForCupid(user1Id),

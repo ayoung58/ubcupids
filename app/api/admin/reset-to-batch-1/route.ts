@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 
@@ -9,7 +9,7 @@ import { prisma } from "@/lib/prisma";
  * Resets the entire system back to batch 1 for testing purposes
  * WARNING: This is destructive and should only be used in development/testing
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const session = await getCurrentUser();
 

@@ -40,12 +40,9 @@ export function AdminDashboardClient({
 }: AdminDashboardClientProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const [currentBatch, setCurrentBatch] = useState(initialBatch);
-  const [batch1Status, setBatch1Status] = useState(initialBatch1Status);
-  const [batch2Status, setBatch2Status] = useState(initialBatch2Status);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
-  const batch1HasRun = batch1Status !== "pending";
+  const batch1HasRun = initialBatch1Status !== "pending";
   const batch2Enabled = batch1HasRun;
 
   const handleAction = async (
@@ -102,7 +99,7 @@ export function AdminDashboardClient({
         <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg">
           <span className="font-semibold text-primary">Current Batch:</span>
           <span className="text-2xl font-bold text-primary">
-            {currentBatch}
+            {initialBatch}
           </span>
         </div>
       </div>
@@ -116,7 +113,7 @@ export function AdminDashboardClient({
           <div className="p-4 bg-slate-50 rounded-lg space-y-2">
             <div className="text-sm font-medium text-slate-600">Batch 1</div>
             <div className="text-lg font-semibold capitalize">
-              {batch1Status}
+              {initialBatch1Status}
             </div>
             <div className="text-xs space-y-1 pt-2 border-t">
               <div className="flex items-center gap-2">
@@ -164,7 +161,7 @@ export function AdminDashboardClient({
           <div className="p-4 bg-slate-50 rounded-lg space-y-2">
             <div className="text-sm font-medium text-slate-600">Batch 2</div>
             <div className="text-lg font-semibold capitalize">
-              {batch2Status}
+              {initialBatch2Status}
             </div>
             <div className="text-xs space-y-1 pt-2 border-t">
               <div className="flex items-center gap-2">

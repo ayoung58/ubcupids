@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 
@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
  * - Creating batch 2 record if it doesn't exist
  * - Resetting user match counts
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const session = await getCurrentUser();
 

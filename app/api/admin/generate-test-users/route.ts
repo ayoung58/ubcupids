@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
-import crypto from "crypto";
 
 /**
  * Generate Test Users
@@ -10,7 +9,7 @@ import crypto from "crypto";
  *
  * Creates 250 verified test users for development/testing
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const session = await getCurrentUser();
 
