@@ -354,9 +354,7 @@ export function AdminDashboardClient({
               onClick={() =>
                 handleAction("reveal-top-5", "/api/admin/reveal-top-5", 1)
               }
-              disabled={
-                loadingAction !== null || !batch1State.hasAssignments
-              }
+              disabled={loadingAction !== null || !batch1State.hasAssignments}
               className="h-20"
               variant="secondary"
               title={
@@ -407,9 +405,7 @@ export function AdminDashboardClient({
               disabled={loadingAction !== null || !batch1State.hasMatches}
               className="h-20"
               variant="secondary"
-              title={
-                !batch1State.hasMatches ? "Create matches first" : ""
-              }
+              title={!batch1State.hasMatches ? "Create matches first" : ""}
             >
               {loadingAction === "reveal-matches-1" ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />

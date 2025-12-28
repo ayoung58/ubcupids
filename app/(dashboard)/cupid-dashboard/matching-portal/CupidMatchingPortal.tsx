@@ -45,6 +45,10 @@ interface CupidProfileView {
   keyTraits: string[];
   lookingFor: string;
   highlights: string[];
+  bio?: string | null;
+  interests?: string | null;
+  major?: string | null;
+  profilePicture?: string | null;
 }
 
 interface PotentialMatch {
@@ -90,6 +94,12 @@ export function CupidMatchingPortal() {
   const [matchImportance, setMatchImportance] =
     useState<ImportanceRatings | null>(null);
   const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(false);
+  const [candidateTab, setCandidateTab] = useState<"profile" | "questionnaire">(
+    "profile"
+  );
+  const [matchTab, setMatchTab] = useState<"profile" | "questionnaire">(
+    "profile"
+  );
 
   useEffect(() => {
     fetchDashboard();
@@ -405,9 +415,32 @@ export function CupidMatchingPortal() {
                   Your Candidate: {currentAssignment.candidate.firstName},{" "}
                   {currentAssignment.candidate.age}
                 </CardTitle>
+                {/* Tabs */}
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant={candidateTab === "profile" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCandidateTab("profile")}
+                    className="flex-1"
+                  >
+                    Profile Info
+                  </Button>
+                  <Button
+                    variant={
+                      candidateTab === "questionnaire" ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() => setCandidateTab("questionnaire")}
+                    className="flex-1"
+                  >
+                    Questionnaire
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto p-0">
-                {loadingQuestionnaires ? (
+                {candidateTab === "profile" ? (
+                  <ProfileDisplay profile={currentAssignment.candidate} />
+                ) : loadingQuestionnaires ? (
                   <LoadingQuestionnairesSkeleton />
                 ) : (
                   <QuestionnaireDisplay
@@ -496,9 +529,32 @@ export function CupidMatchingPortal() {
                     )}
                   </div>
                 </div>
+                {/* Tabs */}
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant={matchTab === "profile" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setMatchTab("profile")}
+                    className="flex-1"
+                  >
+                    Profile Info
+                  </Button>
+                  <Button
+                    variant={
+                      matchTab === "questionnaire" ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() => setMatchTab("questionnaire")}
+                    className="flex-1"
+                  >
+                    Questionnaire
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto p-0">
-                {loadingQuestionnaires ? (
+                {matchTab === "profile" ? (
+                  <ProfileDisplay profile={currentMatch.profile} />
+                ) : loadingQuestionnaires ? (
                   <LoadingQuestionnairesSkeleton />
                 ) : (
                   <QuestionnaireDisplay
@@ -598,6 +654,110 @@ function StatsHeader({ dashboard }: { dashboard: CupidDashboard | null }) {
           <span className="font-bold text-green-600">{dashboard.reviewed}</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ProfileDisplay({ profile }: { profile: CupidProfileView }) {
+  return (
+    <div className="p-6 space-y-6">
+      {/* Profile Picture */}
+      {profile.profilePicture && (
+        <div className="flex justify-center">
+          <img
+            src={profile.profilePicture}
+            alt={profile.firstName}
+            className="w-32 h-32 rounded-full object-cover border-4 border-slate-200"
+          />
+        </div>
+      )}
+
+      {/* Basic Info */}
+      <div className="space-y-2">
+        <h3 className="font-bold text-lg text-slate-900">
+          {profile.firstName}, {profile.age}
+        </h3>
+        {profile.major && (
+          <p className="text-sm text-slate-600">📚 {profile.major}</p>
+        )}
+      </div>
+
+      {/* Bio */}
+      {profile.bio && (
+        <div className="bg-slate-50 p-4 rounded-lg space-y-2">
+          <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+            <span>✍️</span>
+            About Me
+          </h4>
+          <p className="text-sm text-slate-700 whitespace-pre-wrap">
+            {profile.bio}
+          </p>
+        </div>
+      )}
+
+      {/* Interests */}
+      {profile.interests && (
+        <div className="bg-slate-50 p-4 rounded-lg space-y-2">
+          <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+            <span>🎯</span>
+            Interests & Hobbies
+          </h4>
+          <p className="text-sm text-slate-700 whitespace-pre-wrap">
+            {profile.interests}
+          </p>
+        </div>
+      )}
+
+      {/* AI Summary */}
+      <div className="bg-blue-50 p-4 rounded-lg space-y-3 border border-blue-200">
+        <h4 className="font-semibold text-blue-900 flex items-center gap-2">
+          <span>🤖</span>
+          AI-Generated Summary
+        </h4>
+        <p className="text-sm text-blue-800">{profile.summary}</p>
+
+        {profile.keyTraits && profile.keyTraits.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-blue-700 mb-2">
+              Key Traits:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {profile.keyTraits.map((trait, idx) => (
+                <span
+                  key={idx}
+                  className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+                >
+                  {trait}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {profile.lookingFor && (
+          <div>
+            <p className="text-xs font-medium text-blue-700 mb-1">
+              Looking For:
+            </p>
+            <p className="text-sm text-blue-800">{profile.lookingFor}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Question Highlights */}
+      {profile.highlights && profile.highlights.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="font-semibold text-slate-800">Key Responses</h4>
+          {profile.highlights.map((highlight: any, idx: number) => (
+            <div key={idx} className="bg-slate-50 p-3 rounded-lg space-y-1">
+              <p className="text-xs font-medium text-slate-600">
+                {highlight.question}
+              </p>
+              <p className="text-sm text-slate-900">{highlight.answer}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

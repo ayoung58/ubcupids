@@ -210,6 +210,12 @@ export interface CupidProfileView {
     question: string;
     answer: string;
   }[];
+
+  // Additional profile information
+  bio?: string | null;
+  interests?: string | null;
+  major?: string | null;
+  profilePicture?: string | null;
 }
 
 /**

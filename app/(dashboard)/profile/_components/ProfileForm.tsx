@@ -845,7 +845,7 @@ export function ProfileForm() {
                 onChange={(e) => handleProfileChange({ bio: e.target.value })}
                 maxLength={300}
                 rows={4}
-                placeholder="Anything else you'd like to share about yourself..."
+                placeholder="This will be shared with the cupid that matches you!"
               />
               <div className="flex items-center justify-between">
                 <p className="text-xs text-slate-500">

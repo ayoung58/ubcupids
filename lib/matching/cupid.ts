@@ -528,6 +528,12 @@ async function getUserProfileForCupid(
       id: true,
       firstName: true,
       age: true,
+      bio: true,
+      interests: true,
+      major: true,
+      profilePicture: true,
+      showBioToMatches: true,
+      showInterestsToMatches: true,
       questionnaireResponse: {
         select: {
           responses: true,
@@ -565,6 +571,12 @@ async function getUserProfileForCupid(
 
   // Add question highlights
   profile.highlights = getQuestionHighlights(responses);
+
+  // Add bio and interests if available and visible
+  profile.bio = user.showBioToMatches ? user.bio : null;
+  profile.interests = user.showInterestsToMatches ? user.interests : null;
+  profile.major = user.major;
+  profile.profilePicture = user.profilePicture;
 
   return profile;
 }
