@@ -7,7 +7,7 @@ const profileSteps: TutorialStep[] = [
     id: "profile-picture",
     title: "Profile Picture",
     content:
-      "Upload a profile picture to help your matches recognize you! This is optional but recommended.",
+      "Upload a profile picture to help your matches recognize you! This is optional.",
     target: "[data-tutorial='profile-picture']",
     position: "right",
   },

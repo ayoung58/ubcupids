@@ -298,6 +298,10 @@ export function QuestionnaireForm({
       {/* Section Progress */}
       <div className="bg-white border-b shadow-sm">
         <div className="container max-w-7xl px-2 py-3 mx-auto">
+          <p className="text-sm text-slate-600 text-center mb-4">
+            Track your progress and click the sections below to navigate easily
+            to each section
+          </p>
           <div className="flex items-center justify-center gap-2 text-xs">
             {config.sections.map((section) => {
               const sectionProgress = getSectionProgress(section.id, responses);
