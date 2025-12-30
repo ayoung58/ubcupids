@@ -31,18 +31,9 @@
           "required": true,
           "hasImportance": false,
           "options": [
-            {
-              "value": "man",
-              "label": "Man"
-            },
-            {
-              "value": "woman",
-              "label": "Woman"
-            },
-            {
-              "value": "non-binary",
-              "label": "Non-binary"
-            },
+            { "value": "man", "label": "Man" },
+            { "value": "woman", "label": "Woman" },
+            { "value": "non-binary", "label": "Non-binary" },
             {
               "value": "self-describe",
               "label": "Prefer to self-describe",
@@ -57,30 +48,15 @@
           "required": true,
           "hasImportance": false,
           "options": [
-            {
-              "value": "heterosexual",
-              "label": "Heterosexual/Straight"
-            },
-            {
-              "value": "gay-lesbian",
-              "label": "Gay/Lesbian"
-            },
-            {
-              "value": "bisexual",
-              "label": "Bisexual"
-            },
-            {
-              "value": "pansexual",
-              "label": "Pansexual"
-            },
+            { "value": "heterosexual", "label": "Heterosexual/Straight" },
+            { "value": "gay-lesbian", "label": "Gay/Lesbian" },
+            { "value": "bisexual", "label": "Bisexual" },
+            { "value": "pansexual", "label": "Pansexual" },
             {
               "value": "asexual",
               "label": "Asexual (romantic attraction without sexual attraction)"
             },
-            {
-              "value": "questioning",
-              "label": "Questioning/Exploring"
-            },
+            { "value": "questioning", "label": "Questioning/Exploring" },
             {
               "value": "self-describe",
               "label": "Prefer to self-describe",
@@ -96,18 +72,9 @@
           "hasImportance": false,
           "note": "Your matches will only include people whose preferences are compatible with yours.",
           "options": [
-            {
-              "value": "men",
-              "label": "Men"
-            },
-            {
-              "value": "women",
-              "label": "Women"
-            },
-            {
-              "value": "non-binary",
-              "label": "Non-binary people"
-            },
+            { "value": "men", "label": "Men" },
+            { "value": "women", "label": "Women" },
+            { "value": "non-binary", "label": "Non-binary people" },
             {
               "value": "anyone",
               "label": "Anyone (gender doesn't matter to me)"
@@ -122,6 +89,43 @@
       "description": "Let's get to know you! These questions help us understand your personality and sense of humor.",
       "questionsCount": 10,
       "questions": [
+        {
+          "id": "q4",
+          "type": "single-choice",
+          "text": "Your ideal Saturday morning is closest to:",
+          "required": true,
+          "hasImportance": true,
+          "rationale": "Energy level, social vs. solo, routine vs. spontaneity",
+          "options": [
+            { "value": "sleep-noon", "label": "Sleeping until noon" },
+            {
+              "value": "early-active",
+              "label": "Up at 7am for a run, hike, or gym session"
+            },
+            { "value": "friends", "label": "Meeting with friends" },
+            {
+              "value": "productive",
+              "label": "Catching up on work, hobbies, or side projects"
+            }
+          ]
+        },
+        {
+          "id": "q5",
+          "type": "single-choice",
+          "text": "You've had a terrible day. What helps you decompress?",
+          "required": true,
+          "hasImportance": true,
+          "rationale": "Emotional processing, introversion/extraversion, coping mechanisms",
+          "options": [
+            { "value": "talk-out", "label": "Talking it out with someone" },
+            { "value": "alone", "label": "Being alone to recharge" },
+            { "value": "physical", "label": "Physical activity" },
+            {
+              "value": "escapism",
+              "label": "Diving into a show, book, or game"
+            }
+          ]
+        },
         {
           "id": "q6",
           "type": "single-choice",
@@ -153,58 +157,6 @@
           ]
         },
         {
-          "id": "q4",
-          "type": "single-choice",
-          "text": "Your ideal Saturday morning is closest to:",
-          "required": true,
-          "hasImportance": true,
-          "rationale": "Energy level, social vs. solo, routine vs. spontaneity",
-          "options": [
-            {
-              "value": "sleep-noon",
-              "label": "Sleeping until noon"
-            },
-            {
-              "value": "early-active",
-              "label": "Up at 7am for a run, hike, or gym session"
-            },
-            {
-              "value": "friends",
-              "label": "Meeting with friends"
-            },
-            {
-              "value": "productive",
-              "label": "Catching up on work, hobbies, or side projects"
-            }
-          ]
-        },
-        {
-          "id": "q5",
-          "type": "single-choice",
-          "text": "You've had a terrible day. What helps you decompress?",
-          "required": true,
-          "hasImportance": true,
-          "rationale": "Emotional processing, introversion/extraversion, coping mechanisms",
-          "options": [
-            {
-              "value": "talk-out",
-              "label": "Talking it out with someone"
-            },
-            {
-              "value": "alone",
-              "label": "Being alone to recharge"
-            },
-            {
-              "value": "physical",
-              "label": "Physical activity"
-            },
-            {
-              "value": "escapism",
-              "label": "Diving into a show, book, or game"
-            }
-          ]
-        },
-        {
           "id": "q7",
           "type": "single-choice",
           "text": "If you were to make plans with friends, you're the person who:",
@@ -212,10 +164,7 @@
           "hasImportance": true,
           "rationale": "Initiative, planning style, social role",
           "options": [
-            {
-              "value": "organizer",
-              "label": "Organizes everything"
-            },
+            { "value": "organizer", "label": "Organizes everything" },
             {
               "value": "flow",
               "label": "Goes with the flow (whatever everyone else wants)"
@@ -224,10 +173,7 @@
               "value": "suggests",
               "label": "Suggests ideas but lets someone else finalize"
             },
-            {
-              "value": "shows-up",
-              "label": "Shows up when told where to go"
-            },
+            { "value": "shows-up", "label": "Shows up when told where to go" },
             {
               "value": "terrible",
               "label": "Honestly, I'm terrible at committing to plans"
@@ -242,18 +188,12 @@
           "hasImportance": true,
           "rationale": "Communication habits, attentiveness, boundaries",
           "options": [
-            {
-              "value": "quick",
-              "label": "Quick replies, always available"
-            },
+            { "value": "quick", "label": "Quick replies, always available" },
             {
               "value": "few-hours",
               "label": "I respond when I can, but might take a few hours"
             },
-            {
-              "value": "slow-thoughtful",
-              "label": "Slow but thoughtful"
-            },
+            { "value": "slow-thoughtful", "label": "Slow but thoughtful" },
             {
               "value": "terrible",
               "label": "Terrible—I forget to reply for days"
@@ -272,14 +212,8 @@
               "value": "going-out",
               "label": "Going out with friends immediately"
             },
-            {
-              "value": "treat",
-              "label": "Treating yourself"
-            },
-            {
-              "value": "sleep",
-              "label": "Sleeping for 12 hours straight"
-            },
+            { "value": "treat", "label": "Treating yourself" },
+            { "value": "sleep", "label": "Sleeping for 12 hours straight" },
             {
               "value": "stress-next",
               "label": "Already stressing about the next thing"
@@ -337,10 +271,7 @@
           "hasImportance": true,
           "rationale": "Role in groups, control vs. trust, energy contribution",
           "options": [
-            {
-              "value": "dj",
-              "label": "DJs the entire drive"
-            },
+            { "value": "dj", "label": "DJs the entire drive" },
             {
               "value": "navigator",
               "label": "Navigates and keeps us on schedule"
@@ -349,14 +280,8 @@
               "value": "entertainer",
               "label": "Provides snacks and entertainment"
             },
-            {
-              "value": "sleeper",
-              "label": "Sleeps in the passenger seat"
-            },
-            {
-              "value": "driver",
-              "label": "Drives the whole way"
-            }
+            { "value": "sleeper", "label": "Sleeps in the passenger seat" },
+            { "value": "driver", "label": "Drives the whole way" }
           ]
         },
         {
@@ -379,10 +304,7 @@
               "value": "advance-notice",
               "label": "I need advance notice for most things"
             },
-            {
-              "value": "stresses",
-              "label": "Spontaneity stresses me out"
-            }
+            { "value": "stresses", "label": "Spontaneity stresses me out" }
           ]
         },
         {
@@ -400,10 +322,7 @@
               "value": "never",
               "label": "I've never had or pursued a romantic relationship before"
             },
-            {
-              "value": "once-twice",
-              "label": "I've dated once or twice"
-            },
+            { "value": "once-twice", "label": "I've dated once or twice" },
             {
               "value": "multiple",
               "label": "I've dated multiple times so far"
@@ -434,10 +353,7 @@
           "hasImportance": true,
           "rationale": "Energy baseline for lifestyle compatibility",
           "options": [
-            {
-              "value": "high",
-              "label": "High—I'm always on the go"
-            },
+            { "value": "high", "label": "High—I'm always on the go" },
             {
               "value": "moderate",
               "label": "Moderate—I have bursts of energy and downtime"
@@ -490,10 +406,7 @@
               "value": "distract",
               "label": "Distract myself until I feel better"
             },
-            {
-              "value": "bottle-up",
-              "label": "Bottle it up"
-            }
+            { "value": "bottle-up", "label": "Bottle it up" }
           ]
         },
         {
@@ -503,10 +416,7 @@
           "required": true,
           "hasImportance": true,
           "options": [
-            {
-              "value": "central",
-              "label": "Central to my life"
-            },
+            { "value": "central", "label": "Central to my life" },
             {
               "value": "important",
               "label": "Important, but it's not my whole identity"
@@ -519,10 +429,7 @@
               "value": "not-priority",
               "label": "Not really a priority for me right now"
             },
-            {
-              "value": "unsure",
-              "label": "I'm not sure what this means to me"
-            }
+            { "value": "unsure", "label": "I'm not sure what this means to me" }
           ]
         },
         {
@@ -563,22 +470,13 @@
           "hasImportance": true,
           "rationale": "Organization, compatibility for cohabitation, self-awareness",
           "options": [
-            {
-              "value": "spotless",
-              "label": "Spotless and organized"
-            },
+            { "value": "spotless", "label": "Spotless and organized" },
             {
               "value": "clean-enough",
               "label": "Clean enough, but not perfect"
             },
-            {
-              "value": "organized-chaos",
-              "label": "Organized chaos"
-            },
-            {
-              "value": "mess",
-              "label": "A mess, not gonna lie"
-            }
+            { "value": "organized-chaos", "label": "Organized chaos" },
+            { "value": "mess", "label": "A mess, not gonna lie" }
           ]
         },
         {
@@ -596,10 +494,7 @@
               "value": "save-regularly",
               "label": "Save regularly, but I also enjoy spending on select things I value"
             },
-            {
-              "value": "save-when-can",
-              "label": "I save when I can"
-            },
+            { "value": "save-when-can", "label": "I save when I can" },
             {
               "value": "live-moment",
               "label": "Live in the moment, I don't think much about saving"
@@ -614,18 +509,9 @@
           "hasImportance": true,
           "rationale": "Schedule compatibility, energy patterns",
           "options": [
-            {
-              "value": "early-morning",
-              "label": "Early morning"
-            },
-            {
-              "value": "mid-day",
-              "label": "Mid-morning to afternoon"
-            },
-            {
-              "value": "late-night",
-              "label": "Late night"
-            },
+            { "value": "early-morning", "label": "Early morning" },
+            { "value": "mid-day", "label": "Mid-morning to afternoon" },
+            { "value": "late-night", "label": "Late night" },
             {
               "value": "varies",
               "label": "It varies, I don't have a set rhythm"
@@ -644,22 +530,13 @@
               "value": "huge-part",
               "label": "It's a huge part of my routine (5+ times/week)"
             },
-            {
-              "value": "few-times",
-              "label": "I'm active a few times a week"
-            },
+            { "value": "few-times", "label": "I'm active a few times a week" },
             {
               "value": "inconsistent",
               "label": "I try, but it's inconsistent"
             },
-            {
-              "value": "not-thing",
-              "label": "Not really my thing"
-            },
-            {
-              "value": "walking",
-              "label": "Does walking to class count?"
-            }
+            { "value": "not-thing", "label": "Not really my thing" },
+            { "value": "walking", "label": "Does walking to class count?" }
           ]
         },
         {
@@ -707,14 +584,8 @@
               "value": "insecurity",
               "label": "It's mostly a sign of my insecurity"
             },
-            {
-              "value": "not-jealous",
-              "label": "I don't feel jealous"
-            },
-            {
-              "value": "not-sure",
-              "label": "I'm not sure"
-            }
+            { "value": "not-jealous", "label": "I don't feel jealous" },
+            { "value": "not-sure", "label": "I'm not sure" }
           ]
         },
         {
@@ -725,18 +596,9 @@
           "hasImportance": true,
           "rationale": "Communication clarity, potential for misunderstandings",
           "options": [
-            {
-              "value": "direct",
-              "label": "Direct and straightforward"
-            },
-            {
-              "value": "thoughtful",
-              "label": "Thoughtful and considerate"
-            },
-            {
-              "value": "casual",
-              "label": "Casual and easy-going"
-            },
+            { "value": "direct", "label": "Direct and straightforward" },
+            { "value": "thoughtful", "label": "Thoughtful and considerate" },
+            { "value": "casual", "label": "Casual and easy-going" },
             {
               "value": "indirect",
               "label": "Indirect, I hint rather than state directly"
@@ -759,14 +621,8 @@
               "value": "occasional",
               "label": "I drink occasionally (special occasions)"
             },
-            {
-              "value": "rarely",
-              "label": "I rarely drink"
-            },
-            {
-              "value": "dont-drink",
-              "label": "I don't drink at all"
-            },
+            { "value": "rarely", "label": "I rarely drink" },
+            { "value": "dont-drink", "label": "I don't drink at all" },
             {
               "value": "prefer-partner-doesnt",
               "label": "I don't drink and prefer partners who don't either"
@@ -785,18 +641,12 @@
               "value": "always-down",
               "label": "Always down, I love novelty and adventure"
             },
-            {
-              "value": "open",
-              "label": "Open if it sounds interesting"
-            },
+            { "value": "open", "label": "Open if it sounds interesting" },
             {
               "value": "cautious",
               "label": "Cautious, I prefer familiar experiences"
             },
-            {
-              "value": "resistant",
-              "label": "Resistant, I like what I like"
-            }
+            { "value": "resistant", "label": "Resistant, I like what I like" }
           ]
         },
         {
@@ -811,10 +661,7 @@
               "value": "stability",
               "label": "I value stability and tradition"
             },
-            {
-              "value": "growth",
-              "label": "I value growth and change"
-            },
+            { "value": "growth", "label": "I value growth and change" },
             {
               "value": "freedom",
               "label": "I value freedom and independence"
@@ -837,10 +684,7 @@
           "hasImportance": true,
           "rationale": "Values, lifestyle, dealbreaker potential",
           "options": [
-            {
-              "value": "very",
-              "label": "Very important, I practice actively"
-            },
+            { "value": "very", "label": "Very important, I practice actively" },
             {
               "value": "somewhat",
               "label": "Somewhat important, culturally or occasionally"
@@ -849,10 +693,7 @@
               "value": "not-very",
               "label": "Not very important, but I respect it"
             },
-            {
-              "value": "not-important",
-              "label": "Not important at all"
-            },
+            { "value": "not-important", "label": "Not important at all" },
             {
               "value": "non-religious",
               "label": "Actively non-religious/atheist"
@@ -908,10 +749,7 @@
               "value": "private",
               "label": "Keep things pretty private, even when close"
             },
-            {
-              "value": "struggle",
-              "label": "Struggle with vulnerability"
-            }
+            { "value": "struggle", "label": "Struggle with vulnerability" }
           ]
         },
         {
@@ -922,10 +760,7 @@
           "hasImportance": true,
           "rationale": "Emotional intelligence and support style. Mismatches here cause relationship friction (e.g., \"fixer\" paired with someone who just wants to be heard)",
           "options": [
-            {
-              "value": "solve",
-              "label": "Jump in to help solve the problem"
-            },
+            { "value": "solve", "label": "Jump in to help solve the problem" },
             {
               "value": "listen",
               "label": "Listen and offer emotional support"
@@ -968,10 +803,7 @@
               "value": "dating-potential",
               "label": "Dating with potential for something serious"
             },
-            {
-              "value": "casual-fun",
-              "label": "Something casual and fun"
-            },
+            { "value": "casual-fun", "label": "Something casual and fun" },
             {
               "value": "friendship-first",
               "label": "Friendship first, see where it goes"
@@ -994,22 +826,13 @@
               "value": "high",
               "label": "High—they bring excitement and spontaneity"
             },
-            {
-              "value": "moderate",
-              "label": "Moderate—balanced and steady"
-            },
-            {
-              "value": "low-key",
-              "label": "Low-key—calm and grounding"
-            },
+            { "value": "moderate", "label": "Moderate—balanced and steady" },
+            { "value": "low-key", "label": "Low-key—calm and grounding" },
             {
               "value": "similar",
               "label": "Similar to mine (what I answered in Q14)"
             },
-            {
-              "value": "doesnt-matter",
-              "label": "Doesn't matter to me"
-            }
+            { "value": "doesnt-matter", "label": "Doesn't matter to me" }
           ]
         },
         {
@@ -1027,22 +850,13 @@
           "hasImportance": true,
           "rationale": "Introversion/extraversion preference",
           "options": [
-            {
-              "value": "outgoing",
-              "label": "Outgoing and social"
-            },
+            { "value": "outgoing", "label": "Outgoing and social" },
             {
               "value": "somewhat-social",
               "label": "Somewhat social, but also enjoys alone time"
             },
-            {
-              "value": "introverted",
-              "label": "More introverted and low-key"
-            },
-            {
-              "value": "doesnt-matter",
-              "label": "Doesn't matter"
-            }
+            { "value": "introverted", "label": "More introverted and low-key" },
+            { "value": "doesnt-matter", "label": "Doesn't matter" }
           ]
         },
         {
@@ -1069,10 +883,7 @@
               "value": "doesnt-matter",
               "label": "Doesn't matter, as long as they're happy"
             },
-            {
-              "value": "similar",
-              "label": "Has similar ambition levels to me"
-            }
+            { "value": "similar", "label": "Has similar ambition levels to me" }
           ]
         },
         {
@@ -1083,10 +894,7 @@
           "hasImportance": true,
           "rationale": "Emotional support needs, complements q32 on support style given",
           "options": [
-            {
-              "value": "help-solve",
-              "label": "Help me solve the problem"
-            },
+            { "value": "help-solve", "label": "Help me solve the problem" },
             {
               "value": "listen-support",
               "label": "Listen and offer emotional support"
@@ -1124,14 +932,8 @@
               "value": "could-deal",
               "label": "I could deal with it if other things were great"
             },
-            {
-              "value": "dont-care",
-              "label": "Yes, I don't care about mess"
-            },
-            {
-              "value": "im-messy",
-              "label": "I'm the messy one, so yes"
-            }
+            { "value": "dont-care", "label": "Yes, I don't care about mess" },
+            { "value": "im-messy", "label": "I'm the messy one, so yes" }
           ]
         },
         {
@@ -1142,10 +944,7 @@
           "hasImportance": true,
           "rationale": "Humor compatibility",
           "options": [
-            {
-              "value": "makes-laugh",
-              "label": "Makes me laugh constantly"
-            },
+            { "value": "makes-laugh", "label": "Makes me laugh constantly" },
             {
               "value": "can-joke",
               "label": "Can joke around but also be serious"
@@ -1168,10 +967,7 @@
           "hasImportance": true,
           "rationale": "Conflict resolution compatibility",
           "options": [
-            {
-              "value": "immediate",
-              "label": "Talking it out immediately"
-            },
+            { "value": "immediate", "label": "Talking it out immediately" },
             {
               "value": "space-discuss",
               "label": "Taking space, then discussing calmly"
@@ -1232,10 +1028,7 @@
               "value": "somewhat-open",
               "label": "Somewhat open, but private about some things"
             },
-            {
-              "value": "reserved",
-              "label": "More reserved emotionally"
-            },
+            { "value": "reserved", "label": "More reserved emotionally" },
             {
               "value": "meet-where",
               "label": "Doesn't matter, I meet people where they are"
@@ -1276,22 +1069,10 @@
           "hasImportance": true,
           "rationale": "Planning style compatibility",
           "options": [
-            {
-              "value": "organized",
-              "label": "Organized and plans ahead"
-            },
-            {
-              "value": "spontaneous",
-              "label": "Flexible and spontaneous"
-            },
-            {
-              "value": "mix",
-              "label": "A mix of both"
-            },
-            {
-              "value": "doesnt-matter",
-              "label": "Doesn't matter to me"
-            }
+            { "value": "organized", "label": "Organized and plans ahead" },
+            { "value": "spontaneous", "label": "Flexible and spontaneous" },
+            { "value": "mix", "label": "A mix of both" },
+            { "value": "doesnt-matter", "label": "Doesn't matter to me" }
           ]
         },
         {
@@ -1302,10 +1083,7 @@
           "hasImportance": true,
           "rationale": "Values alignment, dealbreaker screening",
           "options": [
-            {
-              "value": "exact-views",
-              "label": "Shares my exact views"
-            },
+            { "value": "exact-views", "label": "Shares my exact views" },
             {
               "value": "same-direction",
               "label": "Leans the same direction but doesn't have to match exactly"
@@ -1328,14 +1106,8 @@
           "hasImportance": true,
           "rationale": "Lifestyle compatibility, dealbreaker screening",
           "options": [
-            {
-              "value": "similar",
-              "label": "Similar to mine (from Q26)"
-            },
-            {
-              "value": "doesnt-matter",
-              "label": "Doesn't matter to me"
-            },
+            { "value": "similar", "label": "Similar to mine (from Q26)" },
+            { "value": "doesnt-matter", "label": "Doesn't matter to me" },
             {
               "value": "less",
               "label": "Less than mine (I'd prefer they drink less)"
@@ -1353,14 +1125,8 @@
           "required": true,
           "hasImportance": true,
           "options": [
-            {
-              "value": "never-dated",
-              "label": "Has never dated before"
-            },
-            {
-              "value": "once-twice",
-              "label": "Has dated once or twice"
-            },
+            { "value": "never-dated", "label": "Has never dated before" },
+            { "value": "once-twice", "label": "Has dated once or twice" },
             {
               "value": "few-times",
               "label": "Dated a few times through high school and university"
@@ -1369,10 +1135,7 @@
               "value": "experienced",
               "label": "Has a very experienced dating history"
             },
-            {
-              "value": "no-preference",
-              "label": "I don't have a preference"
-            }
+            { "value": "no-preference", "label": "I don't have a preference" }
           ]
         },
         {
@@ -1424,10 +1187,7 @@
               "value": "want-scared",
               "label": "I want closeness, but I also get scared and pull back"
             },
-            {
-              "value": "none-fit",
-              "label": "None of these fit me well"
-            }
+            { "value": "none-fit", "label": "None of these fit me well" }
           ]
         },
         {
@@ -1438,22 +1198,13 @@
           "hasImportance": true,
           "rationale": "Quality time preference, relationship style",
           "options": [
-            {
-              "value": "activities",
-              "label": "Doing activities together"
-            },
-            {
-              "value": "same-space",
-              "label": "Just being in the same space"
-            },
+            { "value": "activities", "label": "Doing activities together" },
+            { "value": "same-space", "label": "Just being in the same space" },
             {
               "value": "deep-conversations",
               "label": "Deep conversations and emotional connection"
             },
-            {
-              "value": "figuring-out",
-              "label": "I'm still figuring this out"
-            }
+            { "value": "figuring-out", "label": "I'm still figuring this out" }
           ]
         },
         {
@@ -1475,10 +1226,7 @@
               "value": "accept-as-is",
               "label": "Doesn't need to prioritize growth, I accept them as they are"
             },
-            {
-              "value": "challenges-me",
-              "label": "Challenges me to grow more"
-            }
+            { "value": "challenges-me", "label": "Challenges me to grow more" }
           ]
         },
         {
@@ -1501,10 +1249,7 @@
               "value": "uncomfortable",
               "label": "Uncomfortable, I prefer harmony"
             },
-            {
-              "value": "incompatibility",
-              "label": "Signs of incompatibility"
-            }
+            { "value": "incompatibility", "label": "Signs of incompatibility" }
           ]
         },
         {
@@ -1527,10 +1272,7 @@
               "value": "most-time",
               "label": "I prefer spending most of my time together"
             },
-            {
-              "value": "figuring-out",
-              "label": "I'm figuring out what I need"
-            }
+            { "value": "figuring-out", "label": "I'm figuring out what I need" }
           ]
         },
         {
@@ -1573,22 +1315,10 @@
           "required": true,
           "hasImportance": true,
           "options": [
-            {
-              "value": "very",
-              "label": "Very important"
-            },
-            {
-              "value": "somewhat",
-              "label": "Somewhat important"
-            },
-            {
-              "value": "not-very",
-              "label": "Not very important"
-            },
-            {
-              "value": "not-important",
-              "label": "Not important"
-            }
+            { "value": "very", "label": "Very important" },
+            { "value": "somewhat", "label": "Somewhat important" },
+            { "value": "not-very", "label": "Not very important" },
+            { "value": "not-important", "label": "Not important" }
           ]
         },
         {
@@ -1598,38 +1328,17 @@
           "required": true,
           "hasImportance": true,
           "options": [
-            {
-              "value": "trust-honesty",
-              "label": "Trust and honesty"
-            },
+            { "value": "trust-honesty", "label": "Trust and honesty" },
             {
               "value": "communication",
               "label": "Communication and understanding"
             },
-            {
-              "value": "fun-laughter",
-              "label": "Fun and laughter"
-            },
-            {
-              "value": "intimacy",
-              "label": "Physical and emotional intimacy"
-            },
-            {
-              "value": "shared-values",
-              "label": "Shared values and goals"
-            },
-            {
-              "value": "support",
-              "label": "Support and encouragement"
-            },
-            {
-              "value": "loyalty",
-              "label": "Loyalty"
-            },
-            {
-              "value": "something-else",
-              "label": "Something else"
-            }
+            { "value": "fun-laughter", "label": "Fun and laughter" },
+            { "value": "intimacy", "label": "Physical and emotional intimacy" },
+            { "value": "shared-values", "label": "Shared values and goals" },
+            { "value": "support", "label": "Support and encouragement" },
+            { "value": "loyalty", "label": "Loyalty" },
+            { "value": "something-else", "label": "Something else" }
           ]
         },
         {
@@ -1669,10 +1378,7 @@
               "value": "same-campus",
               "label": "Same campus / very close by (walking distance)"
             },
-            {
-              "value": "same-city",
-              "label": "Same city (Vancouver area)"
-            },
+            { "value": "same-city", "label": "Same city (Vancouver area)" },
             {
               "value": "long-distance",
               "label": "Willing to do long-distance if the connection is there"

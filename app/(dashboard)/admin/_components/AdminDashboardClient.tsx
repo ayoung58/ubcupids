@@ -12,8 +12,10 @@ import {
   Eye,
   RefreshCw,
   Trash2,
+  Settings,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface BatchState {
   hasMatches: boolean;
@@ -206,6 +208,24 @@ export function AdminDashboardClient({
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Configuration</CardTitle>
+          <p className="text-sm text-slate-600">
+            Manage questionnaire and system settings
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Link href="/admin/questionnaire-config">
+            <Button className="w-full h-16" variant="outline">
+              <Settings className="mr-2 h-5 w-5" />
+              Edit Questionnaire Configuration
+            </Button>
+          </Link>
         </CardContent>
       </Card>
 
