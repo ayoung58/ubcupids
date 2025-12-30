@@ -38,6 +38,14 @@ export default async function CupidDashboardPage() {
   const displayName =
     profile?.cupidDisplayName || profile?.displayName || session.user.name;
 
+  // Check if cupid has been assigned any candidates
+  const assignments = await prisma.cupidAssignment.findMany({
+    where: { cupidUserId: session.user.id },
+    select: { id: true },
+  });
+
+  const hasAssignments = assignments.length > 0;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -53,16 +61,25 @@ export default async function CupidDashboardPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Create Matches 💘</CardTitle>
           <p className="text-slate-600">
-            Browse profiles and create meaningful connections
+            {hasAssignments
+              ? "Browse profiles and create meaningful connections"
+              : "Questionnaires are still being filled out!"}
           </p>
         </CardHeader>
         <CardContent>
-          <Link href="/cupid-dashboard/matching-portal">
-            <Button size="lg" className="w-full md:w-auto">
+          {hasAssignments ? (
+            <Link href="/cupid-dashboard/matching-portal">
+              <Button size="lg" className="w-full md:w-auto">
+                <Target className="mr-2 h-5 w-5" />
+                Go to Matching Portal
+              </Button>
+            </Link>
+          ) : (
+            <Button size="lg" className="w-full md:w-auto" disabled>
               <Target className="mr-2 h-5 w-5" />
-              Go to Matching Portal
+              Questionnaires are still being filled out!
             </Button>
-          </Link>
+          )}
         </CardContent>
       </Card>
 

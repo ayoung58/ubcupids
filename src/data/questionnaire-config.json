@@ -1204,11 +1204,6 @@
               "value": "deep-conversations",
               "label": "Deep conversations and emotional connection"
             },
-            {
-              "value": "other",
-              "label": "Other",
-              "hasTextInput": true
-            },
             { "value": "figuring-out", "label": "I'm still figuring this out" }
           ]
         },
@@ -1343,7 +1338,7 @@
             { "value": "shared-values", "label": "Shared values and goals" },
             { "value": "support", "label": "Support and encouragement" },
             { "value": "loyalty", "label": "Loyalty" },
-            { "value": "other", "label": "Other", "hasTextInput": true }
+            { "value": "something-else", "label": "Something else" }
           ]
         },
         {
