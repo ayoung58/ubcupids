@@ -434,6 +434,10 @@ export function AdminDashboardClient({
             </code>
           </p>
           <p className="text-xs text-blue-600">
+            ✅ Match users include completed questionnaires with randomized
+            responses
+          </p>
+          <p className="text-xs text-blue-600">
             ℹ️ Each button click adds 125 more users (cumulative)
           </p>
         </CardContent>
