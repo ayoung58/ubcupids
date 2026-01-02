@@ -387,10 +387,12 @@ export async function storeMatches(
         compatibilityScore: match.compatibilityScore,
         matchType: match.matchType,
         batchNumber,
+        status: "accepted", // Algorithm matches are auto-accepted
         revealedAt,
       },
       update: {
         compatibilityScore: match.compatibilityScore,
+        status: "accepted", // Algorithm matches are auto-accepted
         revealedAt,
       },
     });

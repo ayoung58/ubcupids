@@ -308,12 +308,19 @@ export interface BatchProgress {
 // ===========================================
 
 /**
+ * Match status for cupid matches
+ */
+export type MatchStatus = "accepted" | "pending" | "declined";
+
+/**
  * Match display for user-facing UI
  */
 export interface MatchDisplay {
   matchId: string;
   matchType: MatchType;
   compatibilityScore: number | null;
+  cupidComment: string | null;
+  status: MatchStatus;
 
   matchedUser: {
     firstName: string;
@@ -328,17 +335,17 @@ export interface MatchDisplay {
 
   revealedAt: Date | null;
   createdAt: Date;
+  respondedAt: Date | null;
 }
 
 /**
  * User's matches page data
  */
 export interface UserMatchesData {
-  matches: MatchDisplay[];
+  algorithmMatches: MatchDisplay[];
+  requestsSent: MatchDisplay[];
+  requestsReceived: MatchDisplay[];
   totalMatches: number;
-  algorithmMatches: number;
-  cupidSentMatches: number;
-  cupidReceivedMatches: number;
   batchNumber: number;
   isRevealed: boolean;
 }

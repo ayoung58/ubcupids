@@ -775,6 +775,7 @@ export async function createCupidSelectedMatches(
     // Create matches (bidirectional)
     try {
       // Candidate -> Selected Match (cupid_sent from candidate's perspective)
+      // Status: pending until the other person accepts
       await prisma.match.create({
         data: {
           userId: candidateId,
@@ -782,12 +783,15 @@ export async function createCupidSelectedMatches(
           matchType: "cupid_sent",
           compatibilityScore,
           cupidId: assignment.cupidUserId,
+          cupidComment: null, // Cupid can add comment later if needed
           batchNumber,
+          status: "pending", // Cupid matches start as pending
           revealedAt,
         },
       });
 
       // Selected Match -> Candidate (cupid_received from selected match's perspective)
+      // Status: pending until they accept/decline
       await prisma.match.create({
         data: {
           userId: selectedMatchId,
@@ -795,7 +799,9 @@ export async function createCupidSelectedMatches(
           matchType: "cupid_received",
           compatibilityScore,
           cupidId: assignment.cupidUserId,
+          cupidComment: null, // Cupid can add comment later if needed
           batchNumber,
+          status: "pending", // Cupid matches start as pending
           revealedAt,
         },
       });

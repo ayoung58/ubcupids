@@ -177,10 +177,15 @@ model Match {
   matchType          String
   compatibilityScore Float?   // Only for algorithm matches, null for cupid matches
   cupidId            String?  // If cupid match, ID of cupid who made it
+  cupidComment       String?  // Rationale from cupid for why this match was made
   batchNumber        Int      // Always 1 for 2026 (single batch)
+  
+  // Status: 'accepted' (algorithm/accepted cupid match), 'pending' (cupid match awaiting response), 'declined' (rejected cupid match)
+  status          String   @default("accepted")  // Algorithm matches auto-accepted
   
   revealedAt      DateTime?  // Null until matches are revealed
   createdAt       DateTime @default(now())
+  respondedAt     DateTime?  // When user responded to match request (for cupid matches)
 
   @@unique([userId, matchedUserId, batchNumber, matchType]) // Prevent duplicate matches per type in same batch
   @@index([userId, batchNumber])

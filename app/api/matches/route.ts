@@ -54,43 +54,55 @@ export async function GET() {
     });
 
     // Format matches for display, respecting privacy settings
-    const displayMatches: MatchDisplay[] = matches.map((match) => ({
-      matchId: match.id,
-      matchType: match.matchType as
-        | "algorithm"
-        | "cupid_sent"
-        | "cupid_received",
-      compatibilityScore: match.compatibilityScore,
-      matchedUser: {
-        firstName: match.matchedUser.firstName,
-        displayName: match.matchedUser.displayName,
-        age: match.matchedUser.age || 0,
-        email: match.matchedUser.email,
-        profilePicture: match.matchedUser.showProfilePicToMatches
-          ? match.matchedUser.profilePicture
-          : null,
-        bio: match.matchedUser.showBioToMatches ? match.matchedUser.bio : null,
-        interests: match.matchedUser.showInterestsToMatches
-          ? match.matchedUser.interests
-          : null,
-        pointOfContact: match.matchedUser.showPointOfContactToMatches
-          ? match.matchedUser.pointOfContact
-          : null,
-      },
-      revealedAt: match.revealedAt,
-      createdAt: match.createdAt,
-    }));
+    const displayMatches: MatchDisplay[] = matches.map((match) => {
+      // Hide contact info for pending cupid_received matches
+      const isPendingRequest =
+        match.matchType === "cupid_received" && match.status === "pending";
 
-    // Calculate stats
+      return {
+        matchId: match.id,
+        matchType: match.matchType as
+          | "algorithm"
+          | "cupid_sent"
+          | "cupid_received",
+        compatibilityScore: match.compatibilityScore,
+        cupidComment: match.cupidComment,
+        status: match.status as "accepted" | "pending" | "declined",
+        matchedUser: {
+          firstName: match.matchedUser.firstName,
+          displayName: match.matchedUser.displayName,
+          age: match.matchedUser.age || 0,
+          email: isPendingRequest ? "" : match.matchedUser.email,
+          profilePicture: match.matchedUser.showProfilePicToMatches
+            ? match.matchedUser.profilePicture
+            : null,
+          bio: match.matchedUser.showBioToMatches
+            ? match.matchedUser.bio
+            : null,
+          interests: match.matchedUser.showInterestsToMatches
+            ? match.matchedUser.interests
+            : null,
+          pointOfContact:
+            isPendingRequest || !match.matchedUser.showPointOfContactToMatches
+              ? null
+              : match.matchedUser.pointOfContact,
+        },
+        revealedAt: match.revealedAt,
+        createdAt: match.createdAt,
+        respondedAt: match.respondedAt,
+      };
+    });
+
+    // Separate matches by type
     const algorithmMatches = displayMatches.filter(
       (m) => m.matchType === "algorithm"
-    ).length;
-    const cupidSentMatches = displayMatches.filter(
+    );
+    const requestsSent = displayMatches.filter(
       (m) => m.matchType === "cupid_sent"
-    ).length;
-    const cupidReceivedMatches = displayMatches.filter(
+    );
+    const requestsReceived = displayMatches.filter(
       (m) => m.matchType === "cupid_received"
-    ).length;
+    );
 
     // Check if matches are revealed for this batch
     const batch = await prisma.matchingBatch.findUnique({
@@ -99,11 +111,10 @@ export async function GET() {
     });
 
     const response: UserMatchesData = {
-      matches: displayMatches,
-      totalMatches: displayMatches.length,
       algorithmMatches,
-      cupidSentMatches,
-      cupidReceivedMatches,
+      requestsSent,
+      requestsReceived,
+      totalMatches: displayMatches.length,
       batchNumber: CURRENT_BATCH,
       isRevealed: batch !== null && batch.revealedAt !== null,
     };
