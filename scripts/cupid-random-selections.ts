@@ -103,7 +103,9 @@ async function makeCupidRandomSelections() {
       console.log(
         `✓ ${cupidName} selected match ${randomIndex + 1}/${potentialMatches.length} for ${candidateName}`
       );
-      console.log(`  Score: ${selectedMatch.score.toFixed(1)}% | Rationale: "${rationale}"`);
+      console.log(
+        `  Score: ${selectedMatch.score.toFixed(1)}% | Rationale: "${rationale}"`
+      );
       successCount++;
     } catch (error) {
       console.error(`✗ Failed to submit selection for ${cupidName}:`, error);

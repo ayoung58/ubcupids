@@ -245,7 +245,9 @@ export function MatchesDisplay() {
                 Your Cupid&apos;s Picks ({counts.cupid_sent})
               </Button>
               <Button
-                variant={filterType === "cupid_received" ? "default" : "outline"}
+                variant={
+                  filterType === "cupid_received" ? "default" : "outline"
+                }
                 size="sm"
                 onClick={() => setFilterType("cupid_received")}
                 className="flex items-center gap-2"

@@ -50,7 +50,8 @@ export async function POST() {
     );
 
     // Step 2: Create Match records from ALL cupid selections (including test cupids)
-    const cupidMatchResult = await cupidLib.createCupidSelectedMatches(batchNumber);
+    const cupidMatchResult =
+      await cupidLib.createCupidSelectedMatches(batchNumber);
     console.log(
       `Created ${cupidMatchResult.created} cupid-initiated matches (${cupidMatchResult.skipped} skipped)`
     );
