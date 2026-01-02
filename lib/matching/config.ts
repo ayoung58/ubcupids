@@ -3,29 +3,39 @@
  *
  * This file contains all configuration variables for the matching system.
  * Toggle these values to control matching behavior.
+ *
+ * 2026 TIMELINE:
+ * - Questionnaire responses due: January 31st, 2026
+ * - Cupid evaluation period: Feb 1-6, 2026
+ * - Match reveal: February 7th, 2026
  */
 
 // ===========================================
-// BATCH CONTROL
+// MATCHING CONTROL
 // ===========================================
 
 /**
- * Toggle to run the full matching algorithm for Batch 1
- * Set to true when ready to run matching (Feb 1 deadline)
+ * Toggle to run the full matching algorithm
+ * Set to true when ready to run matching (after Jan 31 deadline)
  */
-export const BATCH_1_RUN_MATCHING = true;
+export const RUN_MATCHING = true;
 
 /**
- * Toggle to run the full matching algorithm for Batch 2
- * Set to true when ready to run matching (Feb 7 deadline)
+ * Match reveal date
+ * Matches will be visible to users on this date
  */
-export const BATCH_2_RUN_MATCHING = false;
+export const MATCH_REVEAL_DATE = new Date("2026-02-07T00:00:00-08:00");
 
 /**
- * Current batch number (1 or 2)
- * This determines which batch operations affect
+ * Questionnaire deadline
+ * Users must complete questionnaire by this date
  */
-export const CURRENT_BATCH = 1;
+export const QUESTIONNAIRE_DEADLINE = new Date("2026-01-31T23:59:59-08:00");
+
+// Legacy exports for backwards compatibility (will be removed in future)
+export const BATCH_1_RUN_MATCHING = RUN_MATCHING;
+export const BATCH_2_RUN_MATCHING = false; // Deprecated - no batch 2
+export const CURRENT_BATCH = 1; // Fixed at 1 - single batch system
 
 // ===========================================
 // TEST MODE

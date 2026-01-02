@@ -19,11 +19,7 @@ import {
   createCupidApprovedMatches,
   revealMatches,
 } from "@/lib/matching/cupid";
-import {
-  CURRENT_BATCH,
-  BATCH_1_RUN_MATCHING,
-  BATCH_2_RUN_MATCHING,
-} from "@/lib/matching/config";
+import { CURRENT_BATCH, RUN_MATCHING } from "@/lib/matching/config";
 
 // Admin secret for protecting this endpoint
 const ADMIN_SECRET =
@@ -53,21 +49,12 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case "run_matching": {
-        // Check if matching is enabled for this batch
-        if (batchNumber === 1 && !BATCH_1_RUN_MATCHING) {
+        // Check if matching is enabled
+        if (!RUN_MATCHING) {
           return NextResponse.json(
             {
               error:
-                "Batch 1 matching is not enabled. Set BATCH_1_RUN_MATCHING=true in config.",
-            },
-            { status: 400 }
-          );
-        }
-        if (batchNumber === 2 && !BATCH_2_RUN_MATCHING) {
-          return NextResponse.json(
-            {
-              error:
-                "Batch 2 matching is not enabled. Set BATCH_2_RUN_MATCHING=true in config.",
+                "Matching is not enabled. Set RUN_MATCHING=true in config.",
             },
             { status: 400 }
           );
@@ -175,8 +162,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       batchNumber,
       config: {
-        BATCH_1_RUN_MATCHING,
-        BATCH_2_RUN_MATCHING,
+        RUN_MATCHING,
         CURRENT_BATCH,
       },
       stats,

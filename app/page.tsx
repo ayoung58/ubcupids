@@ -120,7 +120,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
           <div className="p-4 bg-white rounded-lg border border-slate-200">
             <p className="font-semibold text-slate-900">💌 Match Reveal</p>
-            <p className="text-sm text-slate-600 mt-2">February 1 & 7, 2026</p>
+            <p className="text-sm text-slate-600 mt-2">February 7th, 2026</p>
           </div>
         </div>
 

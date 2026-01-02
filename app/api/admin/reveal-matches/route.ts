@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 
@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
  *
  * Makes all matches (algorithm + cupid) visible to match candidates
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const session = await getCurrentUser();
 
@@ -26,15 +26,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { batchNumber } = body;
-
-    if (!batchNumber || (batchNumber !== 1 && batchNumber !== 2)) {
-      return NextResponse.json(
-        { error: "Invalid batch number" },
-        { status: 400 }
-      );
-    }
+    // Single batch system for 2026
+    const batchNumber = 1;
 
     // Check if matches exist for this batch
     const matchCount = await prisma.match.count({

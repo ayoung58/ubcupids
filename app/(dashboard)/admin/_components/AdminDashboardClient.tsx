@@ -8,16 +8,16 @@ import {
   Loader2,
   Play,
   Users,
-  UserPlus,
   Eye,
-  RefreshCw,
   Trash2,
   Settings,
+  Calendar,
+  CheckCircle2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-interface BatchState {
+interface MatchingState {
   hasMatches: boolean;
   hasAssignments: boolean;
   hasRevealed: boolean;
@@ -25,41 +25,27 @@ interface BatchState {
 
 interface AdminDashboardClientProps {
   adminName: string;
-  currentBatch: number;
-  batch1Status: string;
-  batch2Status: string;
-  batch1State: BatchState;
-  batch2State: BatchState;
+  matchingStatus: string;
+  matchingState: MatchingState;
 }
 
 export function AdminDashboardClient({
   adminName,
-  currentBatch: initialBatch,
-  batch1Status: initialBatch1Status,
-  batch2Status: initialBatch2Status,
-  batch1State,
-  batch2State,
+  matchingStatus,
+  matchingState,
 }: AdminDashboardClientProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
-  const batch1HasRun = initialBatch1Status !== "pending";
-  const batch2Enabled = batch1HasRun;
-
-  const handleAction = async (
-    action: string,
-    endpoint: string,
-    batch?: number
-  ) => {
-    const actionKey = batch ? `${action}-${batch}` : action;
-    setLoadingAction(actionKey);
+  const handleAction = async (action: string, endpoint: string) => {
+    setLoadingAction(action);
 
     try {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ batchNumber: batch }),
+        body: JSON.stringify({ batchNumber: 1 }), // Always batch 1
       });
 
       const data = await response.json();
@@ -69,7 +55,6 @@ export function AdminDashboardClient({
           title: "Success",
           description: data.message || "Action completed successfully",
         });
-        // Refresh the page to get updated batch status
         router.refresh();
       } else {
         toast({
@@ -91,114 +76,94 @@ export function AdminDashboardClient({
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h1 className="text-3xl font-bold text-slate-900">
           🛡️ Admin Dashboard
         </h1>
         <p className="text-slate-600 mt-1">Welcome, {adminName}</p>
-        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg">
-          <span className="font-semibold text-primary">Current Batch:</span>
-          <span className="text-2xl font-bold text-primary">
-            {initialBatch}
-          </span>
-        </div>
       </div>
 
-      {/* Batch Status */}
+      {/* Timeline */}
       <Card>
         <CardHeader>
-          <CardTitle>Batch Status</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            2026 Timeline
+          </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-slate-50 rounded-lg space-y-2">
-            <div className="text-sm font-medium text-slate-600">Batch 1</div>
-            <div className="text-lg font-semibold capitalize">
-              {initialBatch1Status}
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="flex-1 p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <p className="font-semibold text-amber-900">
+                📝 Questionnaire Due
+              </p>
+              <p className="text-sm text-amber-700">January 31st, 2026</p>
             </div>
-            <div className="text-xs space-y-1 pt-2 border-t">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`h-2 w-2 rounded-full ${batch1State.hasMatches ? "bg-green-500" : "bg-slate-300"}`}
-                />
-                <span
-                  className={
-                    batch1State.hasMatches ? "text-slate-700" : "text-slate-400"
-                  }
-                >
-                  Matches Created
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`h-2 w-2 rounded-full ${batch1State.hasAssignments ? "bg-green-500" : "bg-slate-300"}`}
-                />
-                <span
-                  className={
-                    batch1State.hasAssignments
-                      ? "text-slate-700"
-                      : "text-slate-400"
-                  }
-                >
-                  Cupids Paired
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`h-2 w-2 rounded-full ${batch1State.hasRevealed ? "bg-green-500" : "bg-slate-300"}`}
-                />
-                <span
-                  className={
-                    batch1State.hasRevealed
-                      ? "text-slate-700"
-                      : "text-slate-400"
-                  }
-                >
-                  Matches Revealed
-                </span>
-              </div>
+            <div className="flex-1 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="font-semibold text-blue-900">💘 Cupid Evaluation</p>
+              <p className="text-sm text-blue-700">Feb 1-6, 2026</p>
+            </div>
+            <div className="flex-1 p-4 bg-pink-50 rounded-lg border border-pink-200">
+              <p className="font-semibold text-pink-900">💌 Match Reveal</p>
+              <p className="text-sm text-pink-700">February 7th, 2026</p>
             </div>
           </div>
-          <div className="p-4 bg-slate-50 rounded-lg space-y-2">
-            <div className="text-sm font-medium text-slate-600">Batch 2</div>
-            <div className="text-lg font-semibold capitalize">
-              {initialBatch2Status}
+        </CardContent>
+      </Card>
+
+      {/* Matching Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Matching Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="p-4 bg-slate-50 rounded-lg space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-600">
+                Current Status
+              </span>
+              <span className="text-lg font-semibold capitalize px-3 py-1 bg-white rounded-full border">
+                {matchingStatus}
+              </span>
             </div>
-            <div className="text-xs space-y-1 pt-2 border-t">
+            <div className="grid grid-cols-3 gap-4 pt-3 border-t">
               <div className="flex items-center gap-2">
-                <span
-                  className={`h-2 w-2 rounded-full ${batch2State.hasMatches ? "bg-green-500" : "bg-slate-300"}`}
+                <CheckCircle2
+                  className={`h-5 w-5 ${matchingState.hasMatches ? "text-green-500" : "text-slate-300"}`}
                 />
                 <span
                   className={
-                    batch2State.hasMatches ? "text-slate-700" : "text-slate-400"
+                    matchingState.hasMatches
+                      ? "text-slate-700"
+                      : "text-slate-400"
                   }
                 >
                   Matches Created
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span
-                  className={`h-2 w-2 rounded-full ${batch2State.hasAssignments ? "bg-green-500" : "bg-slate-300"}`}
+                <CheckCircle2
+                  className={`h-5 w-5 ${matchingState.hasAssignments ? "text-green-500" : "text-slate-300"}`}
                 />
                 <span
                   className={
-                    batch2State.hasAssignments
+                    matchingState.hasAssignments
                       ? "text-slate-700"
                       : "text-slate-400"
                   }
                 >
-                  Cupids Paired
+                  Cupids Assigned
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span
-                  className={`h-2 w-2 rounded-full ${batch2State.hasRevealed ? "bg-green-500" : "bg-slate-300"}`}
+                <CheckCircle2
+                  className={`h-5 w-5 ${matchingState.hasRevealed ? "text-green-500" : "text-slate-300"}`}
                 />
                 <span
                   className={
-                    batch2State.hasRevealed
+                    matchingState.hasRevealed
                       ? "text-slate-700"
                       : "text-slate-400"
                   }
@@ -215,9 +180,6 @@ export function AdminDashboardClient({
       <Card>
         <CardHeader>
           <CardTitle>Configuration</CardTitle>
-          <p className="text-sm text-slate-600">
-            Manage questionnaire and system settings
-          </p>
         </CardHeader>
         <CardContent>
           <Link href="/admin/questionnaire-config">
@@ -229,289 +191,119 @@ export function AdminDashboardClient({
         </CardContent>
       </Card>
 
-      {/* Matching Algorithm Actions */}
+      {/* Matching Workflow */}
       <Card>
         <CardHeader>
-          <CardTitle>Matching Algorithm</CardTitle>
+          <CardTitle>Matching Workflow</CardTitle>
           <p className="text-sm text-slate-600">
-            Run the matching algorithm to generate algorithm-based matches
-          </p>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4">
-          <Button
-            onClick={() =>
-              handleAction("start-matching", "/api/admin/start-matching", 1)
-            }
-            disabled={
-              loadingAction !== null ||
-              batch1State.hasAssignments ||
-              batch1State.hasRevealed
-            }
-            className="h-20"
-            title={
-              batch1State.hasAssignments || batch1State.hasRevealed
-                ? "Clear matches first to run matching again"
-                : ""
-            }
-          >
-            {loadingAction === "start-matching-1" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <Play className="mr-2 h-5 w-5" />
-            )}
-            Start Matching - Batch 1
-          </Button>
-          <Button
-            onClick={() =>
-              handleAction("start-matching", "/api/admin/start-matching", 2)
-            }
-            disabled={
-              loadingAction !== null ||
-              !batch2Enabled ||
-              batch2State.hasAssignments ||
-              batch2State.hasRevealed
-            }
-            className="h-20"
-            title={
-              batch2State.hasAssignments || batch2State.hasRevealed
-                ? "Clear matches first to run matching again"
-                : !batch2Enabled
-                  ? "Complete batch 1 first"
-                  : ""
-            }
-          >
-            {loadingAction === "start-matching-2" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <Play className="mr-2 h-5 w-5" />
-            )}
-            Start Matching - Batch 2
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Cupid Assignment */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cupid Assignment</CardTitle>
-          <p className="text-sm text-slate-600">
-            Pair cupids with candidates for manual matching
-          </p>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4">
-          <Button
-            onClick={() =>
-              handleAction("pair-cupids", "/api/admin/pair-cupids", 1)
-            }
-            disabled={
-              loadingAction !== null ||
-              !batch1State.hasMatches ||
-              batch1State.hasRevealed
-            }
-            className="h-20"
-            variant="outline"
-            title={
-              !batch1State.hasMatches
-                ? "Run matching algorithm first"
-                : batch1State.hasRevealed
-                  ? "Clear matches first to pair cupids again"
-                  : ""
-            }
-          >
-            {loadingAction === "pair-cupids-1" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <Users className="mr-2 h-5 w-5" />
-            )}
-            Pair Cupids - Batch 1
-          </Button>
-          <Button
-            onClick={() =>
-              handleAction("pair-cupids", "/api/admin/pair-cupids", 2)
-            }
-            disabled={
-              loadingAction !== null ||
-              !batch2Enabled ||
-              !batch2State.hasMatches ||
-              batch2State.hasRevealed
-            }
-            className="h-20"
-            variant="outline"
-            title={
-              !batch2State.hasMatches
-                ? "Run matching algorithm first"
-                : batch2State.hasRevealed
-                  ? "Clear matches first to pair cupids again"
-                  : !batch2Enabled
-                    ? "Complete batch 1 first"
-                    : ""
-            }
-          >
-            {loadingAction === "pair-cupids-2" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <Users className="mr-2 h-5 w-5" />
-            )}
-            Pair Cupids - Batch 2
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Reveal Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Reveal Matches</CardTitle>
-          <p className="text-sm text-slate-600">
-            Make matches visible to cupids and candidates
+            Execute these steps in order after the January 31st deadline
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          {/* Step 1: Run Matching */}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+              1
+            </div>
             <Button
               onClick={() =>
-                handleAction("reveal-top-5", "/api/admin/reveal-top-5", 1)
-              }
-              disabled={loadingAction !== null || !batch1State.hasAssignments}
-              className="h-20"
-              variant="secondary"
-              title={
-                !batch1State.hasAssignments
-                  ? "Pair cupids with candidates first"
-                  : ""
-              }
-            >
-              {loadingAction === "reveal-top-5-1" ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <Eye className="mr-2 h-5 w-5" />
-              )}
-              Reveal Top 5 to Cupids - Batch 1
-            </Button>
-            <Button
-              onClick={() =>
-                handleAction("reveal-top-5", "/api/admin/reveal-top-5", 2)
+                handleAction("start-matching", "/api/admin/start-matching")
               }
               disabled={
                 loadingAction !== null ||
-                !batch2Enabled ||
-                !batch2State.hasAssignments
+                matchingState.hasAssignments ||
+                matchingState.hasRevealed
               }
-              className="h-20"
-              variant="secondary"
+              className="flex-1 h-16"
               title={
-                !batch2State.hasAssignments
-                  ? "Pair cupids with candidates first"
-                  : !batch2Enabled
-                    ? "Complete batch 1 first"
-                    : ""
+                matchingState.hasAssignments
+                  ? "Clear matches first to run again"
+                  : ""
               }
             >
-              {loadingAction === "reveal-top-5-2" ? (
+              {loadingAction === "start-matching" ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
-                <Eye className="mr-2 h-5 w-5" />
+                <Play className="mr-2 h-5 w-5" />
               )}
-              Reveal Top 5 to Cupids - Batch 2
+              Run Matching Algorithm
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+
+          {/* Step 2: Pair Cupids */}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+              2
+            </div>
             <Button
               onClick={() =>
-                handleAction("reveal-matches", "/api/admin/reveal-matches", 1)
-              }
-              disabled={loadingAction !== null || !batch1State.hasMatches}
-              className="h-20"
-              variant="secondary"
-              title={!batch1State.hasMatches ? "Create matches first" : ""}
-            >
-              {loadingAction === "reveal-matches-1" ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <Eye className="mr-2 h-5 w-5" />
-              )}
-              Reveal Matches to Candidates - Batch 1
-            </Button>
-            <Button
-              onClick={() =>
-                handleAction("reveal-matches", "/api/admin/reveal-matches", 2)
+                handleAction("pair-cupids", "/api/admin/pair-cupids")
               }
               disabled={
                 loadingAction !== null ||
-                !batch2Enabled ||
-                !batch2State.hasMatches
+                !matchingState.hasMatches ||
+                matchingState.hasRevealed
               }
-              className="h-20"
-              variant="secondary"
+              className="flex-1 h-16"
+              variant="outline"
               title={
-                !batch2State.hasMatches
-                  ? "Create matches first"
-                  : !batch2Enabled
-                    ? "Complete batch 1 first"
-                    : ""
+                !matchingState.hasMatches ? "Run matching algorithm first" : ""
               }
             >
-              {loadingAction === "reveal-matches-2" ? (
+              {loadingAction === "pair-cupids" ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Users className="mr-2 h-5 w-5" />
+              )}
+              Assign Cupids to Candidates
+            </Button>
+          </div>
+
+          {/* Step 3: Reveal to Cupids */}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+              3
+            </div>
+            <Button
+              onClick={() =>
+                handleAction("reveal-top-5", "/api/admin/reveal-top-5")
+              }
+              disabled={loadingAction !== null || !matchingState.hasAssignments}
+              className="flex-1 h-16"
+              variant="secondary"
+              title={!matchingState.hasAssignments ? "Assign cupids first" : ""}
+            >
+              {loadingAction === "reveal-top-5" ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
                 <Eye className="mr-2 h-5 w-5" />
               )}
-              Reveal Matches to Candidates - Batch 2
+              Reveal Top 5 to Cupids
             </Button>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Testing Tools */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Testing Tools</CardTitle>
-          <p className="text-sm text-slate-600">
-            Tools for testing and development
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={() =>
-              handleAction("generate-users", "/api/admin/generate-test-users")
-            }
-            disabled={loadingAction !== null}
-            className="w-full h-16"
-            variant="outline"
-          >
-            {loadingAction === "generate-users" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <UserPlus className="mr-2 h-5 w-5" />
-            )}
-            Generate 250 Test Users
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Batch Management */}
-      <Card className="border-orange-200 bg-orange-50/50">
-        <CardHeader>
-          <CardTitle className="text-orange-900">Batch Management</CardTitle>
-          <p className="text-sm text-orange-700">
-            Reset and manage batch progression
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={() =>
-              handleAction("reset-batch-2", "/api/admin/reset-batch-2")
-            }
-            disabled={loadingAction !== null || !batch1HasRun}
-            className="w-full h-16"
-            variant="outline"
-          >
-            {loadingAction === "reset-batch-2" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-5 w-5" />
-            )}
-            Reset for Batch 2
-          </Button>
+          {/* Step 4: Reveal to Candidates */}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+              4
+            </div>
+            <Button
+              onClick={() =>
+                handleAction("reveal-matches", "/api/admin/reveal-matches")
+              }
+              disabled={loadingAction !== null || !matchingState.hasMatches}
+              className="flex-1 h-16"
+              variant="secondary"
+              title={!matchingState.hasMatches ? "Create matches first" : ""}
+            >
+              {loadingAction === "reveal-matches" ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Eye className="mr-2 h-5 w-5" />
+              )}
+              Reveal Matches to Candidates (Feb 7)
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -523,7 +315,7 @@ export function AdminDashboardClient({
             These actions are destructive and cannot be undone
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <Button
             onClick={() =>
               handleAction("clear-matches", "/api/admin/clear-matches")
@@ -537,22 +329,7 @@ export function AdminDashboardClient({
             ) : (
               <Trash2 className="mr-2 h-5 w-5" />
             )}
-            Clear All Matches (Current Batch)
-          </Button>
-          <Button
-            onClick={() =>
-              handleAction("reset-to-batch-1", "/api/admin/reset-to-batch-1")
-            }
-            disabled={loadingAction !== null}
-            className="w-full h-16"
-            variant="destructive"
-          >
-            {loadingAction === "reset-to-batch-1" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-5 w-5" />
-            )}
-            Reset to Batch 1 (Testing Only)
+            Clear All Matches & Reset
           </Button>
         </CardContent>
       </Card>

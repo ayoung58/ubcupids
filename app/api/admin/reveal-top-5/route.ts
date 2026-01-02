@@ -26,15 +26,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { batchNumber } = body;
-
-    if (!batchNumber || (batchNumber !== 1 && batchNumber !== 2)) {
-      return NextResponse.json(
-        { error: "Invalid batch number" },
-        { status: 400 }
-      );
-    }
+    // Single batch system - always use batch 1
+    const batchNumber = 1;
 
     // Check if cupid assignments exist
     const assignments = await prisma.cupidAssignment.findMany({
@@ -49,7 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "No cupid assignments found for this batch. Pair cupids with candidates first.",
+            "No cupid assignments found. Pair cupids with candidates first.",
         },
         { status: 400 }
       );
@@ -80,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: `Revealed top 5 matches to cupids for batch ${batchNumber}`,
+      message: "Revealed top 5 matches to cupids",
       revealed,
       assignments: assignments.length,
     });

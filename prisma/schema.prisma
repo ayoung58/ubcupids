@@ -177,7 +177,7 @@ model Match {
   matchType          String
   compatibilityScore Float?   // Only for algorithm matches, null for cupid matches
   cupidId            String?  // If cupid match, ID of cupid who made it
-  batchNumber        Int      // 1 or 2 (Feb 1 or Feb 7)
+  batchNumber        Int      // Always 1 for 2026 (single batch)
   
   revealedAt      DateTime?  // Null until matches are revealed
   createdAt       DateTime @default(now())
@@ -272,7 +272,7 @@ model CompatibilityScore {
   // Bidirectional average (with target's score toward user)
   bidirectionalScore Float?
   
-  batchNumber     Int      // 1 or 2
+  batchNumber     Int      // Always 1 for 2026 (single batch)
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -371,7 +371,7 @@ model CupidProfileSummary {
 model MatchingBatch {
   id              String   @id @default(cuid())
   
-  batchNumber     Int      @unique  // 1 or 2
+  batchNumber     Int      @unique  // Always 1 for 2026 (single batch)
   
   // Status: 'pending' | 'scoring' | 'matching' | 'cupid_review' | 'completed'
   status          String   @default("pending")

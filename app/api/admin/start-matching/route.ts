@@ -7,7 +7,7 @@ import { runMatching } from "@/lib/matching/algorithm";
  * Start Matching Algorithm
  * POST /api/admin/start-matching
  *
- * Runs the matching algorithm for a specific batch
+ * Runs the matching algorithm (single batch system)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -27,15 +27,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { batchNumber } = body;
-
-    if (!batchNumber || (batchNumber !== 1 && batchNumber !== 2)) {
-      return NextResponse.json(
-        { error: "Invalid batch number" },
-        { status: 400 }
-      );
-    }
+    // Single batch system - always use batch 1
+    const batchNumber = 1;
 
     // Check if batch exists, create if not
     let batch = await prisma.matchingBatch.findUnique({
@@ -51,7 +44,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Check if cupid assignments already exist for this batch
+    // Check if cupid assignments already exist
     const existingAssignments = await prisma.cupidAssignment.count({
       where: { batchNumber },
     });
@@ -60,7 +53,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Cupid assignments already exist for this batch. Clear matches first to run matching again.",
+            "Cupid assignments already exist. Clear matches first to run matching again.",
         },
         { status: 400 }
       );
@@ -75,7 +68,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Matches have already been revealed for this batch. Clear matches first to run matching again.",
+            "Matches have already been revealed. Clear matches first to run matching again.",
         },
         { status: 400 }
       );
@@ -85,7 +78,7 @@ export async function POST(request: NextRequest) {
     const result = await runMatching(batchNumber);
 
     return NextResponse.json({
-      message: `Matching algorithm completed for batch ${batchNumber}`,
+      message: "Matching algorithm completed successfully",
       result,
     });
   } catch (error) {
