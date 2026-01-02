@@ -13,6 +13,8 @@ import {
   Settings,
   Calendar,
   CheckCircle2,
+  UserPlus,
+  UsersRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -68,6 +70,87 @@ export function AdminDashboardClient({
       toast({
         title: "Error",
         description: "Failed to execute action",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleGenerateUsers = async (userType: "match" | "cupid") => {
+    const action = `generate-${userType}-users`;
+    setLoadingAction(action);
+
+    try {
+      const response = await fetch("/api/admin/generate-test-users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: 125, userType }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: data.message || `Generated 125 ${userType} users`,
+        });
+        router.refresh();
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to generate users",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error(`Error generating ${userType} users:`, error);
+      toast({
+        title: "Error",
+        description: "Failed to generate users",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleClearTestUsers = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to delete ALL test users? This cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setLoadingAction("clear-test-users");
+
+    try {
+      const response = await fetch("/api/admin/clear-test-users", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: data.message || "Test users cleared",
+        });
+        router.refresh();
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to clear test users",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error clearing test users:", error);
+      toast({
+        title: "Error",
+        description: "Failed to clear test users",
         variant: "destructive",
       });
     } finally {
@@ -307,6 +390,55 @@ export function AdminDashboardClient({
         </CardContent>
       </Card>
 
+      {/* Test Data Generation */}
+      <Card className="border-blue-200 bg-blue-50/50">
+        <CardHeader>
+          <CardTitle className="text-blue-900">🧪 Test Data</CardTitle>
+          <p className="text-sm text-blue-700">
+            Generate test users for development and testing
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-3">
+            <Button
+              onClick={() => handleGenerateUsers("match")}
+              disabled={loadingAction !== null}
+              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+              variant="default"
+            >
+              {loadingAction === "generate-match-users" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <UserPlus className="mr-2 h-4 w-4" />
+              )}
+              Add 125 Match Users
+            </Button>
+            <Button
+              onClick={() => handleGenerateUsers("cupid")}
+              disabled={loadingAction !== null}
+              className="flex-1 h-12 bg-purple-600 hover:bg-purple-700"
+              variant="default"
+            >
+              {loadingAction === "generate-cupid-users" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <UsersRound className="mr-2 h-4 w-4" />
+              )}
+              Add 125 Cupid Users
+            </Button>
+          </div>
+          <p className="text-xs text-blue-600">
+            💡 Password for all test users:{" "}
+            <code className="bg-blue-100 px-1 py-0.5 rounded">
+              TestPassword123!
+            </code>
+          </p>
+          <p className="text-xs text-blue-600">
+            ℹ️ Each button click adds 125 more users (cumulative)
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Danger Zone */}
       <Card className="border-red-200 bg-red-50/50">
         <CardHeader>
@@ -315,13 +447,13 @@ export function AdminDashboardClient({
             These actions are destructive and cannot be undone
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <Button
             onClick={() =>
               handleAction("clear-matches", "/api/admin/clear-matches")
             }
             disabled={loadingAction !== null}
-            className="w-full h-16"
+            className="w-full h-12"
             variant="destructive"
           >
             {loadingAction === "clear-matches" ? (
@@ -330,6 +462,19 @@ export function AdminDashboardClient({
               <Trash2 className="mr-2 h-5 w-5" />
             )}
             Clear All Matches & Reset
+          </Button>
+          <Button
+            onClick={handleClearTestUsers}
+            disabled={loadingAction !== null}
+            className="w-full h-12 bg-orange-600 hover:bg-orange-700"
+            variant="destructive"
+          >
+            {loadingAction === "clear-test-users" ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <Trash2 className="mr-2 h-5 w-5" />
+            )}
+            Delete All Test Users
           </Button>
         </CardContent>
       </Card>
