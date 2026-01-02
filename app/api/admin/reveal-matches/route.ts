@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
+import * as cupidLib from "@/lib/matching/cupid";
 
 /**
  * Reveal Matches to Candidates
  * POST /api/admin/reveal-matches
  *
  * Makes all matches (algorithm + cupid) visible to match candidates
+ * Also automatically makes random selections for test cupids before revealing
  */
 export async function POST() {
   try {
@@ -41,7 +43,19 @@ export async function POST() {
       );
     }
 
-    // Update all matches for this batch to set revealedAt timestamp
+    // Step 1: Automatically make random selections for test cupids
+    const autoSelectionResult = await cupidLib.makeTestCupidRandomSelections();
+    console.log(
+      `Auto-selected ${autoSelectionResult.successful} matches for test cupids before reveal`
+    );
+
+    // Step 2: Create Match records from ALL cupid selections (including test cupids)
+    const cupidMatchResult = await cupidLib.createCupidSelectedMatches(batchNumber);
+    console.log(
+      `Created ${cupidMatchResult.created} cupid-initiated matches (${cupidMatchResult.skipped} skipped)`
+    );
+
+    // Step 3: Update all matches for this batch to set revealedAt timestamp
     const result = await prisma.match.updateMany({
       where: {
         batchNumber,
@@ -63,6 +77,15 @@ export async function POST() {
     return NextResponse.json({
       message: `Revealed ${result.count} matches to candidates for batch ${batchNumber}`,
       revealed: result.count,
+      testCupidSelections: {
+        processed: autoSelectionResult.processed,
+        successful: autoSelectionResult.successful,
+        skipped: autoSelectionResult.skipped,
+      },
+      cupidMatches: {
+        created: cupidMatchResult.created,
+        skipped: cupidMatchResult.skipped,
+      },
     });
   } catch (error) {
     console.error("Error revealing matches:", error);

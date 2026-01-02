@@ -743,6 +743,86 @@ export async function submitCupidSelection(
 // Keep old function name for backwards compatibility
 export const submitCupidDecision = submitCupidSelection;
 
+/**
+ * Automatically make random match selections for test cupids
+ * Called before revealing matches to ensure test cupids have made selections
+ */
+export async function makeTestCupidRandomSelections(): Promise<{
+  processed: number;
+  successful: number;
+  skipped: number;
+}> {
+  const RATIONALES = [
+    "They share similar interests and values based on their questionnaire responses.",
+    "Great compatibility on communication styles and relationship goals.",
+    "Strong alignment on life priorities and future plans.",
+    "Their personalities seem like they would complement each other well.",
+    "Similar interests in hobbies and activities, should have lots to talk about.",
+    "Both seem to value similar things in a relationship.",
+    "Their answers suggest they have compatible lifestyles.",
+    "Good match on both personality traits and practical preferences.",
+    "They both expressed similar values about what matters most to them.",
+    "Strong compatibility across multiple dimensions of the questionnaire.",
+  ];
+
+  // Get all test cupids with pending assignments
+  const pendingAssignments = await prisma.cupidAssignment.findMany({
+    where: {
+      selectedMatchId: null,
+      cupidUser: {
+        isTestUser: true,
+      },
+    },
+  });
+
+  let successful = 0;
+  let skipped = 0;
+
+  for (const assignment of pendingAssignments) {
+    const potentialMatches = assignment.potentialMatches as Array<{
+      userId: string;
+      score: number;
+    }>;
+
+    if (!potentialMatches || potentialMatches.length === 0) {
+      skipped++;
+      continue;
+    }
+
+    // Select a random match
+    const randomIndex = Math.floor(Math.random() * potentialMatches.length);
+    const selectedMatch = potentialMatches[randomIndex];
+    const rationale =
+      RATIONALES[Math.floor(Math.random() * RATIONALES.length)];
+
+    try {
+      await submitCupidSelection(
+        assignment.id,
+        assignment.cupidUserId,
+        selectedMatch.userId,
+        rationale
+      );
+      successful++;
+    } catch (error) {
+      console.error(
+        `Failed to auto-select for test cupid ${assignment.cupidUserId}:`,
+        error
+      );
+      skipped++;
+    }
+  }
+
+  console.log(
+    `Auto-selected ${successful} matches for test cupids (${skipped} skipped)`
+  );
+
+  return {
+    processed: pendingAssignments.length,
+    successful,
+    skipped,
+  };
+}
+
 // ===========================================
 // CUPID-INITIATED MATCHES
 // ===========================================

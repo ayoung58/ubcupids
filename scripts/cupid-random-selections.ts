@@ -10,19 +10,41 @@
 import { prisma } from "../lib/prisma";
 import { submitCupidSelection } from "../lib/matching/cupid";
 
-async function makeCupidRandomSelections() {
-  console.log("Starting random cupid selections for testing...\n");
+// Sample rationales for random selection
+const RATIONALES = [
+  "They share similar interests and values based on their questionnaire responses.",
+  "Great compatibility on communication styles and relationship goals.",
+  "Strong alignment on life priorities and future plans.",
+  "Their personalities seem like they would complement each other well.",
+  "Similar interests in hobbies and activities, should have lots to talk about.",
+  "Both seem to value similar things in a relationship.",
+  "Their answers suggest they have compatible lifestyles.",
+  "Good match on both personality traits and practical preferences.",
+  "They both expressed similar values about what matters most to them.",
+  "Strong compatibility across multiple dimensions of the questionnaire.",
+];
 
-  // Get all cupids with pending assignments
+function getRandomRationale(): string {
+  return RATIONALES[Math.floor(Math.random() * RATIONALES.length)];
+}
+
+async function makeCupidRandomSelections() {
+  console.log("Starting random cupid selections for TEST USERS...\n");
+
+  // Get all cupids with pending assignments (only test users)
   const pendingAssignments = await prisma.cupidAssignment.findMany({
     where: {
       selectedMatchId: null, // Not yet reviewed
+      cupidUser: {
+        isTestUser: true, // Only process test cupids
+      },
     },
     include: {
       cupidUser: {
         select: {
           firstName: true,
           cupidDisplayName: true,
+          isTestUser: true,
         },
       },
       candidate: {
@@ -67,17 +89,21 @@ async function makeCupidRandomSelections() {
     const selectedMatch = potentialMatches[randomIndex];
 
     try {
+      // Generate a random rationale
+      const rationale = getRandomRationale();
+
       // Submit the selection
       await submitCupidSelection(
         assignment.id,
         assignment.cupidUserId,
         selectedMatch.userId,
-        `[TEST] Random selection (match ${randomIndex + 1} of ${potentialMatches.length}, score: ${selectedMatch.score.toFixed(1)}%)`
+        rationale
       );
 
       console.log(
-        `✓ ${cupidName} selected match ${randomIndex + 1}/${potentialMatches.length} for ${candidateName} (score: ${selectedMatch.score.toFixed(1)}%)`
+        `✓ ${cupidName} selected match ${randomIndex + 1}/${potentialMatches.length} for ${candidateName}`
       );
+      console.log(`  Score: ${selectedMatch.score.toFixed(1)}% | Rationale: "${rationale}"`);
       successCount++;
     } catch (error) {
       console.error(`✗ Failed to submit selection for ${cupidName}:`, error);

@@ -57,6 +57,9 @@ export function MatchesDisplay() {
   const [data, setData] = useState<UserMatchesData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<
+    "all" | "algorithm" | "cupid_sent" | "cupid_received"
+  >("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -187,83 +190,102 @@ export function MatchesDisplay() {
     );
   }
 
-  // Show matches in 3 sections
+  // Combine all matches for filtering
+  const allMatches = [
+    ...data.algorithmMatches,
+    ...data.requestsSent,
+    ...data.requestsReceived,
+  ];
+
+  const filteredMatches = getSortedAndFilteredMatches(allMatches, filterType);
+
+  // Count matches by type
+  const counts = {
+    all: allMatches.length,
+    algorithm: data.algorithmMatches.length,
+    cupid_sent: data.requestsSent.length,
+    cupid_received: data.requestsReceived.length,
+  };
+
+  // Show matches with category filter
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-6">
         <Header />
 
-        {/* Algorithm Matches Section */}
-        {data.algorithmMatches.length > 0 && (
-          <section>
+        {/* Category Filter Tabs */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={filterType === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterType("all")}
+                className="flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                All Matches ({counts.all})
+              </Button>
+              <Button
+                variant={filterType === "algorithm" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterType("algorithm")}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                Algorithm ({counts.algorithm})
+              </Button>
+              <Button
+                variant={filterType === "cupid_sent" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterType("cupid_sent")}
+                className="flex items-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                Your Cupid&apos;s Picks ({counts.cupid_sent})
+              </Button>
+              <Button
+                variant={filterType === "cupid_received" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterType("cupid_received")}
+                className="flex items-center gap-2"
+              >
+                <Inbox className="h-4 w-4" />
+                Match Requests ({counts.cupid_received})
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Matches Display */}
+        <div className="space-y-4">
+          {filteredMatches.length === 0 ? (
             <Card>
-              <CardHeader className="border-l-4 border-l-purple-500">
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-purple-500" />
-                  Algorithm Matches ({data.algorithmMatches.length})
-                </CardTitle>
-                <p className="text-sm text-slate-600">
-                  These are guaranteed mutual matches based on compatibility
+              <CardContent className="p-12 text-center">
+                <Heart className="h-12 w-12 mx-auto text-slate-300 mb-4" />
+                <p className="text-slate-500">
+                  No matches in this category yet
                 </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {data.algorithmMatches.map((match) => (
-                  <AlgorithmMatchCard key={match.matchId} match={match} />
-                ))}
               </CardContent>
             </Card>
-          </section>
-        )}
-
-        {/* Match Requests Received Section */}
-        {data.requestsReceived.length > 0 && (
-          <section>
-            <Card>
-              <CardHeader className="border-l-4 border-l-green-500">
-                <CardTitle className="flex items-center gap-2">
-                  <Inbox className="h-5 w-5 text-green-500" />
-                  Match Requests ({data.requestsReceived.length})
-                </CardTitle>
-                <p className="text-sm text-slate-600">
-                  Other cupids think you&apos;d be a great match! Accept or
-                  decline below
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {data.requestsReceived.map((match) => (
+          ) : (
+            filteredMatches.map((match) => {
+              if (match.matchType === "algorithm") {
+                return <AlgorithmMatchCard key={match.matchId} match={match} />;
+              } else if (match.matchType === "cupid_received") {
+                return (
                   <MatchRequestCard
                     key={match.matchId}
                     match={match}
                     onRespond={handleRespondToRequest}
                   />
-                ))}
-              </CardContent>
-            </Card>
-          </section>
-        )}
-
-        {/* Requests Sent Section */}
-        {data.requestsSent.length > 0 && (
-          <section>
-            <Card>
-              <CardHeader className="border-l-4 border-l-blue-500">
-                <CardTitle className="flex items-center gap-2">
-                  <Send className="h-5 w-5 text-blue-500" />
-                  Your Cupid&apos;s Requests ({data.requestsSent.length})
-                </CardTitle>
-                <p className="text-sm text-slate-600">
-                  People your cupid matched you with - waiting for their
-                  response
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {data.requestsSent.map((match) => (
-                  <RequestSentCard key={match.matchId} match={match} />
-                ))}
-              </CardContent>
-            </Card>
-          </section>
-        )}
+                );
+              } else {
+                return <RequestSentCard key={match.matchId} match={match} />;
+              }
+            })
+          )}
+        </div>
       </div>
     </div>
   );
