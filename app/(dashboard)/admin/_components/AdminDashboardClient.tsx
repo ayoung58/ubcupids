@@ -313,7 +313,7 @@ export function AdminDashboardClient({
             </Button>
           </div>
 
-          {/* Step 2: Pair Cupids */}
+          {/* Step 2: Pair Cupids & Reveal Top 5 */}
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
               2
@@ -324,8 +324,7 @@ export function AdminDashboardClient({
               }
               disabled={
                 loadingAction !== null ||
-                !matchingState.hasMatches ||
-                matchingState.hasRevealed
+                !matchingState.hasMatches
               }
               className="flex-1 h-16"
               variant="outline"
@@ -338,37 +337,14 @@ export function AdminDashboardClient({
               ) : (
                 <Users className="mr-2 h-5 w-5" />
               )}
-              Assign Cupids to Candidates
+              Assign Cupids & Reveal Top 5
             </Button>
           </div>
 
-          {/* Step 3: Reveal to Cupids */}
+          {/* Step 3: Reveal to Candidates */}
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
               3
-            </div>
-            <Button
-              onClick={() =>
-                handleAction("reveal-top-5", "/api/admin/reveal-top-5")
-              }
-              disabled={loadingAction !== null || !matchingState.hasAssignments}
-              className="flex-1 h-16"
-              variant="secondary"
-              title={!matchingState.hasAssignments ? "Assign cupids first" : ""}
-            >
-              {loadingAction === "reveal-top-5" ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <Eye className="mr-2 h-5 w-5" />
-              )}
-              Reveal Top 5 to Cupids
-            </Button>
-          </div>
-
-          {/* Step 4: Reveal to Candidates */}
-          <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
-              4
             </div>
             <Button
               onClick={() =>

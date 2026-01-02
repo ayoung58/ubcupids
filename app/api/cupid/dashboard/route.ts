@@ -22,17 +22,37 @@ export async function GET() {
 
     const userId = session.user.id;
 
-    // Check if user is an approved cupid
-    const cupidProfile = await prisma.cupidProfile.findUnique({
+    // Check if user has a CupidProfile
+    let cupidProfile = await prisma.cupidProfile.findUnique({
       where: { userId },
-      select: { approved: true },
     });
 
-    if (!cupidProfile?.approved) {
-      return NextResponse.json(
-        { error: "Not an approved cupid" },
-        { status: 403 }
-      );
+    // If no profile, user is not a cupid
+    if (!cupidProfile) {
+      return NextResponse.json({ error: "Not a cupid" }, { status: 403 });
+    }
+
+    // Auto-approve if not already approved
+    if (!cupidProfile.approved) {
+      cupidProfile = await prisma.cupidProfile.update({
+        where: { userId },
+        data: { approved: true },
+      });
+    }
+
+    // Ensure cupid profile exists and is approved
+    if (!cupidProfile) {
+      cupidProfile = await prisma.cupidProfile.create({
+        data: {
+          userId,
+          approved: true,
+        },
+      });
+    } else if (!cupidProfile.approved) {
+      cupidProfile = await prisma.cupidProfile.update({
+        where: { userId },
+        data: { approved: true },
+      });
     }
 
     // Get dashboard data

@@ -16,14 +16,22 @@ export default async function MatchingPortalPage() {
     redirect("/login");
   }
 
-  // Verify user is an approved Cupid
-  const cupidProfile = await prisma.cupidProfile.findUnique({
+  // Check if user has a CupidProfile (for match users with linked cupid accounts)
+  let cupidProfile = await prisma.cupidProfile.findUnique({
     where: { userId: session.user.id },
-    select: { approved: true },
   });
 
-  if (!cupidProfile?.approved) {
+  // If no profile exists, user shouldn't access portal
+  if (!cupidProfile) {
     redirect("/cupid-dashboard");
+  }
+
+  // Auto-approve the profile if not already approved
+  if (!cupidProfile.approved) {
+    cupidProfile = await prisma.cupidProfile.update({
+      where: { userId: session.user.id },
+      data: { approved: true },
+    });
   }
 
   return <CupidMatchingPortal />;

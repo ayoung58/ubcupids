@@ -101,7 +101,7 @@ export const IMPORTANCE_MULTIPLIERS = {
 /**
  * Minimum bidirectional score (0-100) for algorithm to consider a pair
  */
-export const MINIMUM_MATCH_SCORE = 30;
+export const MINIMUM_MATCH_SCORE = 10;
 
 /**
  * Number of matches to generate per user via algorithm

@@ -90,10 +90,26 @@ export async function assignCandidatesToCupids(
 }> {
   console.log(`Assigning candidates to cupids for batch ${batchNumber}...`);
 
-  // Get approved cupids with their preferred candidate emails
-  const cupids = await prisma.cupidProfile.findMany({
+  // Clear existing assignments for this batch to prevent duplicates
+  const deletedCount = await prisma.cupidAssignment.deleteMany({
+    where: { batchNumber },
+  });
+  console.log(`Cleared ${deletedCount.count} existing assignments for batch ${batchNumber}`);
+
+  // Get ALL cupids: users with isCupid=true OR users with CupidProfile entries
+  const usersWithIsCupid = await prisma.user.findMany({
     where: {
-      approved: true,
+      isCupid: true,
+      emailVerified: { not: null },
+    },
+    select: {
+      id: true,
+      preferredCandidateEmail: true,
+    },
+  });
+
+  const usersWithCupidProfile = await prisma.cupidProfile.findMany({
+    where: {
       user: {
         emailVerified: { not: null },
       },
@@ -108,8 +124,41 @@ export async function assignCandidatesToCupids(
     },
   });
 
+  // Merge and deduplicate
+  const cupidMap = new Map<string, string | null>();
+
+  usersWithIsCupid.forEach((u) => {
+    cupidMap.set(u.id, u.preferredCandidateEmail);
+  });
+
+  usersWithCupidProfile.forEach((cp) => {
+    if (!cupidMap.has(cp.userId)) {
+      cupidMap.set(cp.userId, cp.user.preferredCandidateEmail);
+    }
+  });
+
+  // Ensure all have approved CupidProfile entries
+  for (const userId of cupidMap.keys()) {
+    const profile = await prisma.cupidProfile.findUnique({ where: { userId } });
+    if (!profile) {
+      await prisma.cupidProfile.create({
+        data: { userId, approved: true },
+      });
+    } else if (!profile.approved) {
+      await prisma.cupidProfile.update({
+        where: { userId },
+        data: { approved: true },
+      });
+    }
+  }
+
+  const cupids = Array.from(cupidMap.entries()).map(([userId, email]) => ({
+    userId,
+    user: { preferredCandidateEmail: email },
+  }));
+
   if (cupids.length === 0) {
-    console.log("No approved cupids available");
+    console.log("No cupids available");
     return {
       totalCandidates: 0,
       assignedCandidates: 0,
@@ -192,10 +241,10 @@ export async function assignCandidatesToCupids(
       },
     });
 
-    // Skip if insufficient matches
-    if (topMatches.length < 5) {
+    // Skip if no matches at all
+    if (topMatches.length === 0) {
       console.log(
-        `Skipping preferred candidate ${preferredCandidate.id} - only has ${topMatches.length} compatible matches (need 5)`
+        `Skipping preferred candidate ${preferredCandidate.id} - has no compatible matches`
       );
       continue;
     }
@@ -257,10 +306,10 @@ export async function assignCandidatesToCupids(
       },
     });
 
-    // Skip candidates with fewer than 5 compatible matches
-    if (topMatches.length < 5) {
+    // Skip candidates with no compatible matches
+    if (topMatches.length === 0) {
       console.log(
-        `Skipping candidate ${candidate.id} - only has ${topMatches.length} compatible matches (need 5)`
+        `Skipping candidate ${candidate.id} - has no compatible matches`
       );
       skippedCount++;
       continue;

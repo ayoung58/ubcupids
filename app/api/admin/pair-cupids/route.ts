@@ -45,27 +45,56 @@ export async function POST() {
       );
     }
 
-    // Check if matches have been revealed
-    const revealedMatches = await prisma.match.count({
-      where: { batchNumber, revealedAt: { not: null } },
-    });
-
-    if (revealedMatches > 0) {
-      return NextResponse.json(
-        {
-          error:
-            "Matches have already been revealed for this batch. Clear matches first to pair cupids again.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Run cupid assignment
+    // Run cupid assignment (this also clears existing assignments)
     const result = await assignCandidatesToCupids(batchNumber);
 
+    // After assigning cupids, update their assignments with latest top 5 matches
+    const assignments = await prisma.cupidAssignment.findMany({
+      where: { batchNumber },
+      select: {
+        id: true,
+        candidateId: true,
+      },
+    });
+
+    let updatedCount = 0;
+    for (const assignment of assignments) {
+      // Get top 5 compatibility scores for the candidate
+      const topScores = await prisma.compatibilityScore.findMany({
+        where: {
+          userId: assignment.candidateId,
+          batchNumber,
+        },
+        orderBy: {
+          totalScore: "desc",
+        },
+        take: 5,
+        select: {
+          targetUserId: true,
+          totalScore: true,
+        },
+      });
+
+      if (topScores.length > 0) {
+        // Update the assignment with the latest potential matches
+        const potentialMatches = topScores.map((score) => ({
+          userId: score.targetUserId,
+          score: score.totalScore,
+        }));
+
+        await prisma.cupidAssignment.update({
+          where: { id: assignment.id },
+          data: { potentialMatches },
+        });
+
+        updatedCount++;
+      }
+    }
+
     return NextResponse.json({
-      message: `Cupid assignment completed for batch ${batchNumber}`,
+      message: `Cupid assignment completed and top 5 matches revealed for batch ${batchNumber}`,
       result,
+      updatedAssignments: updatedCount,
     });
   } catch (error) {
     console.error("Error pairing cupids:", error);
