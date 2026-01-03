@@ -316,6 +316,20 @@ export function ProfileForm() {
       return;
     }
 
+    // Validate age if user is being matched
+    if (accountInfo.isBeingMatched) {
+      if (!profileData.age) {
+        setShowError("Age is required for match accounts");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (profileData.age < 16 || profileData.age > 100) {
+        setShowError("Age must be between 16 and 100");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    }
+
     if (profileData.interests && profileData.interests.length > 300) {
       toast({
         title: "Validation error",
@@ -738,15 +752,14 @@ export function ProfileForm() {
                   <div className="group relative inline-block">
                     <Info className="h-4 w-4 text-slate-400 cursor-help" />
                     <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
-                      We collect your age to improve matches and ensure everyone
-                      is comfortable. Please use your real age.
+                      Age should be between 16 and 100 inclusive
                     </div>
                   </div>
                 </Label>
                 <Input
                   id="age"
                   type="number"
-                  min="18"
+                  min="16"
                   max="100"
                   value={profileData.age}
                   onChange={(e) =>
@@ -755,6 +768,10 @@ export function ProfileForm() {
                   required
                   placeholder="18"
                 />
+                <p className="text-xs text-slate-600">
+                  We collect your age to improve matches and ensure everyone is
+                  comfortable. Please use your real age.
+                </p>
               </div>
             )}
 

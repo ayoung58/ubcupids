@@ -127,7 +127,7 @@ export default async function CupidDashboardPage() {
             </div>
             <p>
               <strong>Make Magic:</strong> Your matches will be combined with
-              algorithm results and revealed on February 1 & 7, 2026
+              algorithm results and revealed on February 7, 2026
             </p>
           </div>
         </CardContent>

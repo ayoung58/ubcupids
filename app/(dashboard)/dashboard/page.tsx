@@ -138,7 +138,7 @@ export default async function DashboardPage() {
               ? "✅ Questionnaire completed"
               : "⏳ Complete your questionnaire (opens January 15)"}
           </p>
-          <p>⏳ Matches revealed February 1 & 7, 2026</p>
+          <p>⏳ Matches revealed February 7, 2026</p>
         </CardContent>
       </Card>
     </div>

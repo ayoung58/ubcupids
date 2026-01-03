@@ -506,7 +506,8 @@ export function CupidMatchingPortal() {
                     )}
                   </div>
                   <div className="flex items-center gap-3">
-                    <Button
+                    {/* Compatibility Scores Button - Commented out for production */}
+                    {/* <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowScores(!showScores)}
@@ -518,7 +519,7 @@ export function CupidMatchingPortal() {
                         <Eye className="h-4 w-4" />
                       )}
                       {showScores ? "Hide" : "Show"} Compatibility Score
-                    </Button>
+                    </Button> */}
                     {currentAssignment &&
                       currentAssignment.potentialMatches.length < 25 && (
                         <Button

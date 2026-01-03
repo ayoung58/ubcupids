@@ -474,6 +474,46 @@ export function QuestionnaireForm({
         <ArrowUp className="w-5 h-5" />
       </Button>
 
+      {/* Jump to First Unanswered Button */}
+      <Button
+        onClick={() => {
+          // Find first unanswered question
+          for (const section of config.sections) {
+            for (const question of section.questions) {
+              if (question.required && !responses[question.id]) {
+                const element = document.getElementById(
+                  `question-${question.id}`
+                );
+                if (element) {
+                  const offset = 100;
+                  const elementPosition = element.getBoundingClientRect().top;
+                  const offsetPosition =
+                    elementPosition + window.pageYOffset - offset;
+                  window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth",
+                  });
+                  // Focus the first input/select/textarea in the question
+                  const input = element.querySelector<HTMLElement>(
+                    'input:not([type="hidden"]), select, textarea, button[role="radio"], button[role="checkbox"]'
+                  );
+                  if (input) {
+                    setTimeout(() => input.focus(), 300);
+                  }
+                  return;
+                }
+              }
+            }
+          }
+        }}
+        className="fixed bottom-20 right-6 w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none z-50 bg-blue-600 hover:bg-blue-700"
+        size="sm"
+        aria-label="Jump to first unanswered question"
+        title="Jump to first unanswered question"
+      >
+        <ArrowUp className="w-5 h-5" />
+      </Button>
+
       {/* Submit Confirmation Dialog */}
       <SubmitConfirmDialog
         open={showSubmitDialog}

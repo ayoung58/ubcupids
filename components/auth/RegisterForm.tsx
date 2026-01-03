@@ -132,6 +132,16 @@ export function RegisterForm({
       }
     }
 
+    // Age validation (for match accounts)
+    if (accountType === "match" && formData.age) {
+      const age = parseInt(formData.age);
+      if (age < 16 || age > 100) {
+        setError("Age must be between 16 and 100");
+        setIsLoading(false);
+        return;
+      }
+    }
+
     try {
       // Different endpoints for linking vs creating new account
       const endpoint = isLinking
@@ -365,8 +375,7 @@ export function RegisterForm({
                 <div className="group relative inline-block">
                   <AlertCircle className="h-4 w-4 text-slate-400 cursor-help" />
                   <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
-                    We collect your age to improve matches and ensure everyone
-                    is comfortable. Please use your real age.
+                    Age should be between 16 and 100 inclusive
                   </div>
                 </div>
               </Label>
@@ -374,6 +383,7 @@ export function RegisterForm({
                 id="age"
                 type="number"
                 placeholder="18"
+                min="16"
                 max="100"
                 value={formData.age}
                 onChange={(e) =>
@@ -382,6 +392,10 @@ export function RegisterForm({
                 required
                 disabled={isLoading}
               />
+              <p className="text-xs text-slate-600">
+                We collect your age to improve matches and ensure everyone is
+                comfortable. Please use your real age.
+              </p>
             </div>
           )}
 

@@ -83,6 +83,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
+    // Validate age range for match accounts
+    if (!isCupid && age) {
+      const ageNum = parseInt(age);
+      if (isNaN(ageNum) || ageNum < 16 || ageNum > 100) {
+        return NextResponse.json(
+          { error: "Age must be between 16 and 100" },
+          { status: 400 }
+        );
+      }
+    }
+
     // ============================================
     // 3. VALIDATE TERMS ACCEPTANCE
     // ============================================

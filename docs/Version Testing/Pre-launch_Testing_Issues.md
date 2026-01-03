@@ -47,7 +47,7 @@ Medium Priority Issues:
 
 16. [B] If two or more cupids choose the same preferred candidate: when the second tries to link with that candidate either when linking through profile (when they have a match account or afterwards on the profile page), or when signing up, they should get an error message saying "There is already a cupid that prefers to match this candidate!"
 
-17. [B] Make sure that if a cupid doesn't get their choice of match, they get another person (but in their cupid portal, they should have a message that says "Unfortunately your preferred candidate did not get matched.")
+17. [B] Make sure that if a cupid doesn't get their choice of match, they get another person (but in their cupid portal, they should have a message that says "Unfortunately your preferred candidate did not get matched.") (Resolved- no edits needed. )
 
 18. [B] Matches revealed February 1 & 7, 2026 (still present on home page of matches AND cupids, should be changed to just Feb 7)
 

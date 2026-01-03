@@ -156,10 +156,6 @@ export function MatchesDisplay() {
                 The cupids are working hard behind the scenes to match you up!
                 Matches will be revealed on February 7th, stay tuned! 💘
               </p>
-              <div className="mt-6 flex items-center justify-center gap-2 text-slate-600">
-                <Clock className="h-4 w-4" />
-                <span>Batch {data?.batchNumber || 1}</span>
-              </div>
             </CardContent>
           </Card>
         </div>
