@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { QuestionnaireEditor } from "./_components/QuestionnaireEditor";
@@ -15,8 +14,9 @@ export const metadata: Metadata = {
 export default async function QuestionnaireConfigPage() {
   const session = await getCurrentUser();
 
+  // Middleware handles authentication, so session should always exist here
   if (!session?.user) {
-    redirect("/login");
+    throw new Error("Unauthorized");
   }
 
   // Fetch user profile to check admin status

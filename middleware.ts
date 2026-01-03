@@ -79,5 +79,5 @@ export default withAuth(
  * - /api/* (API routes handle their own authentication)
  */
 export const config = {
-  matcher: ["/dashboard/:path*", "/questionnaire", "/matches"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/questionnaire", "/matches"],
 };

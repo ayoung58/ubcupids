@@ -393,8 +393,8 @@ export function CupidMatchingPortal({
     );
   }
 
-  if (!dashboard || dashboard.pendingAssignments.length === 0) {
-    const isAllDone = dashboard && dashboard.reviewed > 0;
+  if (!dashboard || dashboard.totalAssigned === 0) {
+    const isAllDone = dashboard && dashboard.pending === 0;
 
     return (
       <div className="min-h-screen bg-slate-50 p-8">
@@ -548,7 +548,7 @@ export function CupidMatchingPortal({
                           <Plus className="h-4 w-4" />
                           {isLoadingMore
                             ? "Loading..."
-                            : `Generate 5 More (limit: 25 total users)`}
+                            : `Generate 5 More Potential Matches (limit: 25 total)`}
                         </Button>
                       )}
                     <Button

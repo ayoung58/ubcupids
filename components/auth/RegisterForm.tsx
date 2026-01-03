@@ -394,7 +394,8 @@ export function RegisterForm({
               />
               <p className="text-xs text-slate-600">
                 We collect your age to improve matches and ensure everyone is
-                comfortable. Please use your real age.
+                comfortable. Please use your real age. <br />
+                Your age cannot be edited afterwards.
               </p>
             </div>
           )}

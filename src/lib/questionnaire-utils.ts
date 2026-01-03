@@ -80,16 +80,8 @@ export function validateResponses(responses: Responses): ValidationError[] {
     if (question.type === "text" || question.type === "textarea") {
       const textResponse = response as string;
 
-      // Only validate length if we have a string response
+      // Only validate max length (minLength removed per user request)
       if (typeof textResponse === "string") {
-        if (question.minLength && textResponse.length < question.minLength) {
-          errors.push({
-            questionId: question.id,
-            questionText: question.text,
-            errorMessage: `Please provide at least ${question.minLength} characters (currently ${textResponse.length})`,
-          });
-        }
-
         if (question.maxLength && textResponse.length > question.maxLength) {
           errors.push({
             questionId: question.id,

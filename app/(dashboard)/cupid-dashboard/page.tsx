@@ -38,6 +38,11 @@ export default async function CupidDashboardPage() {
   const displayName =
     profile?.cupidDisplayName || profile?.displayName || session.user.name;
 
+  // Get matching batch status
+  const batch = await prisma.matchingBatch.findUnique({
+    where: { batchNumber: 1 },
+  });
+
   // Check if cupids have been assigned candidates (admin has run "pair cupids")
   const totalAssignments = await prisma.cupidAssignment.count({
     where: { batchNumber: 1 },
@@ -45,15 +50,8 @@ export default async function CupidDashboardPage() {
 
   const cupidsAssigned = totalAssignments > 0;
 
-  // Check if matches have been revealed
-  const revealedMatchCount = await prisma.match.count({
-    where: {
-      batchNumber: 1,
-      revealedAt: { not: null },
-    },
-  });
-
-  const matchesRevealed = revealedMatchCount > 0;
+  // Check if matches have been revealed (use batch.revealedAt for consistency)
+  const matchesRevealed = batch?.revealedAt !== null;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

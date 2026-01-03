@@ -752,7 +752,8 @@ export function ProfileForm() {
                   <div className="group relative inline-block">
                     <Info className="h-4 w-4 text-slate-400 cursor-help" />
                     <div className="invisible group-hover:visible absolute left-0 top-6 w-64 p-2 bg-slate-900 text-white text-xs rounded shadow-lg z-10">
-                      Age should be between 16 and 100 inclusive
+                      Age can only be set during signup and cannot be changed
+                      later
                     </div>
                   </div>
                 </Label>
@@ -767,10 +768,13 @@ export function ProfileForm() {
                   }
                   required
                   placeholder="18"
+                  disabled={profileData.age > 0}
+                  className={
+                    profileData.age > 0 ? "bg-slate-100 cursor-not-allowed" : ""
+                  }
                 />
                 <p className="text-xs text-slate-600">
-                  We collect your age to improve matches and ensure everyone is
-                  comfortable. Please use your real age.
+                  Age is set during account creation and cannot be changed.
                 </p>
               </div>
             )}

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { AdminDashboardClient } from "./_components/AdminDashboardClient";
@@ -12,8 +11,9 @@ export const metadata: Metadata = {
 export default async function AdminDashboardPage() {
   const session = await getCurrentUser();
 
+  // Middleware handles authentication, so session should always exist here
   if (!session?.user) {
-    redirect("/login");
+    throw new Error("Unauthorized");
   }
 
   // Fetch user profile to check admin status
@@ -48,8 +48,8 @@ export default async function AdminDashboardPage() {
     where: { batchNumber: 1, revealedAt: { not: null } },
   });
 
-  // Only mark as revealed if ALL matches have been revealed
-  const hasRevealed = matchCount > 0 && revealedCount === matchCount;
+  // Only mark as revealed if batch revealedAt is set AND there are matches
+  const hasRevealed = batch?.revealedAt !== null && matchCount > 0;
 
   const displayName =
     profile?.displayName || `${profile?.firstName} ${profile?.lastName}`;

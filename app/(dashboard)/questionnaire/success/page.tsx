@@ -64,7 +64,7 @@ export default function QuestionnaireSuccessPage() {
                   2
                 </div>
                 <p className="text-slate-700 flex-1">
-                  <strong>Feb 1-6:</strong> Our cupids review profiles and
+                  <strong>Feb 1-6:</strong> Human cupids review profiles and
                   create matches
                 </p>
               </div>

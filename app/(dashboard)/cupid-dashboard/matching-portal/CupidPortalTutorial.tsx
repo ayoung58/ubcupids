@@ -15,7 +15,7 @@ const cupidPortalSteps: TutorialStep[] = [
     id: "candidate-nav",
     title: "Navigate Between Candidates",
     content:
-      "Use these buttons to move between assigned candidates. Each candidate needs you to find them a match!",
+      "Use these buttons to move between assigned candidates if you have more than one. Each candidate needs you to find them a match!",
     target: "[data-tutorial='candidate-nav']",
     position: "bottom",
   },
@@ -23,7 +23,7 @@ const cupidPortalSteps: TutorialStep[] = [
     id: "info-collapse",
     title: "Collapsible Info Panel",
     content:
-      "Click the arrow to collapse or expand this info panel. Collapsing it gives you more screen space to compare questionnaires.",
+      "Click the ^ arrow to collapse or expand this info panel. Collapsing it gives you more screen space to compare questionnaires.",
     target: "[data-tutorial='collapse-button']",
     position: "top",
   },
@@ -47,7 +47,7 @@ const cupidPortalSteps: TutorialStep[] = [
     id: "match-navigation",
     title: "Browse Potential Matches",
     content:
-      "Use the Previous/Next buttons to browse through potential matches for your candidate. Each match has a compatibility score.",
+      "Use the Previous < and Next > buttons to browse through potential matches for your candidate.",
     target: "[data-tutorial='match-nav']",
     position: "top",
   },
@@ -76,18 +76,10 @@ const cupidPortalSteps: TutorialStep[] = [
     position: "left",
   },
   {
-    id: "rationale",
-    title: "Provide Rationale (Required!)",
-    content:
-      "Before confirming, you MUST provide a brief rationale explaining why this is a good match. Your candidate and their match will see this message!",
-    target: "[data-tutorial='rationale-input']",
-    position: "top",
-  },
-  {
     id: "confirm",
     title: "Confirm Your Selection",
     content:
-      "Once you've selected a match and provided rationale, click 'Confirm Selection' to submit. The match will be sent to the candidate for acceptance!",
+      "Once you've selected a match and provided rationale, click 'Confirm Selection'. You'll need to provide a rationale for your match, and then it can be submitted! The match will then be sent to the candidate for acceptance!",
     target: "[data-tutorial='confirm-button']",
     position: "left",
   },

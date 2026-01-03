@@ -28,7 +28,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { accountType, firstName, lastName, age, major } = body;
+    const {
+      accountType,
+      firstName,
+      lastName,
+      age,
+      major,
+      preferredCandidateEmail,
+    } = body;
 
     if (accountType !== "cupid" && accountType !== "match") {
       return NextResponse.json(
@@ -47,6 +54,7 @@ export async function POST(request: NextRequest) {
         lastName: true,
         age: true,
         displayName: true,
+        preferredCandidateEmail: true,
       },
     });
 
@@ -101,6 +109,12 @@ export async function POST(request: NextRequest) {
         updateData.cupidDisplayName = currentUser.displayName;
       } else if (currentUser.firstName && currentUser.lastName) {
         updateData.cupidDisplayName = `${currentUser.firstName} ${currentUser.lastName}`;
+      }
+      // Save preferred candidate email if provided
+      if (preferredCandidateEmail && preferredCandidateEmail.trim()) {
+        updateData.preferredCandidateEmail = preferredCandidateEmail
+          .trim()
+          .toLowerCase();
       }
     } else {
       updateData.isBeingMatched = true;
