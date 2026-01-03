@@ -34,5 +34,15 @@ export default async function MatchingPortalPage() {
     });
   }
 
-  return <CupidMatchingPortal />;
+  // Get tutorial completion status
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { cupidPortalTutorialCompleted: true },
+  });
+
+  return (
+    <CupidMatchingPortal
+      cupidPortalTutorialCompleted={user?.cupidPortalTutorialCompleted || false}
+    />
+  );
 }

@@ -53,10 +53,12 @@ export function SectionRenderer({
       <CardContent className="space-y-6 md:space-y-8 pt-4 md:pt-6 px-4 md:px-6">
         {section.questions.map((question, idx) => {
           const globalNumber = globalQuestionStartIndex + idx + 1;
+          const isFirstQuestion = globalQuestionStartIndex === 0 && idx === 0;
           return (
             <div
               key={question.id}
               className="pb-6 border-b last:border-b-0 last:pb-0"
+              data-tutorial={isFirstQuestion ? "first-question" : undefined}
             >
               <QuestionRenderer
                 question={question}
@@ -69,6 +71,7 @@ export function SectionRenderer({
                 disabled={disabled}
                 validationError={validationErrors?.get(question.id)}
                 questionNumber={globalNumber}
+                isFirstQuestion={isFirstQuestion}
               />
             </div>
           );

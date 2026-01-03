@@ -14,6 +14,12 @@ async function getQuestionnaireData(userId: string) {
     where: { userId },
   });
 
+  // Fetch tutorial completion status
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { questionnaireTutorialCompleted: true },
+  });
+
   // Decrypt responses and importance if they exist
   let responses: Responses = {};
   let importance: ImportanceRatings = {};
@@ -49,6 +55,8 @@ async function getQuestionnaireData(userId: string) {
     responses,
     importance,
     isSubmitted: existingResponse?.isSubmitted || false,
+    questionnaireTutorialCompleted:
+      user?.questionnaireTutorialCompleted || false,
   };
 }
 
@@ -68,6 +76,7 @@ async function QuestionnairePage() {
       initialImportance={data.importance}
       isSubmitted={data.isSubmitted}
       config={config}
+      questionnaireTutorialCompleted={data.questionnaireTutorialCompleted}
     />
   );
 }

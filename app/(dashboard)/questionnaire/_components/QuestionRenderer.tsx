@@ -23,6 +23,7 @@ interface QuestionRendererProps {
   disabled?: boolean;
   validationError?: string; // Error message to display
   questionNumber?: number; // Global question number
+  isFirstQuestion?: boolean; // Whether this is the first question (for tutorial)
 }
 
 export function QuestionRenderer({
@@ -34,6 +35,7 @@ export function QuestionRenderer({
   disabled = false,
   validationError,
   questionNumber,
+  isFirstQuestion = false,
 }: QuestionRendererProps) {
   // Initialize otherText from value if it's an object with text
   const initialOtherText =
@@ -87,12 +89,14 @@ export function QuestionRenderer({
           </span>
         )}
       </Label>
-      <ImportanceSelector
-        questionId={question.id}
-        value={importance}
-        onChange={onImportanceChange}
-        disabled={disabled}
-      />
+      <div data-tutorial={isFirstQuestion ? "importance-select" : undefined}>
+        <ImportanceSelector
+          questionId={question.id}
+          value={importance}
+          onChange={onImportanceChange}
+          disabled={disabled}
+        />
+      </div>
     </div>
   ) : (
     <Label id={`${question.id}-label`} className="text-base font-medium">

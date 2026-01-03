@@ -21,8 +21,9 @@ import { SubmitConfirmDialog } from "./SubmitConfirmDialog";
 import { PreQuestionnaireAgreement } from "./PreQuestionnaireAgreement";
 import { InfoPanel } from "./InfoPanel";
 import { SkipLink } from "./SkipLink";
+import { QuestionnaireTutorial } from "./QuestionnaireTutorial";
 import { Button } from "@/components/ui/button";
-import { Check, ArrowUp } from "lucide-react";
+import { Check, ArrowUp, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Send } from "lucide-react";
 
@@ -31,6 +32,7 @@ interface QuestionnaireFormProps {
   initialImportance?: ImportanceRatings;
   isSubmitted: boolean;
   config: QuestionnaireConfig;
+  questionnaireTutorialCompleted?: boolean;
 }
 
 export function QuestionnaireForm({
@@ -38,6 +40,7 @@ export function QuestionnaireForm({
   initialImportance,
   isSubmitted,
   config,
+  questionnaireTutorialCompleted = false,
 }: QuestionnaireFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -288,6 +291,11 @@ export function QuestionnaireForm({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Tutorial for first-time users */}
+      <QuestionnaireTutorial
+        initialCompleted={questionnaireTutorialCompleted}
+      />
+
       <SkipLink />
       <ProgressBar
         value={progress}
@@ -296,7 +304,7 @@ export function QuestionnaireForm({
       />
 
       {/* Section Progress */}
-      <div className="bg-white border-b shadow-sm">
+      <div className="bg-white border-b shadow-sm" data-tutorial="section-nav">
         <div className="container max-w-7xl px-2 py-3 mx-auto">
           <p className="text-sm text-slate-600 text-center mb-4">
             Track your progress and click the sections below to navigate easily
@@ -356,7 +364,7 @@ export function QuestionnaireForm({
         className="container max-w-4xl py-6 md:py-8 px-4 mx-auto"
       >
         {/* Header */}
-        <div className="mb-6 md:mb-8">
+        <div className="mb-6 md:mb-8" data-tutorial="questionnaire-header">
           <div className="flex items-start justify-between gap-4 mb-2">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
               UBCupids Compatibility Questionnaire
@@ -387,7 +395,9 @@ export function QuestionnaireForm({
         </div>
 
         {/* Info Panel */}
-        <InfoPanel agreement={config.agreement} />
+        <div data-tutorial="info-panel">
+          <InfoPanel agreement={config.agreement} />
+        </div>
 
         {/* Sections */}
         <div
@@ -427,6 +437,7 @@ export function QuestionnaireForm({
                 variant="outline"
                 size="lg"
                 className="min-h-[44px] w-full sm:w-auto hover:bg-gray-200 hover:border-gray-300 transition-colors"
+                data-tutorial="save-button"
               >
                 {isSaving ? (
                   <>
@@ -446,6 +457,7 @@ export function QuestionnaireForm({
                 disabled={isSubmitting || progress < 100}
                 size="lg"
                 className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
+                data-tutorial="submit-button"
               >
                 {isSubmitting ? (
                   <>
@@ -464,55 +476,61 @@ export function QuestionnaireForm({
         )}
       </main>
 
-      {/* Back to Top Button */}
-      <Button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-6 right-6 w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none z-50"
-        size="sm"
-        aria-label="Back to top"
+      {/* Navigation Buttons */}
+      <div
+        className="fixed bottom-6 right-6 flex flex-col gap-2 z-50"
+        data-tutorial="nav-buttons"
       >
-        <ArrowUp className="w-5 h-5" />
-      </Button>
-
-      {/* Jump to First Unanswered Button */}
-      <Button
-        onClick={() => {
-          // Find first unanswered question
-          for (const section of config.sections) {
-            for (const question of section.questions) {
-              if (question.required && !responses[question.id]) {
-                const element = document.getElementById(
-                  `question-${question.id}`
-                );
-                if (element) {
-                  const offset = 100;
-                  const elementPosition = element.getBoundingClientRect().top;
-                  const offsetPosition =
-                    elementPosition + window.pageYOffset - offset;
-                  window.scrollTo({
-                    top: offsetPosition,
-                    behavior: "smooth",
-                  });
-                  // Focus the first input/select/textarea in the question
-                  const input = element.querySelector<HTMLElement>(
-                    'input:not([type="hidden"]), select, textarea, button[role="radio"], button[role="checkbox"]'
+        {/* Jump to First Unanswered Button */}
+        <Button
+          onClick={() => {
+            // Find first unanswered question
+            for (const section of config.sections) {
+              for (const question of section.questions) {
+                if (question.required && !responses[question.id]) {
+                  const element = document.getElementById(
+                    `question-${question.id}`
                   );
-                  if (input) {
-                    setTimeout(() => input.focus(), 300);
+                  if (element) {
+                    const offset = 100;
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition =
+                      elementPosition + window.pageYOffset - offset;
+                    window.scrollTo({
+                      top: offsetPosition,
+                      behavior: "smooth",
+                    });
+                    // Focus the first input/select/textarea in the question
+                    const input = element.querySelector<HTMLElement>(
+                      'input:not([type="hidden"]), select, textarea, button[role="radio"], button[role="checkbox"]'
+                    );
+                    if (input) {
+                      setTimeout(() => input.focus(), 300);
+                    }
+                    return;
                   }
-                  return;
                 }
               }
             }
-          }
-        }}
-        className="fixed bottom-20 right-6 w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none z-50 bg-blue-600 hover:bg-blue-700"
-        size="sm"
-        aria-label="Jump to first unanswered question"
-        title="Jump to first unanswered question"
-      >
-        <ArrowUp className="w-5 h-5" />
-      </Button>
+          }}
+          className="w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none bg-blue-600 hover:bg-blue-700"
+          size="sm"
+          aria-label="Jump to first unanswered question"
+          title="Jump to first unanswered question"
+        >
+          <HelpCircle className="w-5 h-5" />
+        </Button>
+
+        {/* Back to Top Button */}
+        <Button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none"
+          size="sm"
+          aria-label="Back to top"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </Button>
+      </div>
 
       {/* Submit Confirmation Dialog */}
       <SubmitConfirmDialog

@@ -62,3 +62,15 @@ Less prioritized issues
 22. [C] Add a jump to first unanswered question button for questionnaire, on top of the "jump to top" button. Maybe use an appropriate icon if text would be too clunky.
 
 23. [C] Hide the "Show compatibility scores" button (i.e., can comment it out, but I would not like to have the feature there for production. I may re-activate it for test environment). 
+
+Deferred/more complicated issues
+
+24. [A] Changing questions in deployment environment DOES NOT change the questionnaire; on localhost it just does it locally and then changes need to be pushed. Is this intended? (Yes, can skip, it can  be alright for now, Can change later on if needed. For now, only able to make changes through local host and then deploy.)
+
+25. [A] Tutorial for first time questionnaire users. Basically, I would like something similar to the tutorial for profile and match dashboard. It should talk about the section buttons, the hidden info dropdown, the back to top and jump to questions button, answering a question, and selecting importance for a question (and how it affects the scoring), submission as well, etc. Please also include anything else you think would be important. 
+
+26. [A] I'd also like a tutorial for first time cupid matching portal users. On their first entry, they should get to know the functionality (generating new users, removing a potential match, going to next potential match, selecting, switching between profile and questionnaire, collapsing and hiding information to enlarge questionnaire, and confirmation of submission (in the note, mention that rationale is mandatory), etc.). Please include any other details you think would be important. 
+
+27. [A] I would like a "timeline"-like roadmap on the homepage that includes a bit of animation. It would go through what it's like to be a match candidate and a cupid. There can be animation (i.e. not there and fades in when you scroll down) to give a sense of "appearance". I can elaborate if you have follow up questions on design, implementation, etc. Basically, it should give them a sense of what it's like to be matched, what the process is, and also what it's like to be a cupid. there should be a call to action at the end, and then a copyright footer.
+
+28. [B] Please take out some of the side whitespace for the homepage and match/cupid dashboard as needed, as some of the elements look small and too much whitespace makes the website look empty. Appropriate amounts are still needed though. 

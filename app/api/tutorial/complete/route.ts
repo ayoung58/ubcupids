@@ -26,6 +26,10 @@ export async function POST(request: Request) {
       updateData.dashboardTutorialCompleted = true;
     } else if (tutorialId === "match-profile") {
       updateData.profileTutorialCompleted = true;
+    } else if (tutorialId === "questionnaire") {
+      updateData.questionnaireTutorialCompleted = true;
+    } else if (tutorialId === "cupid-portal") {
+      updateData.cupidPortalTutorialCompleted = true;
     } else {
       return NextResponse.json(
         { error: "Invalid tutorial ID" },

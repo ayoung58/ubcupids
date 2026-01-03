@@ -51,7 +51,7 @@ export function DashboardLayoutClient({
       )}
 
       {/* Main Content */}
-      <div className={isQuestionnairePage ? "" : "max-w-7xl mx-auto px-4 py-6"}>
+      <div className={isQuestionnairePage ? "" : "max-w-7xl mx-auto px-4 py-4"}>
         {children}
       </div>
     </div>

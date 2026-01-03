@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
+import { HomepageTimeline } from "@/components/homepage/HomepageTimeline";
 
 /**
  * Home Page
@@ -12,6 +13,7 @@ import { prisma } from "@/lib/prisma";
  * - Sign out success message (if ?signedout=true)
  * - Call to action (Login / Register)
  * - Brief description of UBCupids
+ * - Timeline showing how the matching process works
  */
 
 interface HomePageProps {
@@ -39,96 +41,102 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="max-w-2xl w-full space-y-8 text-center">
-        {/* Sign Out Success Message - Show regardless of session state */}
-        {showSignOutMessage && (
-          <Alert className="border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              You&apos;ve been signed out successfully.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Hero Section */}
-        <div className="space-y-4">
-          <h1 className="text-5xl font-bold text-slate-900">💘 UBCupids</h1>
-          <p className="text-xl text-slate-600">
-            Find your Valentine&apos;s Day match at UBC
-          </p>
-          <p className="text-slate-500 max-w-lg mx-auto">
-            Anonymous matching service for UBC students. Complete a
-            compatibility questionnaire and receive 1-3 matches for
-            Valentine&apos;s Day 2026.
-          </p>
-        </div>
-
-        {/* Call to Action */}
-        <div className="flex gap-4 justify-center">
-          {/* Always show Login/Register buttons on sign-out page */}
-          {showSignOutMessage ? (
-            <>
-              <Link href="/signup">
-                <Button size="lg" className="px-8">
-                  Get Started
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button size="lg" variant="outline" className="px-8">
-                  Login
-                </Button>
-              </Link>
-            </>
-          ) : session?.user ? (
-            // User is logged in (normal state)
-            <Link href={dashboardUrl}>
-              <Button size="lg" className="px-8">
-                Go to Dashboard
-              </Button>
-            </Link>
-          ) : (
-            // User is logged out (normal state)
-            <>
-              <Link href="/signup">
-                <Button size="lg" className="px-8">
-                  Get Started
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button size="lg" variant="outline" className="px-8">
-                  Login
-                </Button>
-              </Link>
-            </>
+    <div className="min-h-screen bg-slate-50">
+      {/* Hero Section */}
+      <div className="flex items-center justify-center px-4 py-16 sm:py-24">
+        <div className="max-w-2xl w-full space-y-8 text-center">
+          {/* Sign Out Success Message - Show regardless of session state */}
+          {showSignOutMessage && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                You&apos;ve been signed out successfully.
+              </AlertDescription>
+            </Alert>
           )}
-        </div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-8">
-          <div className="p-4 bg-white rounded-lg border border-slate-200">
-            <p className="font-semibold text-slate-900">📝 Questionnaire</p>
-            <p className="text-sm text-slate-600 mt-2">
-              Fill out compatibility questions
+          {/* Hero Content */}
+          <div className="space-y-4">
+            <h1 className="text-5xl font-bold text-slate-900">💘 UBCupids</h1>
+            <p className="text-xl text-slate-600">
+              Find your Valentine&apos;s Day match at UBC
+            </p>
+            <p className="text-slate-500 max-w-lg mx-auto">
+              Anonymous matching service for UBC students. Complete a
+              compatibility questionnaire and receive 1-3 matches for
+              Valentine&apos;s Day 2026.
             </p>
           </div>
-          <div className="p-4 bg-white rounded-lg border border-slate-200">
-            <p className="font-semibold text-slate-900">🤖 Smart Matching</p>
-            <p className="text-sm text-slate-600 mt-2">
-              Algorithm + human cupids
-            </p>
-          </div>
-          <div className="p-4 bg-white rounded-lg border border-slate-200">
-            <p className="font-semibold text-slate-900">💌 Match Reveal</p>
-            <p className="text-sm text-slate-600 mt-2">February 7th, 2026</p>
-          </div>
-        </div>
 
-        {/* Footer */}
-        <p className="text-xs text-slate-500 pt-8">
-          Only @student.ubc.ca and @alumni.ubc.ca emails accepted
-        </p>
+          {/* Call to Action */}
+          <div className="flex gap-4 justify-center">
+            {/* Always show Login/Register buttons on sign-out page */}
+            {showSignOutMessage ? (
+              <>
+                <Link href="/signup">
+                  <Button size="lg" className="px-8">
+                    Get Started
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="lg" variant="outline" className="px-8">
+                    Login
+                  </Button>
+                </Link>
+              </>
+            ) : session?.user ? (
+              // User is logged in (normal state)
+              <Link href={dashboardUrl}>
+                <Button size="lg" className="px-8">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              // User is logged out (normal state)
+              <>
+                <Link href="/signup">
+                  <Button size="lg" className="px-8">
+                    Get Started
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="lg" variant="outline" className="px-8">
+                    Login
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-8">
+            <div className="p-4 bg-white rounded-lg border border-slate-200">
+              <p className="font-semibold text-slate-900">📝 Questionnaire</p>
+              <p className="text-sm text-slate-600 mt-2">
+                Fill out compatibility questions
+              </p>
+            </div>
+            <div className="p-4 bg-white rounded-lg border border-slate-200">
+              <p className="font-semibold text-slate-900">🤖 Smart Matching</p>
+              <p className="text-sm text-slate-600 mt-2">
+                Algorithm + human cupids
+              </p>
+            </div>
+            <div className="p-4 bg-white rounded-lg border border-slate-200">
+              <p className="font-semibold text-slate-900">💌 Match Reveal</p>
+              <p className="text-sm text-slate-600 mt-2">February 7th, 2026</p>
+            </div>
+          </div>
+
+          {/* UBC Email Note */}
+          <p className="text-xs text-slate-500 pt-4">
+            Only @student.ubc.ca and @alumni.ubc.ca emails accepted
+          </p>
+        </div>
       </div>
+
+      {/* Timeline Section */}
+      <HomepageTimeline />
     </div>
   );
 }

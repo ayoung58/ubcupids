@@ -97,6 +97,8 @@ model User {
   // Tutorial Completion Tracking (per-user)
   dashboardTutorialCompleted Boolean @default(false) // Match dashboard tutorial
   profileTutorialCompleted Boolean @default(false)   // Profile page tutorial
+  questionnaireTutorialCompleted Boolean @default(false) // Questionnaire tutorial
+  cupidPortalTutorialCompleted Boolean @default(false)   // Cupid matching portal tutorial
   
   // Legacy fields (keeping for backwards compatibility)
   yearOfStudy   Int?

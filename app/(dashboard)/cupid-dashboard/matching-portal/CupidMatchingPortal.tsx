@@ -39,6 +39,7 @@ import type {
   Responses,
   ImportanceRatings,
 } from "@/src/lib/questionnaire-types";
+import { CupidPortalTutorial } from "./CupidPortalTutorial";
 
 // Types
 interface CupidProfileView {
@@ -79,7 +80,13 @@ interface CupidDashboard {
   pendingAssignments: CupidCandidateAssignment[];
 }
 
-export function CupidMatchingPortal() {
+interface CupidMatchingPortalProps {
+  cupidPortalTutorialCompleted?: boolean;
+}
+
+export function CupidMatchingPortal({
+  cupidPortalTutorialCompleted = false,
+}: CupidMatchingPortalProps) {
   const [dashboard, setDashboard] = useState<CupidDashboard | null>(null);
   const [currentAssignmentIndex, setCurrentAssignmentIndex] = useState(0);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
@@ -431,18 +438,26 @@ export function CupidMatchingPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4">
-      <div className="max-w-[1800px] mx-auto space-y-4">
+    <div className="min-h-screen bg-slate-50 p-2 sm:p-4">
+      {/* Tutorial for first-time cupid users */}
+      <CupidPortalTutorial initialCompleted={cupidPortalTutorialCompleted} />
+
+      <div className="max-w-[1800px] mx-auto space-y-2 sm:space-y-3">
         <BackButton />
 
         {/* Collapsible Info Panel */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {!isInfoCollapsed && (
             <div className="space-y-0">
-              <StatsHeader dashboard={dashboard} />
+              <div data-tutorial="stats-header">
+                <StatsHeader dashboard={dashboard} />
+              </div>
 
               {/* Candidate Navigation */}
-              <div className="flex items-center justify-between p-4 border-t border-slate-200">
+              <div
+                className="flex items-center justify-between p-4 border-t border-slate-200"
+                data-tutorial="candidate-nav"
+              >
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -528,6 +543,7 @@ export function CupidMatchingPortal() {
                           onClick={handleLoadMoreMatches}
                           disabled={isLoadingMore}
                           className="flex items-center gap-2"
+                          data-tutorial="generate-more"
                         >
                           <Plus className="h-4 w-4" />
                           {isLoadingMore
@@ -540,6 +556,7 @@ export function CupidMatchingPortal() {
                       className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
                       onClick={() => setShowConfirmDialog(true)}
                       disabled={!selectedMatchId || isSubmitting}
+                      data-tutorial="confirm-button"
                     >
                       <Check className="h-5 w-5 mr-2" />
                       Confirm Selection
@@ -570,6 +587,7 @@ export function CupidMatchingPortal() {
             aria-label={
               isInfoCollapsed ? "Expand info panel" : "Collapse info panel"
             }
+            data-tutorial="collapse-button"
           >
             {isInfoCollapsed ? (
               <ChevronDown className="h-5 w-5 text-slate-600" />
@@ -600,6 +618,7 @@ export function CupidMatchingPortal() {
         {currentAssignment && currentMatch && (
           <div
             className={`grid grid-cols-2 gap-3 ${isInfoCollapsed ? "h-[calc(100vh-140px)]" : "h-[calc(100vh-380px)]"}`}
+            data-tutorial="split-view"
           >
             {/* Left: Candidate */}
             <Card className="border-2 border-blue-400 overflow-hidden flex flex-col">
@@ -610,7 +629,7 @@ export function CupidMatchingPortal() {
                   {currentAssignment.candidate.age}
                 </CardTitle>
                 {/* Tabs */}
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2 mt-3" data-tutorial="view-tabs">
                   <Button
                     variant={candidateTab === "profile" ? "default" : "outline"}
                     size="sm"
@@ -674,7 +693,10 @@ export function CupidMatchingPortal() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center gap-2"
+                    data-tutorial="match-nav"
+                  >
                     {showScores && (
                       <span className="text-sm font-medium text-pink-600 mr-2">
                         {currentMatch.score.toFixed(1)}%
@@ -717,6 +739,7 @@ export function CupidMatchingPortal() {
                             setShowRejectDialog(true);
                           }}
                           disabled={selectedMatchId !== null}
+                          data-tutorial="reject-button"
                         >
                           <XCircle className="h-4 w-4 mr-1" />
                           Not a Match
@@ -728,6 +751,7 @@ export function CupidMatchingPortal() {
                             setSelectedMatchId(currentMatch.userId)
                           }
                           disabled={selectedMatchId !== null}
+                          data-tutorial="select-button"
                         >
                           <Heart className="h-4 w-4 mr-1" />
                           Select
@@ -793,7 +817,7 @@ export function CupidMatchingPortal() {
               <strong>{currentAssignment?.candidate.firstName}</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
+          <div className="py-4" data-tutorial="rationale-input">
             <Label
               htmlFor="dialog-reason"
               className="text-sm font-medium text-red-600"
