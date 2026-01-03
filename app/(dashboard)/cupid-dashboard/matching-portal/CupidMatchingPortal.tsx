@@ -294,7 +294,7 @@ export function CupidMatchingPortal() {
                   Candidates Are Filling Out Questionnaires
                 </h2>
                 <p className="text-blue-600 mt-2">
-                  Cupids will receive assignments on January 27th! Stay tuned
+                  Cupids will receive assignments on January 31st! Stay tuned
                   till then! ⏳
                 </p>
                 <Link href="/cupid-dashboard">

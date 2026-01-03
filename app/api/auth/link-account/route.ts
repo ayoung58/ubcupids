@@ -57,14 +57,14 @@ export async function POST(request: NextRequest) {
     // Check if they already have this account type
     if (accountType === "cupid" && currentUser.isCupid) {
       return NextResponse.json(
-        { error: "You already have a Cupid account" },
+        { error: "There is already a Cupid account with that email" },
         { status: 400 }
       );
     }
 
     if (accountType === "match" && currentUser.isBeingMatched) {
       return NextResponse.json(
-        { error: "You already have a Match account" },
+        { error: "There is already a Match account with that email" },
         { status: 400 }
       );
     }

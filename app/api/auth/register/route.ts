@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
       if (isTryingToCreateCupid && hasCupidAccount) {
         return NextResponse.json(
           {
-            error: "You already have a Cupid account",
+            error: "There is already a Cupid account with that email",
             hint: "Please log in to access your existing Cupid account.",
           },
           { status: 409 }
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
       if (isTryingToCreateMatch && hasMatchAccount) {
         return NextResponse.json(
           {
-            error: "You already have a Match account",
+            error: "There is already a Match account with that email",
             hint: "Please log in to access your existing Match account.",
           },
           { status: 409 }
