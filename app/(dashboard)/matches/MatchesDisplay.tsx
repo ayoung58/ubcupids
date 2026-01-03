@@ -230,7 +230,7 @@ export function MatchesDisplay() {
                 variant={filterType === "algorithm" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterType("algorithm")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200"
               >
                 <Sparkles className="h-4 w-4" />
                 Algorithm ({counts.algorithm})
@@ -239,10 +239,23 @@ export function MatchesDisplay() {
                 variant={filterType === "cupid_sent" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterType("cupid_sent")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 relative bg-blue-50 hover:bg-blue-100 border-blue-200"
               >
                 <Send className="h-4 w-4" />
                 Your Cupid&apos;s Picks ({counts.cupid_sent})
+                {data.requestsSent.length > 0 && (
+                  <span className="absolute -top-1 -right-1">
+                    {data.requestsSent.some((m) => m.status === "pending") && (
+                      <Clock className="h-3 w-3 text-yellow-500" />
+                    )}
+                    {data.requestsSent.every(
+                      (m) => m.status === "accepted"
+                    ) && <Check className="h-3 w-3 text-green-500" />}
+                    {data.requestsSent.some((m) => m.status === "declined") && (
+                      <X className="h-3 w-3 text-red-500" />
+                    )}
+                  </span>
+                )}
               </Button>
               <Button
                 variant={
@@ -250,10 +263,20 @@ export function MatchesDisplay() {
                 }
                 size="sm"
                 onClick={() => setFilterType("cupid_received")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 relative bg-green-50 hover:bg-green-100 border-green-200"
               >
                 <Inbox className="h-4 w-4" />
                 Match Requests ({counts.cupid_received})
+                {data.requestsReceived.filter((m) => m.status === "pending")
+                  .length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    {
+                      data.requestsReceived.filter(
+                        (m) => m.status === "pending"
+                      ).length
+                    }
+                  </span>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -304,9 +327,9 @@ function getSortedAndFilteredMatches(
       ? matches
       : matches.filter((m) => m.matchType === filterType);
 
-  // Sort: cupid_sent > algorithm > cupid_received
+  // Sort: algorithm > cupid_sent > cupid_received
   return filtered.sort((a, b) => {
-    const order = { cupid_sent: 1, algorithm: 2, cupid_received: 3 };
+    const order = { algorithm: 1, cupid_sent: 2, cupid_received: 3 };
     return order[a.matchType] - order[b.matchType];
   });
 }
@@ -344,7 +367,7 @@ function AlgorithmMatchCard({ match }: { match: MatchDisplay }) {
     match.matchedUser.pointOfContact || match.matchedUser.email;
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow bg-purple-50/30 border-purple-200">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <Avatar className="h-16 w-16">
@@ -384,7 +407,10 @@ function AlgorithmMatchCard({ match }: { match: MatchDisplay }) {
             </div>
 
             {match.matchedUser.bio && (
-              <p className="text-slate-600 mt-3">{match.matchedUser.bio}</p>
+              <div className="mt-3">
+                <p className="text-sm font-medium text-slate-700">Short Bio:</p>
+                <p className="text-slate-600 mt-1">{match.matchedUser.bio}</p>
+              </div>
             )}
 
             {match.matchedUser.interests && (
@@ -486,7 +512,12 @@ function MatchRequestCard({
               )}
 
               {match.matchedUser.bio && (
-                <p className="text-slate-600 mt-3">{match.matchedUser.bio}</p>
+                <div className="mt-3">
+                  <p className="text-sm font-medium text-slate-700">
+                    Short Bio:
+                  </p>
+                  <p className="text-slate-600 mt-1">{match.matchedUser.bio}</p>
+                </div>
               )}
 
               {match.matchedUser.interests && (
@@ -506,7 +537,7 @@ function MatchRequestCard({
 
   // Pending - show accept/decline buttons
   return (
-    <Card className="hover:shadow-md transition-shadow border-2 border-green-200">
+    <Card className="hover:shadow-md transition-shadow border-2 border-green-200 bg-green-50/20">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <Avatar className="h-16 w-16">
@@ -545,7 +576,10 @@ function MatchRequestCard({
             )}
 
             {match.matchedUser.bio && (
-              <p className="text-slate-600 mt-3">{match.matchedUser.bio}</p>
+              <div className="mt-3">
+                <p className="text-sm font-medium text-slate-700">Short Bio:</p>
+                <p className="text-slate-600 mt-1">{match.matchedUser.bio}</p>
+              </div>
             )}
 
             {match.matchedUser.interests && (
@@ -602,17 +636,17 @@ function RequestSentCard({ match }: { match: MatchDisplay }) {
 
   const statusConfig = {
     pending: {
-      color: "bg-yellow-50 border-yellow-200",
+      color: "bg-blue-50/40 border-blue-200",
       badge: "bg-yellow-100 text-yellow-700",
       text: "⏳ Pending",
     },
     accepted: {
-      color: "bg-green-50 border-green-200",
+      color: "bg-blue-50/40 border-blue-200",
       badge: "bg-green-100 text-green-700",
       text: "✓ Accepted",
     },
     declined: {
-      color: "bg-slate-50 border-slate-200",
+      color: "bg-blue-50/20 border-blue-200",
       badge: "bg-slate-100 text-slate-700",
       text: "✗ Declined",
     },
@@ -679,7 +713,10 @@ function RequestSentCard({ match }: { match: MatchDisplay }) {
             )}
 
             {match.matchedUser.bio && (
-              <p className="text-slate-600 mt-3">{match.matchedUser.bio}</p>
+              <div className="mt-3">
+                <p className="text-sm font-medium text-slate-700">Short Bio:</p>
+                <p className="text-slate-600 mt-1">{match.matchedUser.bio}</p>
+              </div>
             )}
 
             {match.matchedUser.interests && (

@@ -39,9 +39,18 @@ export function AdminDashboardClient({
   const { toast } = useToast();
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [actionMessages, setActionMessages] = useState<
+    Record<string, { type: "success" | "error"; message: string }>
+  >({});
 
   const handleAction = async (action: string, endpoint: string) => {
     setLoadingAction(action);
+    // Clear previous message for this action
+    setActionMessages((prev) => {
+      const newMessages = { ...prev };
+      delete newMessages[action];
+      return newMessages;
+    });
 
     try {
       const response = await fetch(endpoint, {
@@ -53,25 +62,26 @@ export function AdminDashboardClient({
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: data.message || "Action completed successfully",
-        });
+        setActionMessages((prev) => ({
+          ...prev,
+          [action]: {
+            type: "success",
+            message: data.message || "Action completed successfully",
+          },
+        }));
         router.refresh();
       } else {
-        toast({
-          title: "Error",
-          description: data.error || "Action failed",
-          variant: "destructive",
-        });
+        setActionMessages((prev) => ({
+          ...prev,
+          [action]: { type: "error", message: data.error || "Action failed" },
+        }));
       }
     } catch (error) {
       console.error(`Error executing ${action}:`, error);
-      toast({
-        title: "Error",
-        description: "Failed to execute action",
-        variant: "destructive",
-      });
+      setActionMessages((prev) => ({
+        ...prev,
+        [action]: { type: "error", message: "Failed to execute action" },
+      }));
     } finally {
       setLoadingAction(null);
     }
@@ -80,6 +90,12 @@ export function AdminDashboardClient({
   const handleGenerateUsers = async (userType: "match" | "cupid") => {
     const action = `generate-${userType}-users`;
     setLoadingAction(action);
+    // Clear previous message for this action
+    setActionMessages((prev) => {
+      const newMessages = { ...prev };
+      delete newMessages[action];
+      return newMessages;
+    });
 
     try {
       const response = await fetch("/api/admin/generate-test-users", {
@@ -91,25 +107,29 @@ export function AdminDashboardClient({
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: data.message || `Generated 125 ${userType} users`,
-        });
+        setActionMessages((prev) => ({
+          ...prev,
+          [action]: {
+            type: "success",
+            message: data.message || `Generated 125 ${userType} users`,
+          },
+        }));
         router.refresh();
       } else {
-        toast({
-          title: "Error",
-          description: data.error || "Failed to generate users",
-          variant: "destructive",
-        });
+        setActionMessages((prev) => ({
+          ...prev,
+          [action]: {
+            type: "error",
+            message: data.error || "Failed to generate users",
+          },
+        }));
       }
     } catch (error) {
       console.error(`Error generating ${userType} users:`, error);
-      toast({
-        title: "Error",
-        description: "Failed to generate users",
-        variant: "destructive",
-      });
+      setActionMessages((prev) => ({
+        ...prev,
+        [action]: { type: "error", message: "Failed to generate users" },
+      }));
     } finally {
       setLoadingAction(null);
     }
@@ -124,7 +144,14 @@ export function AdminDashboardClient({
       return;
     }
 
-    setLoadingAction("clear-test-users");
+    const action = "clear-test-users";
+    setLoadingAction(action);
+    // Clear previous message for this action
+    setActionMessages((prev) => {
+      const newMessages = { ...prev };
+      delete newMessages[action];
+      return newMessages;
+    });
 
     try {
       const response = await fetch("/api/admin/clear-test-users", {
@@ -134,25 +161,29 @@ export function AdminDashboardClient({
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: data.message || "Test users cleared",
-        });
+        setActionMessages((prev) => ({
+          ...prev,
+          [action]: {
+            type: "success",
+            message: data.message || "Test users cleared",
+          },
+        }));
         router.refresh();
       } else {
-        toast({
-          title: "Error",
-          description: data.error || "Failed to clear test users",
-          variant: "destructive",
-        });
+        setActionMessages((prev) => ({
+          ...prev,
+          [action]: {
+            type: "error",
+            message: data.error || "Failed to clear test users",
+          },
+        }));
       }
     } catch (error) {
       console.error("Error clearing test users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to clear test users",
-        variant: "destructive",
-      });
+      setActionMessages((prev) => ({
+        ...prev,
+        [action]: { type: "error", message: "Failed to clear test users" },
+      }));
     } finally {
       setLoadingAction(null);
     }
@@ -288,29 +319,42 @@ export function AdminDashboardClient({
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
               1
             </div>
-            <Button
-              onClick={() =>
-                handleAction("start-matching", "/api/admin/start-matching")
-              }
-              disabled={
-                loadingAction !== null ||
-                matchingState.hasAssignments ||
-                matchingState.hasRevealed
-              }
-              className="flex-1 h-16"
-              title={
-                matchingState.hasAssignments
-                  ? "Clear matches first to run again"
-                  : ""
-              }
-            >
-              {loadingAction === "start-matching" ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <Play className="mr-2 h-5 w-5" />
+            <div className="flex-1 space-y-2">
+              {actionMessages["start-matching"] && (
+                <p
+                  className={`text-sm px-3 py-2 rounded ${
+                    actionMessages["start-matching"].type === "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {actionMessages["start-matching"].message}
+                </p>
               )}
-              Run Matching Algorithm
-            </Button>
+              <Button
+                onClick={() =>
+                  handleAction("start-matching", "/api/admin/start-matching")
+                }
+                disabled={
+                  loadingAction !== null ||
+                  matchingState.hasAssignments ||
+                  matchingState.hasRevealed
+                }
+                className="w-full h-16"
+                title={
+                  matchingState.hasAssignments
+                    ? "Clear matches first to run again"
+                    : ""
+                }
+              >
+                {loadingAction === "start-matching" ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Play className="mr-2 h-5 w-5" />
+                )}
+                Run Matching Algorithm
+              </Button>
+            </div>
           </div>
 
           {/* Step 2: Pair Cupids & Reveal Top 5 */}
@@ -318,27 +362,39 @@ export function AdminDashboardClient({
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
               2
             </div>
-            <Button
-              onClick={() =>
-                handleAction("pair-cupids", "/api/admin/pair-cupids")
-              }
-              disabled={
-                loadingAction !== null ||
-                !matchingState.hasMatches
-              }
-              className="flex-1 h-16"
-              variant="outline"
-              title={
-                !matchingState.hasMatches ? "Run matching algorithm first" : ""
-              }
-            >
-              {loadingAction === "pair-cupids" ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <Users className="mr-2 h-5 w-5" />
+            <div className="flex-1 space-y-2">
+              {actionMessages["pair-cupids"] && (
+                <p
+                  className={`text-sm px-3 py-2 rounded ${
+                    actionMessages["pair-cupids"].type === "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {actionMessages["pair-cupids"].message}
+                </p>
               )}
-              Assign Cupids & Reveal Top 5
-            </Button>
+              <Button
+                onClick={() =>
+                  handleAction("pair-cupids", "/api/admin/pair-cupids")
+                }
+                disabled={loadingAction !== null || !matchingState.hasMatches}
+                className="w-full h-16"
+                variant="outline"
+                title={
+                  !matchingState.hasMatches
+                    ? "Run matching algorithm first"
+                    : ""
+                }
+              >
+                {loadingAction === "pair-cupids" ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Users className="mr-2 h-5 w-5" />
+                )}
+                Assign Cupids & Reveal Top 5
+              </Button>
+            </div>
           </div>
 
           {/* Step 3: Reveal to Candidates */}
@@ -346,22 +402,35 @@ export function AdminDashboardClient({
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
               3
             </div>
-            <Button
-              onClick={() =>
-                handleAction("reveal-matches", "/api/admin/reveal-matches")
-              }
-              disabled={loadingAction !== null || !matchingState.hasMatches}
-              className="flex-1 h-16"
-              variant="secondary"
-              title={!matchingState.hasMatches ? "Create matches first" : ""}
-            >
-              {loadingAction === "reveal-matches" ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <Eye className="mr-2 h-5 w-5" />
+            <div className="flex-1 space-y-2">
+              {actionMessages["reveal-matches"] && (
+                <p
+                  className={`text-sm px-3 py-2 rounded ${
+                    actionMessages["reveal-matches"].type === "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {actionMessages["reveal-matches"].message}
+                </p>
               )}
-              Reveal Matches to Candidates (Feb 7)
-            </Button>
+              <Button
+                onClick={() =>
+                  handleAction("reveal-matches", "/api/admin/reveal-matches")
+                }
+                disabled={loadingAction !== null || !matchingState.hasMatches}
+                className="w-full h-16"
+                variant="secondary"
+                title={!matchingState.hasMatches ? "Create matches first" : ""}
+              >
+                {loadingAction === "reveal-matches" ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Eye className="mr-2 h-5 w-5" />
+                )}
+                Reveal Matches to Candidates (Feb 7)
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -375,6 +444,28 @@ export function AdminDashboardClient({
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
+          {actionMessages["generate-match-users"] && (
+            <p
+              className={`text-sm px-3 py-2 rounded ${
+                actionMessages["generate-match-users"].type === "success"
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : "bg-red-50 text-red-700 border border-red-200"
+              }`}
+            >
+              {actionMessages["generate-match-users"].message}
+            </p>
+          )}
+          {actionMessages["generate-cupid-users"] && (
+            <p
+              className={`text-sm px-3 py-2 rounded ${
+                actionMessages["generate-cupid-users"].type === "success"
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : "bg-red-50 text-red-700 border border-red-200"
+              }`}
+            >
+              {actionMessages["generate-cupid-users"].message}
+            </p>
+          )}
           <div className="flex gap-3">
             <Button
               onClick={() => handleGenerateUsers("match")}
@@ -428,6 +519,17 @@ export function AdminDashboardClient({
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
+          {actionMessages["clear-matches"] && (
+            <p
+              className={`text-sm px-3 py-2 rounded ${
+                actionMessages["clear-matches"].type === "success"
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : "bg-red-50 text-red-700 border border-red-200"
+              }`}
+            >
+              {actionMessages["clear-matches"].message}
+            </p>
+          )}
           <Button
             onClick={() =>
               handleAction("clear-matches", "/api/admin/clear-matches")
@@ -443,6 +545,17 @@ export function AdminDashboardClient({
             )}
             Clear All Matches & Reset
           </Button>
+          {actionMessages["clear-test-users"] && (
+            <p
+              className={`text-sm px-3 py-2 rounded ${
+                actionMessages["clear-test-users"].type === "success"
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : "bg-red-50 text-red-700 border border-red-200"
+              }`}
+            >
+              {actionMessages["clear-test-users"].message}
+            </p>
+          )}
           <Button
             onClick={handleClearTestUsers}
             disabled={loadingAction !== null}

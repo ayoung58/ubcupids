@@ -190,7 +190,7 @@ export function QuestionnaireForm({
           description:
             "Your responses have been locked. You can now view your matches!",
         });
-        router.push("/dashboard");
+        router.push("/questionnaire/success");
         router.refresh();
       } else {
         const data = await response.json();

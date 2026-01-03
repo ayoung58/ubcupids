@@ -226,7 +226,23 @@ export function QuestionRenderer({
                     id={`${question.id}-${option.value}`}
                     checked={isChecked}
                     onCheckedChange={(checked) => {
-                      if (checked && multiValue.length < maxSelections) {
+                      // Special handling for Q3 "anyone" option
+                      if (question.id === "q3" && option.value === "anyone") {
+                        if (checked) {
+                          // If "anyone" is checked, set value to only ["anyone"]
+                          onChange(["anyone"]);
+                        } else {
+                          // If "anyone" is unchecked, clear all
+                          onChange([]);
+                        }
+                      } else if (question.id === "q3" && checked) {
+                        // If any other option is checked in Q3, remove "anyone" from the list
+                        const newValue = [
+                          ...multiValue.filter((v) => v !== "anyone"),
+                          option.value,
+                        ];
+                        onChange(newValue);
+                      } else if (checked && multiValue.length < maxSelections) {
                         onChange([...multiValue, option.value]);
                       } else if (!checked) {
                         onChange(multiValue.filter((v) => v !== option.value));
@@ -265,11 +281,6 @@ export function QuestionRenderer({
           {question.maxLength && (
             <p className="text-sm text-gray-500 text-right">
               {textareaValue.length} / {question.maxLength}
-            </p>
-          )}
-          {question.minLength && (
-            <p className="text-sm text-gray-500">
-              Minimum {question.minLength} characters
             </p>
           )}
         </div>

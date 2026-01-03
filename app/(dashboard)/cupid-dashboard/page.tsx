@@ -45,6 +45,16 @@ export default async function CupidDashboardPage() {
 
   const cupidsAssigned = totalAssignments > 0;
 
+  // Check if matches have been revealed
+  const revealedMatchCount = await prisma.match.count({
+    where: {
+      batchNumber: 1,
+      revealedAt: { not: null },
+    },
+  });
+
+  const matchesRevealed = revealedMatchCount > 0;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -66,7 +76,12 @@ export default async function CupidDashboardPage() {
           </p>
         </CardHeader>
         <CardContent>
-          {cupidsAssigned ? (
+          {matchesRevealed ? (
+            <Button size="lg" className="w-full md:w-auto" disabled>
+              <Target className="mr-2 h-5 w-5" />
+              Matches have now been revealed to match users. Thank you cupids!
+            </Button>
+          ) : cupidsAssigned ? (
             <Link href="/cupid-dashboard/matching-portal">
               <Button size="lg" className="w-full md:w-auto">
                 <Target className="mr-2 h-5 w-5" />

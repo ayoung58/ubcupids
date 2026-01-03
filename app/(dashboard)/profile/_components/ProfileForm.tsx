@@ -358,12 +358,6 @@ export function ProfileForm() {
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
-
-      if (normalizedPreferred === normalizedOwn) {
-        setShowError("You cannot set yourself as the person you want to match");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        return;
-      }
     }
 
     setIsSaving(true);

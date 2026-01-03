@@ -224,16 +224,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Check if user is trying to match themselves
-      if (normalizedPreferredEmail === normalizedEmail) {
-        return NextResponse.json(
-          {
-            error: "You cannot set yourself as the person you want to match",
-          },
-          { status: 400 }
-        );
-      }
-
       // Check if the preferred candidate exists
       const preferredCandidate = await prisma.user.findUnique({
         where: { email: normalizedPreferredEmail },

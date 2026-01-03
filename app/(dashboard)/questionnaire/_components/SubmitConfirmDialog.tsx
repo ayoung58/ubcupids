@@ -44,6 +44,11 @@ export function SubmitConfirmDialog({
               Your responses will be encrypted and used to match you with
               compatible people for Valentine&apos;s Day 2026.
             </p>
+            <p className="text-sm font-medium text-blue-900 bg-blue-50 p-3 rounded-lg border border-blue-200">
+              💡 <strong>Remember:</strong> Set importance levels (⭐) for
+              questions that matter most to you. This helps the algorithm find
+              better matches!
+            </p>
             <p className="text-sm font-medium text-gray-900">
               Are you ready to submit?
             </p>
