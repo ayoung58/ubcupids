@@ -48,6 +48,9 @@ export default async function AdminDashboardPage() {
     where: { batchNumber: 1, revealedAt: { not: null } },
   });
 
+  // Only mark as revealed if ALL matches have been revealed
+  const hasRevealed = matchCount > 0 && revealedCount === matchCount;
+
   const displayName =
     profile?.displayName || `${profile?.firstName} ${profile?.lastName}`;
 
@@ -58,7 +61,7 @@ export default async function AdminDashboardPage() {
       matchingState={{
         hasMatches: matchCount > 0,
         hasAssignments: assignmentCount > 0,
-        hasRevealed: revealedCount > 0,
+        hasRevealed: hasRevealed,
       }}
     />
   );

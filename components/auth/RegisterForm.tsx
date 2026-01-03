@@ -55,6 +55,7 @@ export function RegisterForm({
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    confirmPassword: "",
     firstName: "",
     lastName: "",
     age: "",
@@ -109,6 +110,13 @@ export function RegisterForm({
     if (!isLinking && !formData.acceptedTerms) {
       setError("You must accept the Terms and Conditions");
       setTermsError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // Password confirmation check (only for new accounts)
+    if (!isLinking && formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
@@ -324,6 +332,27 @@ export function RegisterForm({
                 <p className="text-xs text-slate-500">
                   At least 8 characters, 1 uppercase, 1 lowercase, 1 number
                 </p>
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">
+                  Confirm Password <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  required
+                  disabled={isLoading}
+                />
               </div>
             </>
           )}

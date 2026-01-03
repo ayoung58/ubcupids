@@ -141,13 +141,13 @@ export function ProfileForm() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Clear any previous error
+    setShowError(null);
+
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Profile picture must be less than 5MB",
-        variant: "destructive",
-      });
+      setShowError("Profile picture must be less than 5MB");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -157,11 +157,8 @@ export function ProfileForm() {
         file.type
       )
     ) {
-      toast({
-        title: "Invalid file type",
-        description: "Only JPEG, PNG, and WebP images are allowed",
-        variant: "destructive",
-      });
+      setShowError("Only JPEG, PNG, and WebP images are allowed");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -733,32 +730,6 @@ export function ProfileForm() {
               </div>
             )}
 
-            {/* Preferred Candidate Email - Only for Cupid accounts */}
-            {accountInfo.isCupid && (
-              <div className="space-y-2" data-tutorial="preferred-email">
-                <Label htmlFor="preferredCandidateEmail">
-                  If you have someone you&apos;d like to match (your preferred
-                  candidate), enter their student email.
-                  <br />
-                  (it cannot be your own) (Optional)
-                </Label>
-                <Input
-                  id="preferredCandidateEmail"
-                  type="email"
-                  value={accountInfo.preferredCandidateEmail}
-                  onChange={(e) => {
-                    setAccountInfo({
-                      ...accountInfo,
-                      preferredCandidateEmail: e.target.value,
-                    });
-                    setHasUnsavedChanges(true);
-                    setShowError(null); // Clear error when user starts typing
-                  }}
-                  placeholder="someone@student.ubc.ca"
-                />
-              </div>
-            )}
-
             {/* Age - Only for Match accounts */}
             {accountInfo.isBeingMatched && (
               <div className="space-y-2">
@@ -932,6 +903,45 @@ export function ProfileForm() {
                 </div>
               </div>
             </div>
+
+            {/* Cupid-related Items - Separate Section */}
+            {accountInfo.isCupid && (
+              <div className="pt-6 mt-6 border-t border-slate-200 space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                    Cupid-related Items
+                  </h3>
+                  <p className="text-sm text-slate-600">
+                    Settings specific to your cupid account
+                  </p>
+                </div>
+
+                {/* Preferred Candidate Email */}
+                <div className="space-y-2" data-tutorial="preferred-email">
+                  <Label htmlFor="preferredCandidateEmail">
+                    Preferred Candidate Email (Optional)
+                  </Label>
+                  <Input
+                    id="preferredCandidateEmail"
+                    type="email"
+                    value={accountInfo.preferredCandidateEmail}
+                    onChange={(e) => {
+                      setAccountInfo({
+                        ...accountInfo,
+                        preferredCandidateEmail: e.target.value,
+                      });
+                      setHasUnsavedChanges(true);
+                      setShowError(null); // Clear error when user starts typing
+                    }}
+                    placeholder="someone@student.ubc.ca"
+                  />
+                  <p className="text-xs text-slate-600">
+                    If you have someone you&apos;d like to match (your preferred
+                    candidate), enter their student email here.
+                  </p>
+                </div>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

@@ -124,22 +124,6 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Submit Proof</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
-            <p className="text-sm text-slate-600 mb-2">
-              Upload date receipt for prize draw
-            </p>
-            <Link href="/submit-proof">
-              <Button className="w-full" variant="outline">
-                Upload
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Next Steps Timeline */}

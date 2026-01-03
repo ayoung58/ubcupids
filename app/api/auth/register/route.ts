@@ -250,6 +250,24 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Check if another cupid already has this preferred candidate
+      const existingCupid = await prisma.user.findFirst({
+        where: {
+          preferredCandidateEmail: normalizedPreferredEmail,
+        },
+        select: { id: true },
+      });
+
+      if (existingCupid) {
+        return NextResponse.json(
+          {
+            error:
+              "There is already a cupid that prefers to match this candidate!",
+          },
+          { status: 400 }
+        );
+      }
+
       validatedPreferredEmail = normalizedPreferredEmail;
     }
 

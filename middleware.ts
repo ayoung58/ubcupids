@@ -71,7 +71,6 @@ export default withAuth(
  * - Dashboard: Main authenticated area
  * - Questionnaire: Contains personal data, must be authenticated
  * - Matches: Shows sensitive matching results
- * - Submit-proof: Requires authenticated user to link uploads
  *
  * Routes NOT matched (public):
  * - / (home page)
@@ -80,5 +79,5 @@ export default withAuth(
  * - /api/* (API routes handle their own authentication)
  */
 export const config = {
-  matcher: ["/dashboard/:path*", "/questionnaire", "/matches", "/submit-proof"],
+  matcher: ["/dashboard/:path*", "/questionnaire", "/matches"],
 };
