@@ -12,6 +12,8 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Users,
   Heart,
   AlertCircle,
@@ -19,6 +21,8 @@ import {
   Eye,
   EyeOff,
   X,
+  XCircle,
+  Plus,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -100,6 +104,14 @@ export function CupidMatchingPortal() {
   const [matchTab, setMatchTab] = useState<"profile" | "questionnaire">(
     "profile"
   );
+  const [isInfoCollapsed, setIsInfoCollapsed] = useState(false);
+  const [rejectedMatches, setRejectedMatches] = useState<Set<string>>(
+    new Set()
+  );
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [matchToReject, setMatchToReject] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [rationaleError, setRationaleError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDashboard();
@@ -182,6 +194,15 @@ export function CupidMatchingPortal() {
   const submitSelection = async () => {
     if (!dashboard || !currentAssignment || !selectedMatchId) return;
 
+    // Validate rationale is provided
+    if (!reason || reason.trim().length === 0) {
+      setRationaleError(
+        "Please provide brief rationale for your match! Your match will be able to see this, and they'd appreciate it!"
+      );
+      return;
+    }
+
+    setRationaleError(null);
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/cupid/decide", {
@@ -190,7 +211,7 @@ export function CupidMatchingPortal() {
         body: JSON.stringify({
           assignmentId: currentAssignment.assignmentId,
           selectedMatchId,
-          reason: reason || undefined,
+          reason: reason.trim(),
         }),
       });
 
@@ -228,19 +249,120 @@ export function CupidMatchingPortal() {
   const navigateMatch = (direction: "prev" | "next") => {
     if (!currentAssignment) return;
 
+    const visibleCount = visibleMatches.length;
     if (direction === "prev" && currentMatchIndex > 0) {
       setCurrentMatchIndex(currentMatchIndex - 1);
-    } else if (
-      direction === "next" &&
-      currentMatchIndex < currentAssignment.potentialMatches.length - 1
-    ) {
+    } else if (direction === "next" && currentMatchIndex < visibleCount - 1) {
       setCurrentMatchIndex(currentMatchIndex + 1);
+    }
+  };
+
+  const handleRejectMatch = async () => {
+    if (!matchToReject || !currentAssignment) return;
+
+    // Mark as rejected
+    setRejectedMatches((prev) => new Set(prev).add(matchToReject));
+    setShowRejectDialog(false);
+    setMatchToReject(null);
+
+    // If this was the selected match, deselect it
+    if (selectedMatchId === matchToReject) {
+      setSelectedMatchId(null);
+    }
+
+    // Navigate to next non-rejected match, or loop to beginning
+    const visibleMatches = currentAssignment.potentialMatches.filter(
+      (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject
+    );
+
+    if (visibleMatches.length === 0) {
+      // All matches rejected - stay on current but show empty state
+      return;
+    }
+
+    // Find next match that isn't rejected
+    let nextIndex = currentMatchIndex + 1;
+    while (nextIndex < currentAssignment.potentialMatches.length) {
+      const match = currentAssignment.potentialMatches[nextIndex];
+      if (
+        !rejectedMatches.has(match.userId) &&
+        match.userId !== matchToReject
+      ) {
+        setCurrentMatchIndex(nextIndex);
+        return;
+      }
+      nextIndex++;
+    }
+
+    // If no next match, go to first non-rejected match
+    for (let i = 0; i < currentAssignment.potentialMatches.length; i++) {
+      const match = currentAssignment.potentialMatches[i];
+      if (
+        !rejectedMatches.has(match.userId) &&
+        match.userId !== matchToReject
+      ) {
+        setCurrentMatchIndex(i);
+        return;
+      }
+    }
+  };
+
+  const handleLoadMoreMatches = async () => {
+    if (!currentAssignment || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const res = await fetch("/api/cupid/load-more", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assignmentId: currentAssignment.assignmentId,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to load more matches");
+      }
+
+      const data = await res.json();
+
+      // Update the current assignment with new matches
+      setDashboard((prev) => {
+        if (!prev) return null;
+        const updatedAssignments = prev.pendingAssignments.map((assignment) => {
+          if (assignment.assignmentId === currentAssignment.assignmentId) {
+            return {
+              ...assignment,
+              potentialMatches: data.potentialMatches,
+            };
+          }
+          return assignment;
+        });
+        return {
+          ...prev,
+          pendingAssignments: updatedAssignments,
+        };
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load more matches"
+      );
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
   const currentAssignment =
     dashboard?.pendingAssignments[currentAssignmentIndex];
-  const currentMatch = currentAssignment?.potentialMatches[currentMatchIndex];
+
+  // Filter out rejected matches
+  const visibleMatches =
+    currentAssignment?.potentialMatches.filter(
+      (m) => !rejectedMatches.has(m.userId)
+    ) || [];
+
+  const currentMatch = visibleMatches[currentMatchIndex];
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -312,101 +434,172 @@ export function CupidMatchingPortal() {
     <div className="min-h-screen bg-slate-50 p-4">
       <div className="max-w-[1800px] mx-auto space-y-4">
         <BackButton />
-        <StatsHeader dashboard={dashboard} />
 
-        {/* Candidate Navigation */}
-        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentAssignmentIndex((i) => Math.max(0, i - 1))}
-            disabled={currentAssignmentIndex === 0}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous Candidate
-          </Button>
-          <span className="text-slate-700 font-semibold">
-            Candidate {currentAssignmentIndex + 1} of{" "}
-            {dashboard.pendingAssignments.length}
-          </span>
-          <Button
-            variant="outline"
-            onClick={() =>
-              setCurrentAssignmentIndex((i) =>
-                Math.min(dashboard.pendingAssignments.length - 1, i + 1)
-              )
-            }
-            disabled={
-              currentAssignmentIndex === dashboard.pendingAssignments.length - 1
-            }
-          >
-            Next Candidate
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
+        {/* Collapsible Info Panel */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {!isInfoCollapsed && (
+            <div className="space-y-0">
+              <StatsHeader dashboard={dashboard} />
 
-        {/* Confirm Selection Area */}
-        <Card className="bg-gradient-to-r from-pink-50 to-rose-50 border-pink-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1">
-                {selectedMatchId ? (
-                  <div className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-600" />
-                    <span className="font-medium text-green-700">
-                      Match selected:{" "}
-                      {
-                        currentAssignment?.potentialMatches.find(
-                          (m) => m.userId === selectedMatchId
-                        )?.profile.firstName
-                      }
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedMatchId(null)}
-                      className="text-slate-600 hover:text-slate-900"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Undo
-                    </Button>
-                  </div>
-                ) : (
-                  <span className="text-slate-600">
-                    Select a match from the right panel to continue
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-3">
+              {/* Candidate Navigation */}
+              <div className="flex items-center justify-between p-4 border-t border-slate-200">
                 <Button
                   variant="outline"
-                  size="sm"
-                  onClick={() => setShowScores(!showScores)}
-                  className="flex items-center gap-2"
+                  onClick={() =>
+                    setCurrentAssignmentIndex((i) => Math.max(0, i - 1))
+                  }
+                  disabled={currentAssignmentIndex === 0}
                 >
-                  {showScores ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                  {showScores ? "Hide" : "Show"} Compatibility Score
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous Candidate
                 </Button>
+                <span className="text-slate-700 font-semibold">
+                  Candidate {currentAssignmentIndex + 1} of{" "}
+                  {dashboard.pendingAssignments.length}
+                </span>
                 <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
-                  onClick={() => setShowConfirmDialog(true)}
-                  disabled={!selectedMatchId || isSubmitting}
+                  variant="outline"
+                  onClick={() =>
+                    setCurrentAssignmentIndex((i) =>
+                      Math.min(dashboard.pendingAssignments.length - 1, i + 1)
+                    )
+                  }
+                  disabled={
+                    currentAssignmentIndex ===
+                    dashboard.pendingAssignments.length - 1
+                  }
                 >
-                  <Check className="h-5 w-5 mr-2" />
-                  Confirm Selection
+                  Next Candidate
+                  <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
+
+              {/* Confirm Selection Area */}
+              <div className="bg-gradient-to-r from-pink-50 to-rose-50 border-t border-pink-200 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    {selectedMatchId ? (
+                      <div className="flex items-center gap-2">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-green-700">
+                          Match selected:{" "}
+                          {
+                            currentAssignment?.potentialMatches.find(
+                              (m) => m.userId === selectedMatchId
+                            )?.profile.firstName
+                          }
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedMatchId(null)}
+                          className="text-slate-600 hover:text-slate-900"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Undo
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="text-slate-600">
+                        Select a match from the right panel to continue
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowScores(!showScores)}
+                      className="flex items-center gap-2"
+                    >
+                      {showScores ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                      {showScores ? "Hide" : "Show"} Compatibility Score
+                    </Button>
+                    {currentAssignment &&
+                      currentAssignment.potentialMatches.length < 25 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleLoadMoreMatches}
+                          disabled={isLoadingMore}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          {isLoadingMore
+                            ? "Loading..."
+                            : `Generate 5 More (limit: 25 total users)`}
+                        </Button>
+                      )}
+                    <Button
+                      size="lg"
+                      className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
+                      onClick={() => setShowConfirmDialog(true)}
+                      disabled={!selectedMatchId || isSubmitting}
+                    >
+                      <Check className="h-5 w-5 mr-2" />
+                      Confirm Selection
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          )}
+
+          {/* Collapsed state - minimal header */}
+          {isInfoCollapsed && (
+            <div className="p-3 flex items-center justify-between">
+              <span className="text-sm text-slate-600">
+                Candidate {currentAssignmentIndex + 1} of{" "}
+                {dashboard.pendingAssignments.length}
+                {selectedMatchId && (
+                  <span className="ml-2 text-green-600">• Match selected</span>
+                )}
+              </span>
+            </div>
+          )}
+
+          {/* Collapse/Expand Button */}
+          <button
+            onClick={() => setIsInfoCollapsed(!isInfoCollapsed)}
+            className="w-full py-2 flex items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors border-t border-slate-200"
+            aria-label={
+              isInfoCollapsed ? "Expand info panel" : "Collapse info panel"
+            }
+          >
+            {isInfoCollapsed ? (
+              <ChevronDown className="h-5 w-5 text-slate-600" />
+            ) : (
+              <ChevronUp className="h-5 w-5 text-slate-600" />
+            )}
+          </button>
+        </div>
 
         {/* Split Screen */}
+        {currentAssignment && visibleMatches.length === 0 && (
+          <Card className="p-8 text-center">
+            <AlertCircle className="h-12 w-12 mx-auto text-slate-400 mb-4" />
+            <h3 className="text-lg font-semibold text-slate-700">
+              No More Matches Available
+            </h3>
+            <p className="text-slate-600 mt-2">
+              You&apos;ve rejected all potential matches for this candidate.
+              {currentAssignment.potentialMatches.length < 25 && (
+                <span>
+                  {" "}
+                  Try loading more matches or move to the next candidate.
+                </span>
+              )}
+            </p>
+          </Card>
+        )}
         {currentAssignment && currentMatch && (
-          <div className="grid grid-cols-2 gap-4 h-[calc(100vh-320px)]">
+          <div
+            className={`grid grid-cols-2 gap-3 ${isInfoCollapsed ? "h-[calc(100vh-140px)]" : "h-[calc(100vh-380px)]"}`}
+          >
             {/* Left: Candidate */}
             <Card className="border-2 border-blue-400 overflow-hidden flex flex-col">
               <CardHeader className="bg-blue-50 border-b border-blue-200 flex-shrink-0">
@@ -471,8 +664,7 @@ export function CupidMatchingPortal() {
                     <Heart className="h-5 w-5 text-pink-500" />
                     <div>
                       <div className="text-sm font-medium text-slate-600">
-                        Match {currentMatchIndex + 1} of{" "}
-                        {currentAssignment.potentialMatches.length}
+                        Match {currentMatchIndex + 1} of {visibleMatches.length}
                       </div>
                       <div className="text-lg font-semibold text-slate-900">
                         {currentMatch.profile.firstName},{" "}
@@ -499,10 +691,7 @@ export function CupidMatchingPortal() {
                       variant="outline"
                       size="sm"
                       onClick={() => navigateMatch("next")}
-                      disabled={
-                        currentMatchIndex ===
-                        currentAssignment.potentialMatches.length - 1
-                      }
+                      disabled={currentMatchIndex === visibleMatches.length - 1}
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -517,15 +706,32 @@ export function CupidMatchingPortal() {
                         Selected
                       </Button>
                     ) : (
-                      <Button
-                        size="sm"
-                        className="bg-pink-500 hover:bg-pink-600 text-white"
-                        onClick={() => setSelectedMatchId(currentMatch.userId)}
-                        disabled={selectedMatchId !== null}
-                      >
-                        <Heart className="h-4 w-4 mr-1" />
-                        Select
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-500 text-red-700 hover:bg-red-50"
+                          onClick={() => {
+                            setMatchToReject(currentMatch.userId);
+                            setShowRejectDialog(true);
+                          }}
+                          disabled={selectedMatchId !== null}
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Not a Match
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-pink-500 hover:bg-pink-600 text-white"
+                          onClick={() =>
+                            setSelectedMatchId(currentMatch.userId)
+                          }
+                          disabled={selectedMatchId !== null}
+                        >
+                          <Heart className="h-4 w-4 mr-1" />
+                          Select
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -587,30 +793,79 @@ export function CupidMatchingPortal() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
-            <Label htmlFor="dialog-reason" className="text-sm font-medium">
-              Optional reasoning:
+            <Label
+              htmlFor="dialog-reason"
+              className="text-sm font-medium text-red-600"
+            >
+              Rationale (Required):
             </Label>
             <Textarea
               id="dialog-reason"
-              placeholder="Why is this the best match?"
+              placeholder="Why is this the best match? (required)"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="mt-2 min-h-[100px]"
+              onChange={(e) => {
+                setReason(e.target.value);
+                if (rationaleError) setRationaleError(null);
+              }}
+              className={`mt-2 min-h-[100px] ${rationaleError ? "border-red-500" : ""}`}
             />
+            {rationaleError && (
+              <p className="text-sm text-red-600 mt-2">{rationaleError}</p>
+            )}
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowConfirmDialog(false);
+                setRationaleError(null);
+              }}
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                setShowConfirmDialog(false);
                 submitSelection();
               }}
               className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !reason || reason.trim().length === 0}
             >
               Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject Confirmation Dialog */}
+      <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove This Candidate?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure? This will remove{" "}
+              <strong>
+                {
+                  currentAssignment?.potentialMatches.find(
+                    (m) => m.userId === matchToReject
+                  )?.profile.firstName
+                }
+              </strong>{" "}
+              as a potential match for your candidate.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowRejectDialog(false);
+                setMatchToReject(null);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRejectMatch}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -634,7 +889,7 @@ function StatsHeader({ dashboard }: { dashboard: CupidDashboard | null }) {
   if (!dashboard) return null;
 
   return (
-    <div className="flex flex-wrap gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+    <div className="flex flex-wrap gap-4 items-center justify-between p-4">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
           🎯 Matching Portal

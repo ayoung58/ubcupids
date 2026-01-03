@@ -8,7 +8,7 @@ High Priority and Crucial fixes (denoted with [A]):
 
 4. [A] Cupid rationale should be mandatory (should no longer be optional). If they do not provide a brief bit of rationale, then it can't be submitted. There should be a message that says "please provide brief rationale for your match! Your match will be able to see this, and they'd appreciate it!". Both the represented candidate and the one being requested (who will accept or deny this request) will be able to see this in their card in the match reveal interface. 
 
-5. [A] Email got AUTOMATICALLY verified on deployment version! (CRITICAL). Please tell me why this is happening! Would it also be happening on local?
+5. [A] Email got AUTOMATICALLY verified on deployment version! (CRITICAL). Please tell me why this is happening! Would it also be happening on local? (SKIPPED FOR NOW, will look into this after all bugs are fixed, and create new account to test again)
 
 6. [A] For all the admin button operations, if there are errors, there should be error messages shown in the UI when the buttons are clicked, if success, should have a success message (right above the respective button)! (i.e. run matching, generating test users, etc.)
 
@@ -60,3 +60,5 @@ Less prioritized issues
 21. [C] /admin without signing in gives a blank page, need to redirect to login. Make sure the admin questionnaire editor also has this link redirect to login. 
 
 22. [C] Add a jump to first unanswered question button for questionnaire, on top of the "jump to top" button. Maybe use an appropriate icon if text would be too clunky.
+
+23. [C] Hide the "Show compatibility scores" button (i.e., can comment it out, but I would not like to have the feature there for production. I may re-activate it for test environment). 

@@ -94,7 +94,9 @@ export async function assignCandidatesToCupids(
   const deletedCount = await prisma.cupidAssignment.deleteMany({
     where: { batchNumber },
   });
-  console.log(`Cleared ${deletedCount.count} existing assignments for batch ${batchNumber}`);
+  console.log(
+    `Cleared ${deletedCount.count} existing assignments for batch ${batchNumber}`
+  );
 
   // Get ALL cupids: users with isCupid=true OR users with CupidProfile entries
   const usersWithIsCupid = await prisma.user.findMany({
@@ -284,7 +286,7 @@ export async function assignCandidatesToCupids(
       continue;
     }
 
-    // Get top compatible matches for this candidate
+    // Get top compatible matches for this candidate (fetch top 25)
     const topMatches = await prisma.compatibilityScore.findMany({
       where: {
         userId: candidate.id,
@@ -299,7 +301,7 @@ export async function assignCandidatesToCupids(
       orderBy: {
         bidirectionalScore: "desc",
       },
-      take: 5,
+      take: 25, // Fetch top 25 for potential expansion
       select: {
         targetUserId: true,
         bidirectionalScore: true,
@@ -460,7 +462,8 @@ export async function getCupidDashboard(
       assignment.id,
       assignment.candidateId,
       assignment.potentialMatches as { userId: string; score: number }[],
-      cupidUserId
+      cupidUserId,
+      5 // Initially show only first 5 matches
     );
 
     if (candidateAssignment) {
@@ -490,12 +493,18 @@ async function getCandidateAssignmentDetails(
   assignmentId: string,
   candidateId: string,
   potentialMatchesData: { userId: string; score: number }[],
-  cupidUserId: string
+  cupidUserId: string,
+  maxMatches?: number // Optional: limit number of matches returned
 ): Promise<Omit<
   CupidCandidateAssignment,
   "selectedMatchId" | "selectionReason"
 > | null> {
   try {
+    // Limit matches if specified
+    const matchesToLoad = maxMatches
+      ? potentialMatchesData.slice(0, maxMatches)
+      : potentialMatchesData;
+
     // Get candidate profile
     const candidateProfile = await getUserProfileForCupid(candidateId);
     if (!candidateProfile) {
@@ -505,7 +514,7 @@ async function getCandidateAssignmentDetails(
 
     // Get profiles for all potential matches
     const potentialMatches: PotentialMatch[] = [];
-    for (const matchData of potentialMatchesData) {
+    for (const matchData of matchesToLoad) {
       const matchProfile = await getUserProfileForCupid(matchData.userId);
       if (matchProfile) {
         potentialMatches.push({
@@ -792,8 +801,7 @@ export async function makeTestCupidRandomSelections(): Promise<{
     // Select a random match
     const randomIndex = Math.floor(Math.random() * potentialMatches.length);
     const selectedMatch = potentialMatches[randomIndex];
-    const rationale =
-      RATIONALES[Math.floor(Math.random() * RATIONALES.length)];
+    const rationale = RATIONALES[Math.floor(Math.random() * RATIONALES.length)];
 
     try {
       await submitCupidSelection(
