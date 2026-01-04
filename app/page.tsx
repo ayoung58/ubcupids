@@ -59,8 +59,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </div>
 
       {/* Hero Section */}
-      <div className="flex items-center justify-center px-4 py-16 sm:py-24">
-        <div className="max-w-2xl w-full space-y-8 text-center">
+      <div className="flex items-center justify-center px-4 py-12 sm:py-16">
+        <div className="max-w-2xl w-full space-y-6 text-center">
           {/* Sign Out Success Message - Show regardless of session state */}
           {showSignOutMessage && (
             <Alert className="border-green-200 bg-green-50">
@@ -125,7 +125,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           {/* Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
             <div className="p-4 bg-white rounded-lg border border-slate-200">
               <p className="font-semibold text-slate-900">📝 Questionnaire</p>
               <p className="text-sm text-slate-600 mt-2">
@@ -145,14 +145,16 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           {/* UBC Email Note */}
-          <p className="text-xs text-slate-500 pt-4">
+          <p className="text-xs text-slate-500 pt-1 mb-[-20px]">
             Only @student.ubc.ca and @alumni.ubc.ca emails accepted
           </p>
         </div>
       </div>
 
       {/* Timeline Section */}
-      <HomepageTimeline />
+      <div className="mt-0">
+        <HomepageTimeline />
+      </div>
     </div>
   );
 }

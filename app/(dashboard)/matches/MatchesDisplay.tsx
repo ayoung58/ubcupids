@@ -217,7 +217,11 @@ export function MatchesDisplay() {
                 variant={filterType === "all" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterType("all")}
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${
+                  filterType === "all"
+                    ? "bg-black text-white hover:bg-black"
+                    : ""
+                }`}
               >
                 <Users className="h-4 w-4" />
                 All Matches ({counts.all})
@@ -226,7 +230,11 @@ export function MatchesDisplay() {
                 variant={filterType === "algorithm" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterType("algorithm")}
-                className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200"
+                className={`flex items-center gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200 ${
+                  filterType === "algorithm"
+                    ? "bg-black text-white hover:bg-black"
+                    : ""
+                }`}
               >
                 <Sparkles className="h-4 w-4" />
                 Algorithm ({counts.algorithm})
@@ -235,7 +243,11 @@ export function MatchesDisplay() {
                 variant={filterType === "cupid_sent" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterType("cupid_sent")}
-                className="flex items-center gap-2 relative bg-blue-50 hover:bg-blue-100 border-blue-200"
+                className={`flex items-center gap-2 relative bg-blue-50 hover:bg-blue-100 border-blue-200 ${
+                  filterType === "cupid_sent"
+                    ? "bg-black text-white hover:bg-black"
+                    : ""
+                }`}
               >
                 <Send className="h-4 w-4" />
                 Your Cupid&apos;s Picks ({counts.cupid_sent})
@@ -259,7 +271,11 @@ export function MatchesDisplay() {
                 }
                 size="sm"
                 onClick={() => setFilterType("cupid_received")}
-                className="flex items-center gap-2 relative bg-green-50 hover:bg-green-100 border-green-200"
+                className={`flex items-center gap-2 relative bg-green-50 hover:bg-green-100 border-green-200 ${
+                  filterType === "cupid_received"
+                    ? "bg-black text-white hover:bg-black"
+                    : ""
+                }`}
               >
                 <Inbox className="h-4 w-4" />
                 Match Requests ({counts.cupid_received})
