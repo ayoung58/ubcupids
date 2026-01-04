@@ -62,6 +62,13 @@ export default async function DashboardPage() {
 
   const displayName = profile?.displayName || session.user.name;
 
+  // Check if matches have been revealed
+  const batch = await prisma.matchingBatch.findUnique({
+    where: { batchNumber: 1 },
+    select: { revealedAt: true },
+  });
+  const matchesRevealed = batch?.revealedAt !== null;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Tutorial for match users */}
@@ -131,11 +138,25 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
             <p className="text-sm text-slate-600 mb-2">
-              Feedback forms open when matches are revealed on Feb 7th
+              {matchesRevealed
+                ? "Help us improve! You'll have a chance to win 1 of 2 $20 Amazon gift cards!"
+                : "Feedback forms open when matches are revealed on Feb 7th"}
             </p>
-            <Button className="w-full" variant="outline" disabled>
-              Provide Feedback
-            </Button>
+            {matchesRevealed ? (
+              <Link
+                href="https://syk3gprmktl.typeform.com/to/GhBJoEjn"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="w-full" variant="outline">
+                  Provide Feedback
+                </Button>
+              </Link>
+            ) : (
+              <Button className="w-full" variant="outline" disabled>
+                Provide Feedback
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>
