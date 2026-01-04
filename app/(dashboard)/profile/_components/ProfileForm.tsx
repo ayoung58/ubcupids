@@ -9,6 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Loader2,
   Upload,
   X,
@@ -17,6 +27,7 @@ import {
   EyeOff,
   Info,
   CheckCircle,
+  Trash2,
 } from "lucide-react";
 import { ProfileFormData } from "@/types/profile";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,6 +44,12 @@ export function ProfileForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAccountTypeDialog, setShowAccountTypeDialog] = useState(false);
+  const [selectedAccountTypes, setSelectedAccountTypes] = useState<string[]>(
+    []
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
   const initialProfileData = useRef<ProfileFormData | null>(null);
 
   // Custom validation styles
@@ -420,6 +437,90 @@ export function ProfileForm() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    // Check if user has both accounts
+    if (accountInfo.isCupid && accountInfo.isBeingMatched) {
+      setShowAccountTypeDialog(true);
+    } else {
+      // Only one account type, show direct confirmation
+      if (accountInfo.isBeingMatched) {
+        setSelectedAccountTypes(["match"]);
+      } else if (accountInfo.isCupid) {
+        setSelectedAccountTypes(["cupid"]);
+      }
+      setShowDeleteDialog(true);
+    }
+  };
+
+  const handleAccountTypeSelection = () => {
+    if (selectedAccountTypes.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one account type to delete",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowAccountTypeDialog(false);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch("/api/profile/delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accountTypes: selectedAccountTypes,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // If both accounts deleted, redirect to login
+        if (
+          selectedAccountTypes.includes("match") &&
+          selectedAccountTypes.includes("cupid")
+        ) {
+          toast({
+            title: "Account Deleted",
+            description: data.message,
+          });
+          // Sign out and redirect
+          window.location.href = "/signout";
+        } else {
+          toast({
+            title: "Account Deleted",
+            description: data.message,
+          });
+          // Refresh the page to update the UI
+          window.location.reload();
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.error || "Failed to delete account",
+          variant: "destructive",
+        });
+        setShowDeleteDialog(false);
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete account",
+        variant: "destructive",
+      });
+      setShowDeleteDialog(false);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -966,6 +1067,141 @@ export function ProfileForm() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Delete Account Section */}
+      <Card className="border-red-200 bg-red-50/50 mt-6">
+        <CardHeader>
+          <CardTitle className="text-red-900">⚠️ Danger Zone</CardTitle>
+          <p className="text-sm text-red-700">
+            Permanently delete your account(s)
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <p className="text-sm text-slate-700">
+              Deleting your account will permanently remove all associated data.
+              This action cannot be undone.
+            </p>
+            <Button
+              onClick={handleDeleteAccount}
+              variant="destructive"
+              className="w-full"
+              type="button"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Account
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Account Type Selection Dialog */}
+      <AlertDialog
+        open={showAccountTypeDialog}
+        onOpenChange={setShowAccountTypeDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Select Accounts to Delete</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have both a Match and a Cupid account. Please select which
+              account(s) you want to delete:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 py-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="delete-match"
+                checked={selectedAccountTypes.includes("match")}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedAccountTypes([...selectedAccountTypes, "match"]);
+                  } else {
+                    setSelectedAccountTypes(
+                      selectedAccountTypes.filter((t) => t !== "match")
+                    );
+                  }
+                }}
+              />
+              <Label htmlFor="delete-match" className="cursor-pointer">
+                Match Account - All questionnaire responses, matches, and
+                match-related data will be deleted
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="delete-cupid"
+                checked={selectedAccountTypes.includes("cupid")}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedAccountTypes([...selectedAccountTypes, "cupid"]);
+                  } else {
+                    setSelectedAccountTypes(
+                      selectedAccountTypes.filter((t) => t !== "cupid")
+                    );
+                  }
+                }}
+              />
+              <Label htmlFor="delete-cupid" className="cursor-pointer">
+                Cupid Account - All cupid assignments, selections, and
+                cupid-related data will be deleted
+              </Label>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              onClick={handleAccountTypeSelection}
+              variant="destructive"
+              disabled={selectedAccountTypes.length === 0}
+            >
+              Continue
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your{" "}
+              {selectedAccountTypes.includes("match") &&
+              selectedAccountTypes.includes("cupid")
+                ? "Match and Cupid accounts"
+                : selectedAccountTypes.includes("match")
+                  ? "Match account"
+                  : "Cupid account"}{" "}
+              and remove all associated data from our servers.
+              {selectedAccountTypes.includes("match") && (
+                <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-900 text-sm">
+                  ⚠️ If any cupid has you as a match candidate, they will
+                  receive a notification that you deleted your account.
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Permanently"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
