@@ -18,11 +18,8 @@ import {
   Heart,
   AlertCircle,
   Target,
-  Eye,
-  EyeOff,
   X,
   XCircle,
-  Plus,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -67,6 +64,7 @@ interface CupidCandidateAssignment {
   cupidUserId: string;
   candidate: CupidProfileView;
   potentialMatches: PotentialMatch[];
+  rejectedMatches: string[];
   selectedMatchId: string | null;
   selectionReason: string | null;
 }
@@ -95,7 +93,6 @@ export function CupidMatchingPortal({
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [showScores, setShowScores] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [candidateResponses, setCandidateResponses] =
     useState<Responses | null>(null);
@@ -117,7 +114,6 @@ export function CupidMatchingPortal({
   );
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [matchToReject, setMatchToReject] = useState<string | null>(null);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [rationaleError, setRationaleError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -267,101 +263,84 @@ export function CupidMatchingPortal({
   const handleRejectMatch = async () => {
     if (!matchToReject || !currentAssignment) return;
 
-    // Mark as rejected
-    setRejectedMatches((prev) => new Set(prev).add(matchToReject));
-    setShowRejectDialog(false);
-    setMatchToReject(null);
-
-    // If this was the selected match, deselect it
-    if (selectedMatchId === matchToReject) {
-      setSelectedMatchId(null);
-    }
-
-    // Navigate to next non-rejected match, or loop to beginning
-    const visibleMatches = currentAssignment.potentialMatches.filter(
-      (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject
-    );
-
-    if (visibleMatches.length === 0) {
-      // All matches rejected - stay on current but show empty state
-      return;
-    }
-
-    // Find next match that isn't rejected
-    let nextIndex = currentMatchIndex + 1;
-    while (nextIndex < currentAssignment.potentialMatches.length) {
-      const match = currentAssignment.potentialMatches[nextIndex];
-      if (
-        !rejectedMatches.has(match.userId) &&
-        match.userId !== matchToReject
-      ) {
-        setCurrentMatchIndex(nextIndex);
-        return;
-      }
-      nextIndex++;
-    }
-
-    // If no next match, go to first non-rejected match
-    for (let i = 0; i < currentAssignment.potentialMatches.length; i++) {
-      const match = currentAssignment.potentialMatches[i];
-      if (
-        !rejectedMatches.has(match.userId) &&
-        match.userId !== matchToReject
-      ) {
-        setCurrentMatchIndex(i);
-        return;
-      }
-    }
-  };
-
-  const handleLoadMoreMatches = async () => {
-    if (!currentAssignment || isLoadingMore) return;
-
-    setIsLoadingMore(true);
     try {
-      const res = await fetch("/api/cupid/load-more", {
+      // Persist rejection to database
+      const res = await fetch("/api/cupid/reject-match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           assignmentId: currentAssignment.assignmentId,
+          rejectedUserId: matchToReject,
         }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to load more matches");
+        throw new Error(data.error || "Failed to reject match");
       }
 
-      const data = await res.json();
+      // Mark as rejected in local state
+      setRejectedMatches((prev) => new Set(prev).add(matchToReject));
+      setShowRejectDialog(false);
+      setMatchToReject(null);
 
-      // Update the current assignment with new matches
-      setDashboard((prev) => {
-        if (!prev) return null;
-        const updatedAssignments = prev.pendingAssignments.map((assignment) => {
-          if (assignment.assignmentId === currentAssignment.assignmentId) {
-            return {
-              ...assignment,
-              potentialMatches: data.potentialMatches,
-            };
-          }
-          return assignment;
-        });
-        return {
-          ...prev,
-          pendingAssignments: updatedAssignments,
-        };
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load more matches"
+      // If this was the selected match, deselect it
+      if (selectedMatchId === matchToReject) {
+        setSelectedMatchId(null);
+      }
+
+      // Navigate to next non-rejected match, or loop to beginning
+      const visibleMatches = currentAssignment.potentialMatches.filter(
+        (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject
       );
-    } finally {
-      setIsLoadingMore(false);
+
+      if (visibleMatches.length === 0) {
+        // All matches rejected - stay on current but show empty state
+        return;
+      }
+
+      // Find next match that isn't rejected
+      let nextIndex = currentMatchIndex + 1;
+      while (nextIndex < currentAssignment.potentialMatches.length) {
+        const match = currentAssignment.potentialMatches[nextIndex];
+        if (
+          !rejectedMatches.has(match.userId) &&
+          match.userId !== matchToReject
+        ) {
+          setCurrentMatchIndex(nextIndex);
+          return;
+        }
+        nextIndex++;
+      }
+
+      // If no next match, go to first non-rejected match
+      for (let i = 0; i < currentAssignment.potentialMatches.length; i++) {
+        const match = currentAssignment.potentialMatches[i];
+        if (
+          !rejectedMatches.has(match.userId) &&
+          match.userId !== matchToReject
+        ) {
+          setCurrentMatchIndex(i);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to reject match:", err);
+      setError(err instanceof Error ? err.message : "Failed to reject match");
+      setShowRejectDialog(false);
+      setMatchToReject(null);
     }
   };
 
   const currentAssignment =
     dashboard?.pendingAssignments[currentAssignmentIndex];
+
+  // Load rejected matches from current assignment
+  useEffect(() => {
+    if (currentAssignment) {
+      setRejectedMatches(new Set(currentAssignment.rejectedMatches || []));
+    }
+  }, [currentAssignment]);
 
   // Filter out rejected matches
   const visibleMatches =
@@ -535,22 +514,6 @@ export function CupidMatchingPortal({
                       )}
                       {showScores ? "Hide" : "Show"} Compatibility Score
                     </Button> */}
-                    {currentAssignment &&
-                      currentAssignment.potentialMatches.length < 25 && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleLoadMoreMatches}
-                          disabled={isLoadingMore}
-                          className="flex items-center gap-2"
-                          data-tutorial="generate-more"
-                        >
-                          <Plus className="h-4 w-4" />
-                          {isLoadingMore
-                            ? "Loading..."
-                            : `Generate 5 More Potential Matches (limit: 25 total)`}
-                        </Button>
-                      )}
                     <Button
                       size="lg"
                       className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
@@ -606,12 +569,7 @@ export function CupidMatchingPortal({
             </h3>
             <p className="text-slate-600 mt-2">
               You&apos;ve rejected all potential matches for this candidate.
-              {currentAssignment.potentialMatches.length < 25 && (
-                <span>
-                  {" "}
-                  Try loading more matches or move to the next candidate.
-                </span>
-              )}
+              Please move to the next candidate.
             </p>
           </Card>
         )}
@@ -697,11 +655,7 @@ export function CupidMatchingPortal({
                     className="flex items-center gap-2"
                     data-tutorial="match-nav"
                   >
-                    {showScores && (
-                      <span className="text-sm font-medium text-pink-600 mr-2">
-                        {currentMatch.score.toFixed(1)}%
-                      </span>
-                    )}
+                    {/* Compatibility score hidden in production */}
                     <Button
                       variant="outline"
                       size="sm"

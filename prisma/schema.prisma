@@ -303,9 +303,13 @@ model CupidAssignment {
   candidateId     String
   candidate       User     @relation("AssignedCandidates", fields: [candidateId], references: [id], onDelete: Cascade)
   
-  // Top 5 potential matches for this candidate
+  // Top 25 potential matches for this candidate
   // Stored as JSON array: [{ userId: "...", score: 85.5 }, { userId: "...", score: 82.3 }, ...]
   potentialMatches Json
+  
+  // Rejected matches - array of userIds that cupid marked as "Not a Match"
+  // Stored as JSON array: ["userId1", "userId2", ...]
+  rejectedMatches Json @default("[]")
   
   // Cupid's selection - which userId from potentialMatches they chose
   selectedMatchId String?

@@ -462,8 +462,9 @@ export async function getCupidDashboard(
       assignment.id,
       assignment.candidateId,
       assignment.potentialMatches as { userId: string; score: number }[],
+      (assignment.rejectedMatches as string[]) || [],
       cupidUserId,
-      5 // Initially show only first 5 matches
+      25 // Show top 25 matches
     );
 
     if (candidateAssignment) {
@@ -493,6 +494,7 @@ async function getCandidateAssignmentDetails(
   assignmentId: string,
   candidateId: string,
   potentialMatchesData: { userId: string; score: number }[],
+  rejectedMatches: string[],
   cupidUserId: string,
   maxMatches?: number // Optional: limit number of matches returned
 ): Promise<Omit<
@@ -539,6 +541,7 @@ async function getCandidateAssignmentDetails(
       cupidUserId,
       candidate: candidateProfile,
       potentialMatches,
+      rejectedMatches, // Include rejected matches from database
     };
   } catch (error) {
     console.error(`Error loading candidate assignment ${assignmentId}:`, error);
