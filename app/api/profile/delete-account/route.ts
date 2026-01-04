@@ -126,6 +126,23 @@ export async function POST(request: Request) {
         }
       }
 
+      // Check if user has no remaining accounts after deletion
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { isBeingMatched: true, isCupid: true },
+      });
+
+      // If user has neither match nor cupid account, delete entirely
+      if (updatedUser && !updatedUser.isBeingMatched && !updatedUser.isCupid) {
+        await prisma.user.delete({
+          where: { id: userId },
+        });
+        return NextResponse.json({
+          message: "Your account has been permanently deleted",
+          deletedAccounts: ["match"],
+        });
+      }
+
       return NextResponse.json({
         message: "Your match account has been deleted",
         deletedAccounts: ["match"],
@@ -160,6 +177,23 @@ export async function POST(request: Request) {
           },
         });
       });
+
+      // Check if user has no remaining accounts after deletion
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { isBeingMatched: true, isCupid: true },
+      });
+
+      // If user has neither match nor cupid account, delete entirely
+      if (updatedUser && !updatedUser.isBeingMatched && !updatedUser.isCupid) {
+        await prisma.user.delete({
+          where: { id: userId },
+        });
+        return NextResponse.json({
+          message: "Your account has been permanently deleted",
+          deletedAccounts: ["cupid"],
+        });
+      }
 
       return NextResponse.json({
         message: "Your cupid account has been deleted",

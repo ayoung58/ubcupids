@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { signOut } from "next-auth/react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -483,17 +484,14 @@ export function ProfileForm() {
       if (response.ok) {
         const data = await response.json();
 
-        // If both accounts deleted, redirect to login
-        if (
-          selectedAccountTypes.includes("match") &&
-          selectedAccountTypes.includes("cupid")
-        ) {
+        // Check if account was completely deleted (message indicates permanent deletion)
+        if (data.message.includes("permanently deleted")) {
           toast({
             title: "Account Deleted",
             description: data.message,
           });
-          // Sign out and redirect
-          window.location.href = "/signout";
+          // Sign out and redirect to homepage (user is completely deleted)
+          await signOut({ callbackUrl: "/" });
         } else {
           toast({
             title: "Account Deleted",

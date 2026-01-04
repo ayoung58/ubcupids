@@ -37,12 +37,16 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   // Determine correct dashboard URL if user is logged in
   let dashboardUrl = "/dashboard";
+  let userExists = false;
   if (session?.user && !showSignOutMessage) {
     const profile = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { isCupid: true },
     });
-    dashboardUrl = profile?.isCupid ? "/cupid-dashboard" : "/dashboard";
+    if (profile) {
+      userExists = true;
+      dashboardUrl = profile.isCupid ? "/cupid-dashboard" : "/dashboard";
+    }
   }
 
   return (
@@ -77,7 +81,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           )}
 
           {/* Sign-ups Closed Message */}
-          {signupsClosed && !session?.user && (
+          {signupsClosed && !userExists && (
             <Alert className="border-red-200 bg-red-50">
               <XCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800 font-medium">
@@ -120,8 +124,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   </Button>
                 </Link>
               </>
-            ) : session?.user ? (
-              // User is logged in (normal state)
+            ) : userExists ? (
+              // User is logged in and exists in database
               <Link href={dashboardUrl}>
                 <Button size="lg" className="px-8">
                   Go to Dashboard
