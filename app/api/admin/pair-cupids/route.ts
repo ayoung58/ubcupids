@@ -59,7 +59,7 @@ export async function POST() {
 
     let updatedCount = 0;
     for (const assignment of assignments) {
-      // Get top 5 compatibility scores for the candidate
+      // Get top 25 compatibility scores for the candidate
       const topScores = await prisma.compatibilityScore.findMany({
         where: {
           userId: assignment.candidateId,
@@ -68,7 +68,7 @@ export async function POST() {
         orderBy: {
           totalScore: "desc",
         },
-        take: 5,
+        take: 25, // Fetch top 25 matches
         select: {
           targetUserId: true,
           totalScore: true,
@@ -92,7 +92,7 @@ export async function POST() {
     }
 
     return NextResponse.json({
-      message: `Cupid assignment completed and top 5 matches revealed for batch ${batchNumber}`,
+      message: `Cupid assignment completed and top 25 matches revealed for batch ${batchNumber}`,
       result,
       updatedAssignments: updatedCount,
     });

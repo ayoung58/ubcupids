@@ -236,7 +236,7 @@ export async function assignCandidatesToCupids(
       orderBy: {
         bidirectionalScore: "desc",
       },
-      take: 5,
+      take: 25, // Fetch top 25 matches
       select: {
         targetUserId: true,
         bidirectionalScore: true,

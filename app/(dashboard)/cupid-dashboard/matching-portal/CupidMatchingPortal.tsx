@@ -20,6 +20,7 @@ import {
   Target,
   X,
   XCircle,
+  Plus,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -115,6 +116,7 @@ export function CupidMatchingPortal({
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [matchToReject, setMatchToReject] = useState<string | null>(null);
   const [rationaleError, setRationaleError] = useState<string | null>(null);
+  const [revealedMatchCount, setRevealedMatchCount] = useState(5); // Start by showing 5 matches
 
   useEffect(() => {
     fetchDashboard();
@@ -335,20 +337,30 @@ export function CupidMatchingPortal({
   const currentAssignment =
     dashboard?.pendingAssignments[currentAssignmentIndex];
 
-  // Load rejected matches from current assignment
+  // Load rejected matches from current assignment and reset revealed count
   useEffect(() => {
     if (currentAssignment) {
       setRejectedMatches(new Set(currentAssignment.rejectedMatches || []));
+      setRevealedMatchCount(5); // Reset to show first 5 matches
     }
   }, [currentAssignment]);
 
-  // Filter out rejected matches
-  const visibleMatches =
+  // Filter out rejected matches and limit to revealed count
+  const allAvailableMatches =
     currentAssignment?.potentialMatches.filter(
       (m) => !rejectedMatches.has(m.userId)
     ) || [];
 
+  const visibleMatches = allAvailableMatches.slice(0, revealedMatchCount);
+  const remainingMatches = allAvailableMatches.length - visibleMatches.length;
+
   const currentMatch = visibleMatches[currentMatchIndex];
+
+  const handleRevealMore = () => {
+    setRevealedMatchCount((prev) =>
+      Math.min(prev + 5, allAvailableMatches.length)
+    );
+  };
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -514,6 +526,21 @@ export function CupidMatchingPortal({
                       )}
                       {showScores ? "Hide" : "Show"} Compatibility Score
                     </Button> */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRevealMore}
+                      disabled={remainingMatches === 0}
+                      className="flex items-center gap-2"
+                      data-tutorial="generate-more"
+                    >
+                      <Plus className="h-4 w-4" />
+                      {remainingMatches === 0
+                        ? "No more compatible matches"
+                        : remainingMatches <= 5
+                          ? `Reveal ${remainingMatches} More ${remainingMatches === 1 ? "Match" : "Matches"}`
+                          : "Reveal 5 More Matches"}
+                    </Button>
                     <Button
                       size="lg"
                       className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"

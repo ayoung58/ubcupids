@@ -3,10 +3,10 @@ import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 
 /**
- * Reveal Top 5 Matches to Cupids
+ * Reveal Top 25 Matches to Cupids
  * POST /api/admin/reveal-top-5
  *
- * Makes the top 5 algorithm matches visible to cupids for their assigned candidates
+ * Makes the top 25 algorithm matches visible to cupids for their assigned candidates
  */
 export async function POST(request: NextRequest) {
   try {
@@ -48,11 +48,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For each assignment, get top 5 compatibility scores and create/update them
+    // For each assignment, get top 25 compatibility scores and create/update them
     let revealed = 0;
 
     for (const assignment of assignments) {
-      // Get top 5 compatibility scores for the candidate
+      // Get top 25 compatibility scores for the candidate
       const topScores = await prisma.compatibilityScore.findMany({
         where: {
           userId: assignment.candidateId,
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         orderBy: {
           totalScore: "desc",
         },
-        take: 5,
+        take: 25, // Fetch top 25 matches
         select: {
           userId: true,
           targetUserId: true,
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: "Revealed top 5 matches to cupids",
+      message: "Revealed top 25 matches to cupids",
       revealed,
       assignments: assignments.length,
     });
