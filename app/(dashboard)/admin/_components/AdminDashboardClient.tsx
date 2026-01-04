@@ -305,81 +305,217 @@ export function AdminDashboardClient({
         </CardContent>
       </Card>
 
-      {/* Matching Workflow */}
-      <Card>
+      {/* Matching Workflow - Test Users */}
+      <Card className="border-blue-200 bg-blue-50/30">
         <CardHeader>
-          <CardTitle>Matching Workflow</CardTitle>
-          <p className="text-sm text-slate-600">
-            Execute these steps in order after the January 31st deadline
+          <CardTitle className="text-blue-900">
+            🧪 Test Users Matching Workflow
+          </CardTitle>
+          <p className="text-sm text-blue-700">
+            Manage matching for test users independently (isTestUser=true)
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Step 1: Run Matching */}
+          {/* Step 1: Run Matching for Test Users */}
           <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
               1
             </div>
             <div className="flex-1 space-y-2">
-              {actionMessages["start-matching"] && (
+              {actionMessages["start-matching-test"] && (
                 <p
                   className={`text-sm px-3 py-2 rounded ${
-                    actionMessages["start-matching"].type === "success"
+                    actionMessages["start-matching-test"].type === "success"
                       ? "bg-green-50 text-green-700 border border-green-200"
                       : "bg-red-50 text-red-700 border border-red-200"
                   }`}
                 >
-                  {actionMessages["start-matching"].message}
+                  {actionMessages["start-matching-test"].message}
                 </p>
               )}
               <Button
                 onClick={() =>
-                  handleAction("start-matching", "/api/admin/start-matching")
+                  handleAction(
+                    "start-matching-test",
+                    "/api/admin/start-matching-test"
+                  )
+                }
+                disabled={loadingAction !== null}
+                className="w-full h-16 bg-blue-600 hover:bg-blue-700"
+              >
+                {loadingAction === "start-matching-test" ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Play className="mr-2 h-5 w-5" />
+                )}
+                Run Matching (Test Users Only)
+              </Button>
+            </div>
+          </div>
+
+          {/* Step 2: Pair Cupids - Test Users */}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+              2
+            </div>
+            <div className="flex-1 space-y-2">
+              {actionMessages["pair-cupids-test"] && (
+                <p
+                  className={`text-sm px-3 py-2 rounded ${
+                    actionMessages["pair-cupids-test"].type === "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {actionMessages["pair-cupids-test"].message}
+                </p>
+              )}
+              <Button
+                onClick={() =>
+                  handleAction(
+                    "pair-cupids-test",
+                    "/api/admin/pair-cupids-test"
+                  )
+                }
+                disabled={loadingAction !== null}
+                className="w-full h-16 bg-blue-500 hover:bg-blue-600"
+                variant="outline"
+              >
+                {loadingAction === "pair-cupids-test" ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Users className="mr-2 h-5 w-5" />
+                )}
+                Assign Cupids (Test Users Only)
+              </Button>
+            </div>
+          </div>
+
+          {/* Step 3: Reveal Matches - Test Users */}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+              3
+            </div>
+            <div className="flex-1 space-y-2">
+              {actionMessages["reveal-matches-test"] && (
+                <p
+                  className={`text-sm px-3 py-2 rounded ${
+                    actionMessages["reveal-matches-test"].type === "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {actionMessages["reveal-matches-test"].message}
+                </p>
+              )}
+              <Button
+                onClick={() =>
+                  handleAction(
+                    "reveal-matches-test",
+                    "/api/admin/reveal-matches-test"
+                  )
+                }
+                disabled={loadingAction !== null}
+                className="w-full h-16 bg-blue-400 hover:bg-blue-500"
+                variant="secondary"
+              >
+                {loadingAction === "reveal-matches-test" ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Eye className="mr-2 h-5 w-5" />
+                )}
+                Reveal Matches (Test Users Only)
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Matching Workflow - Production Users */}
+      <Card className="border-purple-200 bg-purple-50/30">
+        <CardHeader>
+          <CardTitle className="text-purple-900">
+            🚀 Production Users Matching Workflow
+          </CardTitle>
+          <p className="text-sm text-purple-700">
+            Manage matching for real users (isTestUser=false) - Execute after
+            January 31st
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Step 1: Run Matching for Production Users */}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">
+              1
+            </div>
+            <div className="flex-1 space-y-2">
+              {actionMessages["start-matching-production"] && (
+                <p
+                  className={`text-sm px-3 py-2 rounded ${
+                    actionMessages["start-matching-production"].type ===
+                    "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {actionMessages["start-matching-production"].message}
+                </p>
+              )}
+              <Button
+                onClick={() =>
+                  handleAction(
+                    "start-matching-production",
+                    "/api/admin/start-matching-production"
+                  )
                 }
                 disabled={
                   loadingAction !== null ||
                   matchingState.hasAssignments ||
                   matchingState.hasRevealed
                 }
-                className="w-full h-16"
+                className="w-full h-16 bg-purple-600 hover:bg-purple-700"
                 title={
                   matchingState.hasAssignments
                     ? "Clear matches first to run again"
                     : ""
                 }
               >
-                {loadingAction === "start-matching" ? (
+                {loadingAction === "start-matching-production" ? (
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 ) : (
                   <Play className="mr-2 h-5 w-5" />
                 )}
-                Run Matching Algorithm
+                Run Matching (Production Users)
               </Button>
             </div>
           </div>
 
-          {/* Step 2: Pair Cupids & Reveal Top 5 */}
+          {/* Step 2: Pair Cupids - Production Users */}
           <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">
               2
             </div>
             <div className="flex-1 space-y-2">
-              {actionMessages["pair-cupids"] && (
+              {actionMessages["pair-cupids-production"] && (
                 <p
                   className={`text-sm px-3 py-2 rounded ${
-                    actionMessages["pair-cupids"].type === "success"
+                    actionMessages["pair-cupids-production"].type === "success"
                       ? "bg-green-50 text-green-700 border border-green-200"
                       : "bg-red-50 text-red-700 border border-red-200"
                   }`}
                 >
-                  {actionMessages["pair-cupids"].message}
+                  {actionMessages["pair-cupids-production"].message}
                 </p>
               )}
               <Button
                 onClick={() =>
-                  handleAction("pair-cupids", "/api/admin/pair-cupids")
+                  handleAction(
+                    "pair-cupids-production",
+                    "/api/admin/pair-cupids-production"
+                  )
                 }
                 disabled={loadingAction !== null || !matchingState.hasMatches}
-                className="w-full h-16"
+                className="w-full h-16 bg-purple-500 hover:bg-purple-600"
                 variant="outline"
                 title={
                   !matchingState.hasMatches
@@ -387,48 +523,52 @@ export function AdminDashboardClient({
                     : ""
                 }
               >
-                {loadingAction === "pair-cupids" ? (
+                {loadingAction === "pair-cupids-production" ? (
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 ) : (
                   <Users className="mr-2 h-5 w-5" />
                 )}
-                Assign Cupids & Reveal Top 5
+                Assign Cupids (Production Users)
               </Button>
             </div>
           </div>
 
-          {/* Step 3: Reveal to Candidates */}
+          {/* Step 3: Reveal Matches - Production Users */}
           <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">
               3
             </div>
             <div className="flex-1 space-y-2">
-              {actionMessages["reveal-matches"] && (
+              {actionMessages["reveal-matches-production"] && (
                 <p
                   className={`text-sm px-3 py-2 rounded ${
-                    actionMessages["reveal-matches"].type === "success"
+                    actionMessages["reveal-matches-production"].type ===
+                    "success"
                       ? "bg-green-50 text-green-700 border border-green-200"
                       : "bg-red-50 text-red-700 border border-red-200"
                   }`}
                 >
-                  {actionMessages["reveal-matches"].message}
+                  {actionMessages["reveal-matches-production"].message}
                 </p>
               )}
               <Button
                 onClick={() =>
-                  handleAction("reveal-matches", "/api/admin/reveal-matches")
+                  handleAction(
+                    "reveal-matches-production",
+                    "/api/admin/reveal-matches-production"
+                  )
                 }
                 disabled={loadingAction !== null || !matchingState.hasMatches}
-                className="w-full h-16"
+                className="w-full h-16 bg-purple-400 hover:bg-purple-500"
                 variant="secondary"
                 title={!matchingState.hasMatches ? "Create matches first" : ""}
               >
-                {loadingAction === "reveal-matches" ? (
+                {loadingAction === "reveal-matches-production" ? (
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 ) : (
                   <Eye className="mr-2 h-5 w-5" />
                 )}
-                Reveal Matches to Candidates (Feb 7)
+                Reveal Matches (Production Users - Feb 7)
               </Button>
             </div>
           </div>
