@@ -312,7 +312,7 @@ export function HomepageTimeline() {
           Ready to Get Started?
         </h3>
         <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-          <Link href="/signup?type=match">
+          <Link href="/register?type=match">
             <Button
               size="lg"
               className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8"
@@ -321,7 +321,7 @@ export function HomepageTimeline() {
               Sign Up as Match
             </Button>
           </Link>
-          <Link href="/signup?type=cupid">
+          <Link href="/register?type=cupid">
             <Button
               size="lg"
               variant="outline"
