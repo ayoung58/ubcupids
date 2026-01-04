@@ -124,6 +124,20 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Feedback</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
+            <p className="text-sm text-slate-600 mb-2">
+              Feedback forms open when matches are revealed on Feb 7th
+            </p>
+            <Button className="w-full" variant="outline" disabled>
+              Provide Feedback
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Next Steps Timeline */}

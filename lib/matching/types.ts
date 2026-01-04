@@ -238,6 +238,7 @@ export interface CupidCandidateAssignment {
   candidate: CupidProfileView;
   potentialMatches: PotentialMatch[];
   rejectedMatches: string[]; // Array of rejected userIds
+  revealedCount: number; // Number of matches revealed to cupid
 
   selectedMatchId: string | null;
   selectionReason: string | null;

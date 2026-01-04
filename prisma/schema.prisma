@@ -311,6 +311,9 @@ model CupidAssignment {
   // Stored as JSON array: ["userId1", "userId2", ...]
   rejectedMatches Json @default("[]")
   
+  // Number of matches revealed to cupid (for progressive reveal)
+  revealedCount Int @default(5)
+  
   // Cupid's selection - which userId from potentialMatches they chose
   selectedMatchId String?
   selectionReason String?  @db.Text

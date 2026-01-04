@@ -44,12 +44,14 @@
     "react-dom": "19.2.0",
     "react-email": "^5.0.6",
     "react-hook-form": "^7.68.0",
+    "react-markdown": "^10.1.0",
     "resend": "^6.6.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",

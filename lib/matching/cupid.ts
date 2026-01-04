@@ -472,6 +472,7 @@ export async function getCupidDashboard(
         ...candidateAssignment,
         selectedMatchId: assignment.selectedMatchId,
         selectionReason: assignment.selectionReason,
+        revealedCount: (assignment.revealedCount as number) || 5,
       });
     }
   }
@@ -542,6 +543,7 @@ async function getCandidateAssignmentDetails(
       candidate: candidateProfile,
       potentialMatches,
       rejectedMatches, // Include rejected matches from database
+      revealedCount: 5, // Default value, will be overridden with actual DB value
     };
   } catch (error) {
     console.error(`Error loading candidate assignment ${assignmentId}:`, error);

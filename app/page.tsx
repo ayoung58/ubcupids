@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, BookOpen } from "lucide-react";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { HomepageTimeline } from "@/components/homepage/HomepageTimeline";
@@ -42,6 +42,22 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Header with Guide Link */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-slate-900">💘 UBCupids</h1>
+            <Link
+              href="/user-guide"
+              className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"
+            >
+              <BookOpen className="h-5 w-5" />
+              <span className="font-medium">Guide</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div className="flex items-center justify-center px-4 py-16 sm:py-24">
         <div className="max-w-2xl w-full space-y-8 text-center">

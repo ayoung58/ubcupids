@@ -272,7 +272,7 @@ export function HomepageTimeline() {
           How It Works
         </h2>
         <p className="text-slate-600 max-w-2xl mx-auto px-4 text-sm sm:text-base">
-          Whether you're looking for love or helping others find it, here's what
+          Whether you&apos;re looking for love or helping others find it, here&apos;s what
           your journey looks like
         </p>
       </div>
@@ -341,7 +341,7 @@ export function HomepageTimeline() {
             <div className="text-center sm:text-left">
               <p className="text-lg font-semibold">💘 UBCupids</p>
               <p className="text-slate-400 text-sm mt-1">
-                Find your Valentine's Day match at UBC
+                Find your Valentine&apos;s Day match at UBC
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-sm">

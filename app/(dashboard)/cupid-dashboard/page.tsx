@@ -95,6 +95,46 @@ export default async function CupidDashboardPage() {
         </CardContent>
       </Card>
 
+      {/* Feedback Card */}
+      <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex-1 text-center sm:text-left">
+              <h3 className="text-lg font-bold text-purple-700 mb-2">
+                📝 Help Us Improve!
+              </h3>
+              <p className="text-purple-600 text-sm">
+                {matchesRevealed
+                  ? "Help us improve the experience by providing feedback! You'll have a chance to win 1 of 2 $20 Amazon gift cards!"
+                  : "Feedback forms open when matches are revealed on Feb 7th"}
+              </p>
+            </div>
+            {matchesRevealed ? (
+              <Button
+                asChild
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              >
+                <a
+                  href="https://syk3gprmktl.typeform.com/to/GhBJoEjn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Provide Feedback
+                </a>
+              </Button>
+            ) : (
+              <Button
+                disabled
+                variant="outline"
+                className="border-purple-300 bg-white text-purple-400 cursor-not-allowed opacity-60"
+              >
+                Provide Feedback
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Information Card */}
       <Card>
         <CardHeader>

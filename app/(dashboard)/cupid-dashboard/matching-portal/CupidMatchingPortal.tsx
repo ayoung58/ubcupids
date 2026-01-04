@@ -66,6 +66,7 @@ interface CupidCandidateAssignment {
   candidate: CupidProfileView;
   potentialMatches: PotentialMatch[];
   rejectedMatches: string[];
+  revealedCount: number;
   selectedMatchId: string | null;
   selectionReason: string | null;
 }
@@ -117,10 +118,24 @@ export function CupidMatchingPortal({
   const [matchToReject, setMatchToReject] = useState<string | null>(null);
   const [rationaleError, setRationaleError] = useState<string | null>(null);
   const [revealedMatchCount, setRevealedMatchCount] = useState(5); // Start by showing 5 matches
+  const [matchesRevealed, setMatchesRevealed] = useState(false); // Track if admin has revealed matches
 
   useEffect(() => {
     fetchDashboard();
+    checkMatchesRevealed();
   }, []);
+
+  const checkMatchesRevealed = async () => {
+    try {
+      const res = await fetch("/api/admin/batch-status");
+      if (res.ok) {
+        const data = await res.json();
+        setMatchesRevealed(!!data.revealedAt);
+      }
+    } catch (err) {
+      console.error("Failed to check match reveal status:", err);
+    }
+  };
 
   const fetchDashboard = async () => {
     try {
@@ -265,6 +280,20 @@ export function CupidMatchingPortal({
   const handleRejectMatch = async () => {
     if (!matchToReject || !currentAssignment) return;
 
+    // Check if this is the last remaining match
+    const remainingMatches = currentAssignment.potentialMatches.filter(
+      (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject
+    );
+
+    if (remainingMatches.length === 0) {
+      setError(
+        "This is the last potential match for this match candidate. You cannot reject it."
+      );
+      setShowRejectDialog(false);
+      setMatchToReject(null);
+      return;
+    }
+
     try {
       // Persist rejection to database
       const res = await fetch("/api/cupid/reject-match", {
@@ -337,11 +366,11 @@ export function CupidMatchingPortal({
   const currentAssignment =
     dashboard?.pendingAssignments[currentAssignmentIndex];
 
-  // Load rejected matches from current assignment and reset revealed count
+  // Load rejected matches from current assignment and load revealed count from backend
   useEffect(() => {
     if (currentAssignment) {
       setRejectedMatches(new Set(currentAssignment.rejectedMatches || []));
-      setRevealedMatchCount(5); // Reset to show first 5 matches
+      setRevealedMatchCount(currentAssignment.revealedCount || 5);
     }
   }, [currentAssignment]);
 
@@ -398,8 +427,8 @@ export function CupidMatchingPortal({
                 <Check className="h-16 w-16 mx-auto text-green-500 mb-4" />
                 <h2 className="text-2xl font-bold text-green-700">All Done!</h2>
                 <p className="text-green-600 mt-2">
-                  You&apos;ve reviewed all assigned candidates. Great work,
-                  Cupid! 💘
+                  You&apos;ve reviewed all assigned match candidates. Great
+                  work, Cupid! 💘
                 </p>
                 <Link href="/cupid-dashboard">
                   <Button className="mt-6">Back to Dashboard</Button>
@@ -411,7 +440,7 @@ export function CupidMatchingPortal({
               <CardContent className="p-8 text-center">
                 <Users className="h-16 w-16 mx-auto text-blue-400 mb-4" />
                 <h2 className="text-2xl font-bold text-blue-700">
-                  Candidates Are Filling Out Questionnaires
+                  Match Candidates Are Filling Out Questionnaires
                 </h2>
                 <p className="text-blue-600 mt-2">
                   Cupids will receive assignments on January 31st! Stay tuned
@@ -436,6 +465,46 @@ export function CupidMatchingPortal({
       <div className="max-w-[1800px] mx-auto space-y-2 sm:space-y-3">
         <BackButton />
 
+        {/* Feedback Card */}
+        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-lg font-bold text-purple-700 mb-2">
+                  📝 Help Us Improve!
+                </h3>
+                <p className="text-purple-600 text-sm">
+                  {matchesRevealed
+                    ? "Help us improve the experience by providing feedback! You'll have a chance to win 1 of 2 $20 Amazon gift cards!"
+                    : "Feedback forms open when matches are revealed on Feb 7th"}
+                </p>
+              </div>
+              {matchesRevealed ? (
+                <Button
+                  asChild
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  <a
+                    href="https://syk3gprmktl.typeform.com/to/GhBJoEjn"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Provide Feedback
+                  </a>
+                </Button>
+              ) : (
+                <Button
+                  disabled
+                  variant="outline"
+                  className="border-purple-300 bg-white text-purple-400 cursor-not-allowed opacity-60"
+                >
+                  Provide Feedback
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Collapsible Info Panel */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {!isInfoCollapsed && (
@@ -457,10 +526,10 @@ export function CupidMatchingPortal({
                   disabled={currentAssignmentIndex === 0}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous Candidate
+                  Previous Match Candidate
                 </Button>
                 <span className="text-slate-700 font-semibold">
-                  Candidate {currentAssignmentIndex + 1} of{" "}
+                  Match Candidate {currentAssignmentIndex + 1} of{" "}
                   {dashboard.pendingAssignments.length}
                 </span>
                 <Button
@@ -475,7 +544,7 @@ export function CupidMatchingPortal({
                     dashboard.pendingAssignments.length - 1
                   }
                 >
-                  Next Candidate
+                  Next Match Candidate
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
@@ -561,7 +630,7 @@ export function CupidMatchingPortal({
           {isInfoCollapsed && (
             <div className="p-3 flex items-center justify-between">
               <span className="text-sm text-slate-600">
-                Candidate {currentAssignmentIndex + 1} of{" "}
+                Match Candidate {currentAssignmentIndex + 1} of{" "}
                 {dashboard.pendingAssignments.length}
                 {selectedMatchId && (
                   <span className="ml-2 text-green-600">• Match selected</span>
@@ -595,8 +664,8 @@ export function CupidMatchingPortal({
               No More Matches Available
             </h3>
             <p className="text-slate-600 mt-2">
-              You&apos;ve rejected all potential matches for this candidate.
-              Please move to the next candidate.
+              You&apos;ve rejected all potential matches for this match
+              candidate. Please move to the next match candidate.
             </p>
           </Card>
         )}
@@ -610,8 +679,9 @@ export function CupidMatchingPortal({
               <CardHeader className="bg-blue-50 border-b border-blue-200 flex-shrink-0">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Target className="h-5 w-5 text-blue-600" />
-                  Your Candidate: {currentAssignment.candidate.firstName},{" "}
-                  {currentAssignment.candidate.age}
+                  Your Match Candidate: {
+                    currentAssignment.candidate.firstName
+                  }, {currentAssignment.candidate.age}
                 </CardTitle>
                 {/* Tabs */}
                 <div className="flex gap-2 mt-3" data-tutorial="view-tabs">
@@ -901,7 +971,7 @@ function StatsHeader({ dashboard }: { dashboard: CupidDashboard | null }) {
           🎯 Matching Portal
         </h1>
         <p className="text-slate-600">
-          Welcome, {dashboard.cupidName}! Select the best match for each
+          Welcome, {dashboard.cupidName}! Select the best match for each match
           candidate.
         </p>
       </div>
@@ -1032,7 +1102,7 @@ function QuestionnaireDisplay({
 }) {
   if (!responses) {
     return (
-      <div className="text-center text-slate-500">
+      <div className="p-6 text-center text-slate-500">
         No questionnaire data available
       </div>
     );
