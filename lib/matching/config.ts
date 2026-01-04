@@ -32,6 +32,12 @@ export const MATCH_REVEAL_DATE = new Date("2026-02-07T00:00:00-08:00");
  */
 export const QUESTIONNAIRE_DEADLINE = new Date("2026-01-31T23:59:59-08:00");
 
+/**
+ * Sign-up deadline for registration
+ * Users cannot register after this date
+ */
+export const SIGNUP_DEADLINE = new Date("2026-01-31T23:59:59-08:00");
+
 // Legacy exports for backwards compatibility (will be removed in future)
 export const BATCH_1_RUN_MATCHING = RUN_MATCHING;
 export const BATCH_2_RUN_MATCHING = false; // Deprecated - no batch 2
@@ -101,7 +107,7 @@ export const IMPORTANCE_MULTIPLIERS = {
 /**
  * Minimum bidirectional score (0-100) for algorithm to consider a pair
  */
-export const MINIMUM_MATCH_SCORE = 10;
+export const MINIMUM_MATCH_SCORE = 5;
 
 /**
  * Number of matches to generate per user via algorithm

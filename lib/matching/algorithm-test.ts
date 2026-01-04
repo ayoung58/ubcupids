@@ -341,6 +341,24 @@ export async function runMatchingForTestUsers(
 
   const startTime = Date.now();
 
+  // Close all unsubmitted questionnaires for test users
+  console.log("Closing all unsubmitted questionnaires for test users...");
+  const closeResult = await prisma.questionnaireResponse.updateMany({
+    where: {
+      isSubmitted: false,
+      user: {
+        isTestUser: true,
+      },
+    },
+    data: {
+      isSubmitted: true,
+      submittedAt: new Date(),
+    },
+  });
+  console.log(
+    `Closed ${closeResult.count} unsubmitted questionnaires for test users`
+  );
+
   const users = await loadEligibleTestUsers();
 
   if (users.length < 2) {

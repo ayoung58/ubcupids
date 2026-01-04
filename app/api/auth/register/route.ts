@@ -8,6 +8,7 @@ import {
 } from "@/lib/auth";
 import crypto from "crypto";
 import { sendVerificationEmail } from "@/lib/email";
+import { SIGNUP_DEADLINE } from "@/lib/matching/config";
 
 /**
  * Registration API Endpoint
@@ -41,7 +42,21 @@ import { sendVerificationEmail } from "@/lib/email";
 export async function POST(request: NextRequest) {
   try {
     // ============================================
-    // 1. PARSE REQUEST BODY
+    // 1. CHECK SIGNUP DEADLINE
+    // ============================================
+    const now = new Date();
+    if (now > SIGNUP_DEADLINE) {
+      return NextResponse.json(
+        {
+          error: "Sign-ups have closed for 2026",
+          hint: "Registration is no longer available. Please check back next year.",
+        },
+        { status: 403 }
+      );
+    }
+
+    // ============================================
+    // 2. PARSE REQUEST BODY
     // ============================================
     const body = await request.json();
     const {
@@ -59,7 +74,7 @@ export async function POST(request: NextRequest) {
     const isCupid = accountType === "cupid";
 
     // ============================================
-    // 2. VALIDATE REQUIRED FIELDS
+    // 3. VALIDATE REQUIRED FIELDS
     // ============================================
     const missingFields: string[] = [];
 
@@ -95,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 3. VALIDATE TERMS ACCEPTANCE
+    // 4. VALIDATE TERMS ACCEPTANCE
     // ============================================
     if (!acceptedTerms) {
       return NextResponse.json(
@@ -105,12 +120,12 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 4. NORMALIZE EMAIL
+    // 5. NORMALIZE EMAIL
     // ============================================
     const normalizedEmail = normalizeEmail(email);
 
     // ============================================
-    // 5. VALIDATE UBC EMAIL
+    // 6. VALIDATE UBC EMAIL
     // ============================================
     if (!isValidUBCEmail(normalizedEmail)) {
       return NextResponse.json(
@@ -124,7 +139,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 6. VALIDATE PASSWORD STRENGTH
+    // 7. VALIDATE PASSWORD STRENGTH
     // ============================================
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
@@ -139,7 +154,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 7. CHECK IF EMAIL ALREADY EXISTS
+    // 8. CHECK IF EMAIL ALREADY EXISTS
     // ============================================
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },

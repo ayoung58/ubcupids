@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { encryptJSON } from "@/lib/encryption";
+import { QUESTIONNAIRE_DEADLINE } from "@/lib/matching/config";
 
 /**
  * POST /api/questionnaire/save
@@ -48,6 +49,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Unauthorized - Please log in" },
         { status: 401 }
+      );
+    }
+
+    // Check if questionnaire deadline has passed
+    const now = new Date();
+    if (now > QUESTIONNAIRE_DEADLINE) {
+      return NextResponse.json(
+        {
+          error: "Questionnaire submission deadline has passed",
+          hint: "You have missed the questionnaire submission deadline. The matching algorithm has already run.",
+        },
+        { status: 403 }
       );
     }
 

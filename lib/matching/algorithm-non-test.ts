@@ -340,6 +340,24 @@ export async function runMatchingForNonTestUsers(
 
   const startTime = Date.now();
 
+  // Close all unsubmitted questionnaires for production users
+  console.log("Closing all unsubmitted questionnaires for production users...");
+  const closeResult = await prisma.questionnaireResponse.updateMany({
+    where: {
+      isSubmitted: false,
+      user: {
+        isTestUser: false,
+      },
+    },
+    data: {
+      isSubmitted: true,
+      submittedAt: new Date(),
+    },
+  });
+  console.log(
+    `Closed ${closeResult.count} unsubmitted questionnaires for production users`
+  );
+
   const users = await loadEligibleNonTestUsers();
 
   if (users.length < 2) {

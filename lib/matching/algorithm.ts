@@ -447,6 +447,19 @@ export async function runMatching(
 
   const startTime = Date.now();
 
+  // Close all unsubmitted questionnaires
+  console.log("Closing all unsubmitted questionnaires...");
+  const closeResult = await prisma.questionnaireResponse.updateMany({
+    where: {
+      isSubmitted: false,
+    },
+    data: {
+      isSubmitted: true,
+      submittedAt: new Date(),
+    },
+  });
+  console.log(`Closed ${closeResult.count} unsubmitted questionnaires`);
+
   // Update batch status
   await updateMatchingBatch(batchNumber, "scoring", {
     scoringStartedAt: new Date(),

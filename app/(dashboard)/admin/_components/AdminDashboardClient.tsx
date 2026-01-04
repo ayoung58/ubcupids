@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import {
   Loader2,
   Play,
@@ -36,7 +35,6 @@ export function AdminDashboardClient({
   matchingStatus,
   matchingState,
 }: AdminDashboardClientProps) {
-  const { toast } = useToast();
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [actionMessages, setActionMessages] = useState<
@@ -428,6 +426,41 @@ export function AdminDashboardClient({
               </Button>
             </div>
           </div>
+
+          {/* Clear Test Matches Button */}
+          <div className="flex items-center gap-4 pt-4 border-t border-blue-200">
+            <div className="flex-1 space-y-2">
+              {actionMessages["clear-matches-test"] && (
+                <p
+                  className={`text-sm px-3 py-2 rounded ${
+                    actionMessages["clear-matches-test"].type === "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {actionMessages["clear-matches-test"].message}
+                </p>
+              )}
+              <Button
+                onClick={() =>
+                  handleAction(
+                    "clear-matches-test",
+                    "/api/admin/clear-matches-test"
+                  )
+                }
+                disabled={loadingAction !== null}
+                className="w-full h-12 bg-red-600 hover:bg-red-700"
+                variant="destructive"
+              >
+                {loadingAction === "clear-matches-test" ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-5 w-5" />
+                )}
+                Clear All Test Matches & Reset
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -569,6 +602,42 @@ export function AdminDashboardClient({
                   <Eye className="mr-2 h-5 w-5" />
                 )}
                 Reveal Matches (Production Users - Feb 7)
+              </Button>
+            </div>
+          </div>
+
+          {/* Clear Production Matches Button */}
+          <div className="flex items-center gap-4 pt-4 border-t border-purple-200">
+            <div className="flex-1 space-y-2">
+              {actionMessages["clear-matches-production"] && (
+                <p
+                  className={`text-sm px-3 py-2 rounded ${
+                    actionMessages["clear-matches-production"].type ===
+                    "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {actionMessages["clear-matches-production"].message}
+                </p>
+              )}
+              <Button
+                onClick={() =>
+                  handleAction(
+                    "clear-matches-production",
+                    "/api/admin/clear-matches-production"
+                  )
+                }
+                disabled={loadingAction !== null}
+                className="w-full h-12 bg-red-600 hover:bg-red-700"
+                variant="destructive"
+              >
+                {loadingAction === "clear-matches-production" ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-5 w-5" />
+                )}
+                Clear All Production Matches & Reset
               </Button>
             </div>
           </div>

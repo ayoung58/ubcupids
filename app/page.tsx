@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, BookOpen } from "lucide-react";
+import { CheckCircle, BookOpen, XCircle } from "lucide-react";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { HomepageTimeline } from "@/components/homepage/HomepageTimeline";
+import { SIGNUP_DEADLINE } from "@/lib/matching/config";
 
 /**
  * Home Page
@@ -29,6 +30,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   // IMPORTANT: Show sign-out message even if session still exists
   // (JWT cookie might not be cleared immediately in browser)
   const showSignOutMessage = signedout === "true";
+
+  // Check if signups are closed
+  const now = new Date();
+  const signupsClosed = now > SIGNUP_DEADLINE;
 
   // Determine correct dashboard URL if user is logged in
   let dashboardUrl = "/dashboard";
@@ -59,7 +64,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </div>
 
       {/* Hero Section */}
-      <div className="flex items-center justify-center px-4 py-16 sm:py-24">
+      <div className="flex items-center justify-center px-4 py-12 sm:py-16">
         <div className="max-w-2xl w-full space-y-8 text-center">
           {/* Sign Out Success Message - Show regardless of session state */}
           {showSignOutMessage && (
@@ -67,6 +72,17 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 You&apos;ve been signed out successfully.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Sign-ups Closed Message */}
+          {signupsClosed && !session?.user && (
+            <Alert className="border-red-200 bg-red-50">
+              <XCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800 font-medium">
+                Sign-ups have closed for 2026. Registration is no longer
+                available.
               </AlertDescription>
             </Alert>
           )}
@@ -79,8 +95,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </p>
             <p className="text-slate-500 max-w-lg mx-auto">
               Anonymous matching service for UBC students. Complete a
-              compatibility questionnaire and receive 1-3 matches for
+              compatibility questionnaire to receive 1-3 matches for
               Valentine&apos;s Day 2026.
+            </p>
+
+            <p className="text-slate-500 max-w-lg mx-auto">
+              Sign ups are open until January 31st, 2026.
             </p>
           </div>
 
@@ -90,7 +110,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             {showSignOutMessage ? (
               <>
                 <Link href="/signup">
-                  <Button size="lg" className="px-8">
+                  <Button size="lg" className="px-8" disabled={signupsClosed}>
                     Get Started
                   </Button>
                 </Link>
@@ -111,7 +131,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               // User is logged out (normal state)
               <>
                 <Link href="/signup">
-                  <Button size="lg" className="px-8">
+                  <Button size="lg" className="px-8" disabled={signupsClosed}>
                     Get Started
                   </Button>
                 </Link>
@@ -125,11 +145,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           {/* Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
             <div className="p-4 bg-white rounded-lg border border-slate-200">
               <p className="font-semibold text-slate-900">📝 Questionnaire</p>
               <p className="text-sm text-slate-600 mt-2">
-                Fill out compatibility questions
+                Fill out compatibility questions by Jan. 31st
               </p>
             </div>
             <div className="p-4 bg-white rounded-lg border border-slate-200">
