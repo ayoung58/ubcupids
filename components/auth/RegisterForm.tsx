@@ -465,10 +465,14 @@ export function RegisterForm({
                 }`}
               >
                 I accept the{" "}
-                <a href="/terms" className="underline hover:text-slate-900">
-                  Terms and Conditions
-                </a>{" "}
-                (placeholder for now)
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-slate-900"
+                >
+                  Privacy Policy and Terms of Service
+                </a>
               </Label>
             </div>
           )}

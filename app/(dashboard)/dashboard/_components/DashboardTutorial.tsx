@@ -39,7 +39,7 @@ const dashboardSteps: TutorialStep[] = [
     id: "get-started",
     title: "Ready to Get Started?",
     content:
-      "We recommend you start by setting up your profile! This is where you can link a cupid account if you'd like, set up your display name, and select what information you'd like to show potential matches! If you have any questions or feedback, you can email us at support@ubcupids.com!",
+      "We recommend you start by setting up your profile! This is where you can link a cupid account if you'd like, set up your display name, and select what information you'd like to show potential matches! If you have any questions or feedback, you can email us at support@ubcupids.org!",
     target: "[data-tutorial='profile-button']",
     position: "bottom",
   },

@@ -56,7 +56,7 @@ export default function PasswordResetEmail({
 
           <Text style={footer}>
             If you&apos;re having trouble, reply to this email or contact
-            support@ubcupids.com
+            support@ubcupids.org
           </Text>
         </Container>
       </Body>

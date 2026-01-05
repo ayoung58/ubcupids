@@ -272,8 +272,8 @@ export function HomepageTimeline() {
           How It Works
         </h2>
         <p className="text-slate-600 max-w-2xl mx-auto px-4 text-sm sm:text-base">
-          Whether you&apos;re looking for love or helping others find it, here&apos;s what
-          your journey looks like
+          Whether you&apos;re looking for love or helping others find it,
+          here&apos;s what your journey looks like
         </p>
       </div>
 
@@ -346,19 +346,13 @@ export function HomepageTimeline() {
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-sm">
               <Link
-                href="/terms"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                Terms of Service
-              </Link>
-              <Link
                 href="/privacy"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                Privacy Policy
+                Privacy & Terms
               </Link>
               <a
-                href="mailto:support@ubcupids.com"
+                href="mailto:support@ubcupids.org"
                 className="text-slate-400 hover:text-white transition-colors"
               >
                 Contact

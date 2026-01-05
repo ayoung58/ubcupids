@@ -39,8 +39,8 @@ export function DashboardLayoutClient({
               </Link>
             </div>
 
-            {/* Guide Link */}
-            <div className="absolute top-4 left-4">
+            {/* Navigation Links */}
+            <div className="absolute top-4 left-4 flex items-center gap-2">
               <Link
                 href="/user-guide"
                 className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"
@@ -48,6 +48,18 @@ export function DashboardLayoutClient({
                 <BookOpen className="h-5 w-5" />
                 <span className="font-medium">Guide</span>
               </Link>
+              <Link
+                href="/privacy"
+                className="px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
+              >
+                Privacy
+              </Link>
+              <a
+                href="mailto:support@ubcupids.org"
+                className="px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
+              >
+                Contact
+              </a>
             </div>
 
             <div className="absolute top-4 right-4">

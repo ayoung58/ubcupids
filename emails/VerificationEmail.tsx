@@ -80,7 +80,7 @@ export default function VerificationEmail({
 
           {/* Footer */}
           <Text style={footer}>
-            Need help? Reply to this email or contact us at support@ubcupids.com
+            Need help? Reply to this email or contact us at support@ubcupids.org
           </Text>
         </Container>
       </Body>
