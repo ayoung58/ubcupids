@@ -126,7 +126,7 @@
           "id": "q6",
           "type": "single-choice",
           "text": "At a party where you don't know anyone except the host, you:",
-          "required": false,
+          "required": true,
           "hasImportance": true,
           "rationale": "Social comfort, extraversion, humor, self-awareness",
           "options": [
@@ -156,7 +156,7 @@
           "id": "q4",
           "type": "single-choice",
           "text": "Your ideal Saturday morning is closest to:",
-          "required": false,
+          "required": true,
           "hasImportance": true,
           "rationale": "Energy level, social vs. solo, routine vs. spontaneity",
           "options": [
