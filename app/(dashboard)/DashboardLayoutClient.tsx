@@ -31,6 +31,16 @@ export function DashboardLayoutClient({
       {!isQuestionnairePage && (
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 py-4 relative min-h-[72px]">
+            {/* Logo - Centered */}
+            <div className="flex justify-center" data-tutorial="logo">
+              <Link
+                href="/"
+                className="text-3xl font-bold text-slate-900 hover:text-slate-700 transition-colors"
+              >
+                💘 UBCupids
+              </Link>
+            </div>
+
             {/* Navigation Links */}
             <div className="absolute top-4 left-4 flex items-center gap-2">
               <Link

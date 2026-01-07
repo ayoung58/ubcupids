@@ -13,13 +13,26 @@ export default function PrivacyAndTermsPage() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="hover:bg-slate-100">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
+        <div className="max-w-4xl mx-auto px-4 py-4 relative min-h-[72px]">
+          {/* Logo - Centered */}
+          <div className="flex justify-center">
+            <Link
+              href="/"
+              className="text-3xl font-bold text-slate-900 hover:text-slate-700 transition-colors"
+            >
+              💘 UBCupids
+            </Link>
+          </div>
+
+          {/* Back Button */}
+          <div className="absolute top-4 left-4">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="hover:bg-slate-100">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -100,9 +113,9 @@ export default function PrivacyAndTermsPage() {
               connections between UBC students.
             </p>
             <p className="text-slate-700 leading-relaxed">
-              By using our service at <span className="font-semibold">UBCupids</span>, you
-              agree to the practices set forth in this Privacy Notice and Terms
-              of Service.
+              By using our service at{" "}
+              <span className="font-semibold">UBCupids</span>, you agree to the
+              practices set forth in this Privacy Notice and Terms of Service.
             </p>
           </section>
 

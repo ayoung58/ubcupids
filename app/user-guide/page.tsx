@@ -73,8 +73,19 @@ export default function UserGuidePage() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 relative min-h-[72px]">
+          {/* Logo - Centered */}
+          <div className="flex justify-center">
+            <Link
+              href="/"
+              className="text-3xl font-bold text-slate-900 hover:text-slate-700 transition-colors"
+            >
+              💘 UBCupids
+            </Link>
+          </div>
+
+          {/* Back Button - Left Side */}
+          <div className="absolute top-4 left-4">
             <Link
               href="/"
               className="flex items-center gap-2 text-slate-700 hover:text-slate-900"
@@ -82,10 +93,12 @@ export default function UserGuidePage() {
               <ArrowLeft className="h-5 w-5" />
               <span>Back to Home</span>
             </Link>
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-6 w-6 text-pink-500" />
-              <h1 className="text-2xl font-bold text-slate-900">User Guide</h1>
-            </div>
+          </div>
+
+          {/* Page Title - Right Side */}
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-pink-500" />
+            <h1 className="text-2xl font-bold text-slate-900">User Guide</h1>
           </div>
         </div>
       </div>
