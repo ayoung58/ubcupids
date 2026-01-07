@@ -346,6 +346,12 @@ export function HomepageTimeline() {
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-sm">
               <Link
+                href="/user-guide"
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                User Guide
+              </Link>
+              <Link
                 href="/privacy"
                 className="text-slate-400 hover:text-white transition-colors"
               >

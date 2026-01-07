@@ -30,15 +30,7 @@ export function DashboardLayoutClient({
       {/* Header - Hidden on questionnaire page */}
       {!isQuestionnairePage && (
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 py-4 relative">
-            <div className="text-center">
-              <Link href="/" data-tutorial="logo" className="inline-block">
-                <h1 className="text-3xl font-bold text-slate-900 cursor-pointer hover:text-slate-700 transition-colors">
-                  💘 UBCupids
-                </h1>
-              </Link>
-            </div>
-
+          <div className="max-w-7xl mx-auto px-4 py-4 relative min-h-[72px]">
             {/* Navigation Links */}
             <div className="absolute top-4 left-4 flex items-center gap-2">
               <Link

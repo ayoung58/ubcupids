@@ -51,11 +51,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header with Guide Link */}
+      {/* Header with Navigation Links */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-slate-900">💘 UBCupids</h1>
+        <div className="max-w-7xl mx-auto px-4 py-4 relative min-h-[72px]">
+          {/* Navigation Links */}
+          <div className="absolute top-4 left-4 flex items-center gap-2">
             <Link
               href="/user-guide"
               className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"
@@ -63,6 +63,18 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <BookOpen className="h-5 w-5" />
               <span className="font-medium">Guide</span>
             </Link>
+            <Link
+              href="/privacy"
+              className="px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
+            >
+              Privacy
+            </Link>
+            <a
+              href="mailto:support@ubcupids.org"
+              className="px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
+            >
+              Contact
+            </a>
           </div>
         </div>
       </div>
