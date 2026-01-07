@@ -78,10 +78,6 @@
               "label": "Asexual (romantic attraction without sexual attraction)"
             },
             {
-              "value": "aromantic",
-              "label": "Aromantic"
-            },
-            {
               "value": "questioning",
               "label": "Questioning/Exploring"
             },
@@ -124,7 +120,7 @@
       "id": "section-1",
       "title": "Icebreakers / Personality",
       "description": "Let's get to know you! These questions help us understand your personality and sense of humor.",
-      "questionsCount": 7,
+      "questionsCount": 10,
       "questions": [
         {
           "id": "q6",
@@ -186,7 +182,7 @@
           "id": "q5",
           "type": "single-choice",
           "text": "You've had a terrible day. What helps you decompress?",
-          "required": false,
+          "required": true,
           "hasImportance": true,
           "rationale": "Emotional processing, introversion/extraversion, coping mechanisms",
           "options": [
@@ -265,10 +261,40 @@
           ]
         },
         {
+          "id": "q9",
+          "type": "single-choice",
+          "text": "You just finished a tough exam. You celebrate by:",
+          "required": true,
+          "hasImportance": true,
+          "rationale": "Stress response, celebration style, anxiety levels",
+          "options": [
+            {
+              "value": "going-out",
+              "label": "Going out with friends immediately"
+            },
+            {
+              "value": "treat",
+              "label": "Treating yourself"
+            },
+            {
+              "value": "sleep",
+              "label": "Sleeping for 12 hours straight"
+            },
+            {
+              "value": "stress-next",
+              "label": "Already stressing about the next thing"
+            },
+            {
+              "value": "no-celebrate",
+              "label": "Nothing, I don't really celebrate small wins"
+            }
+          ]
+        },
+        {
           "id": "q10",
-          "type": "multi-choice",
+          "type": "single-choice",
           "text": "Which type of humor makes you laugh the most? Pick the example that would actually make you chuckle:",
-          "required": false,
+          "required": true,
           "hasImportance": true,
           "rationale": "Humor compatibility, self-awareness",
           "options": [
@@ -304,6 +330,36 @@
           ]
         },
         {
+          "id": "q11",
+          "type": "single-choice",
+          "text": "On a road trip, you're the person who:",
+          "required": true,
+          "hasImportance": true,
+          "rationale": "Role in groups, control vs. trust, energy contribution",
+          "options": [
+            {
+              "value": "dj",
+              "label": "DJs the entire drive"
+            },
+            {
+              "value": "navigator",
+              "label": "Navigates and keeps us on schedule"
+            },
+            {
+              "value": "entertainer",
+              "label": "Provides snacks and entertainment"
+            },
+            {
+              "value": "sleeper",
+              "label": "Sleeps in the passenger seat"
+            },
+            {
+              "value": "driver",
+              "label": "Drives the whole way"
+            }
+          ]
+        },
+        {
           "id": "q12",
           "type": "single-choice",
           "text": "Your relationship with spontaneity:",
@@ -328,15 +384,7 @@
               "label": "Spontaneity stresses me out"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "section-2",
-      "title": "What I'm Like",
-      "description": "Tell us more about yourself—your lifestyle, values, and how you navigate the world.",
-      "questionsCount": 20,
-      "questions": [
+        },
         {
           "id": "q13",
           "type": "single-choice",
@@ -369,7 +417,15 @@
               "label": "I'm VERY experienced with dating (why exactly are you here? 🤨)"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "section-2",
+      "title": "What I'm Like",
+      "description": "Tell us more about yourself—your lifestyle, values, and how you navigate the world.",
+      "questionsCount": 19,
+      "questions": [
         {
           "id": "q14",
           "type": "single-choice",
@@ -553,18 +609,22 @@
         {
           "id": "q21",
           "type": "single-choice",
-          "text": "I am most like...",
+          "text": "I'm most productive:",
           "required": true,
           "hasImportance": true,
           "rationale": "Schedule compatibility, energy patterns",
           "options": [
             {
               "value": "early-morning",
-              "label": "An early bird"
+              "label": "Early morning"
             },
             {
-              "value": "night",
-              "label": "A night owl"
+              "value": "mid-day",
+              "label": "Mid-morning to afternoon"
+            },
+            {
+              "value": "late-night",
+              "label": "Late night"
             },
             {
               "value": "varies",
@@ -1262,7 +1322,7 @@
         },
         {
           "id": "q46",
-          "type": "multi-choice",
+          "type": "single-choice",
           "text": "I want someone whose relationship with alcohol is:",
           "required": true,
           "hasImportance": true,
@@ -1288,7 +1348,7 @@
         },
         {
           "id": "q47",
-          "type": "multi-choice",
+          "type": "single-choice",
           "text": "I'd prefer if someone:",
           "required": true,
           "hasImportance": true,
@@ -1635,7 +1695,7 @@
           "id": "q60",
           "type": "textarea",
           "text": "Something I absolutely cannot compromise on in a relationship:",
-          "required": false,
+          "required": true,
           "hasImportance": false,
           "rationale": "Personal dealbreaker, gives human cupids context",
           "placeholder": "Example: \"Honesty—I need complete transparency\" or \"Respect for my career ambitions\"",
@@ -1646,7 +1706,7 @@
           "id": "q61",
           "type": "textarea",
           "text": "What's something you're passionate about that people might not know?",
-          "required": false,
+          "required": true,
           "hasImportance": false,
           "rationale": "Unique interests, depth, conversation starter",
           "placeholder": "Example: \"I'm weirdly into urban planning—I'll spend hours redesigning transit systems in my head. My friends think it's boring, but I genuinely love it.\"",
@@ -1657,7 +1717,7 @@
           "id": "q62",
           "type": "textarea",
           "text": "If you were matched, what is one thing you want the other person to know about you?",
-          "required": false,
+          "required": true,
           "hasImportance": false,
           "rationale": "Personality, vulnerability, setting expectations",
           "placeholder": "Example: \"I take a little time to open up, but I'm thoughtful, loyal, and genuinely invested once I do.\"",

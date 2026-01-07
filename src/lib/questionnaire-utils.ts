@@ -25,12 +25,12 @@ export function getAllQuestions(): Question[] {
 }
 
 /**
- * Get total number of questions
+ * Get total number of required questions (for progress calculation)
  */
 export function getTotalQuestions(): number {
   const config = getQuestionnaireConfig();
   return config.sections.reduce(
-    (sum, section) => sum + section.questions.length,
+    (sum, section) => sum + section.questions.filter((q) => q.required).length,
     0
   );
 }
@@ -183,11 +183,12 @@ export function validateResponses(responses: Responses): ValidationError[] {
 
 /**
  * Calculate completion progress as a percentage (0-100)
+ * Only counts required questions for progress calculation
  */
 export function calculateProgress(responses: Responses): number {
-  const totalQuestions = getTotalQuestions();
-  const answeredQuestions = Object.keys(responses).filter((key) => {
-    const response = responses[key];
+  const requiredQuestions = getRequiredQuestions();
+  const answeredRequiredQuestions = requiredQuestions.filter((question) => {
+    const response = responses[question.id];
     // Count as answered if not empty
     return (
       response &&
@@ -196,7 +197,9 @@ export function calculateProgress(responses: Responses): number {
     );
   }).length;
 
-  return Math.round((answeredQuestions / totalQuestions) * 100);
+  return Math.round(
+    (answeredRequiredQuestions / requiredQuestions.length) * 100
+  );
 }
 
 /**
@@ -214,7 +217,7 @@ export function getQuestionById(questionId: string): Question | undefined {
 }
 
 /**
- * Get section progress (percentage of questions answered in a section)
+ * Get section progress (percentage of required questions answered in a section)
  */
 export function getSectionProgress(
   sectionId: string,
@@ -225,7 +228,10 @@ export function getSectionProgress(
 
   if (!section) return 0;
 
-  const answeredInSection = section.questions.filter((q) => {
+  const requiredQuestionsInSection = section.questions.filter(
+    (q) => q.required
+  );
+  const answeredInSection = requiredQuestionsInSection.filter((q) => {
     const response = responses[q.id];
     return (
       response &&
@@ -234,15 +240,18 @@ export function getSectionProgress(
     );
   }).length;
 
-  return Math.round((answeredInSection / section.questions.length) * 100);
+  return Math.round(
+    (answeredInSection / requiredQuestionsInSection.length) * 100
+  );
 }
 
 /**
- * Count total answered questions
+ * Count total answered required questions
  */
 export function countAnsweredQuestions(responses: Responses): number {
-  return Object.keys(responses).filter((key) => {
-    const response = responses[key];
+  const requiredQuestions = getRequiredQuestions();
+  return requiredQuestions.filter((question) => {
+    const response = responses[question.id];
     return (
       response &&
       (typeof response !== "string" || response.trim() !== "") &&

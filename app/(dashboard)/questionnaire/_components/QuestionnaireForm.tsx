@@ -13,6 +13,7 @@ import {
   calculateProgress,
   validateResponses,
   getTotalQuestions,
+  getRequiredQuestions,
   getSectionProgress,
 } from "@/src/lib/questionnaire-utils";
 import { SectionRenderer } from "./SectionRenderer";
@@ -268,8 +269,9 @@ export function QuestionnaireForm({
 
   // Calculate progress
   const totalQuestions = getTotalQuestions();
-  const answeredQuestions = Object.keys(responses).filter((key) => {
-    const response = responses[key];
+  const requiredQuestions = getRequiredQuestions();
+  const answeredQuestions = requiredQuestions.filter((question) => {
+    const response = responses[question.id];
     // Count as answered if not empty (matching calculateProgress logic)
     return (
       response &&

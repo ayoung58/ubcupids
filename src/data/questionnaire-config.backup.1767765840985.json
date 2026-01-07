@@ -78,10 +78,6 @@
               "label": "Asexual (romantic attraction without sexual attraction)"
             },
             {
-              "value": "aromantic",
-              "label": "Aromantic"
-            },
-            {
               "value": "questioning",
               "label": "Questioning/Exploring"
             },
@@ -1262,7 +1258,7 @@
         },
         {
           "id": "q46",
-          "type": "multi-choice",
+          "type": "single-choice",
           "text": "I want someone whose relationship with alcohol is:",
           "required": true,
           "hasImportance": true,
@@ -1288,7 +1284,7 @@
         },
         {
           "id": "q47",
-          "type": "multi-choice",
+          "type": "single-choice",
           "text": "I'd prefer if someone:",
           "required": true,
           "hasImportance": true,
@@ -1635,7 +1631,7 @@
           "id": "q60",
           "type": "textarea",
           "text": "Something I absolutely cannot compromise on in a relationship:",
-          "required": false,
+          "required": true,
           "hasImportance": false,
           "rationale": "Personal dealbreaker, gives human cupids context",
           "placeholder": "Example: \"Honesty—I need complete transparency\" or \"Respect for my career ambitions\"",
@@ -1646,7 +1642,7 @@
           "id": "q61",
           "type": "textarea",
           "text": "What's something you're passionate about that people might not know?",
-          "required": false,
+          "required": true,
           "hasImportance": false,
           "rationale": "Unique interests, depth, conversation starter",
           "placeholder": "Example: \"I'm weirdly into urban planning—I'll spend hours redesigning transit systems in my head. My friends think it's boring, but I genuinely love it.\"",
@@ -1657,7 +1653,7 @@
           "id": "q62",
           "type": "textarea",
           "text": "If you were matched, what is one thing you want the other person to know about you?",
-          "required": false,
+          "required": true,
           "hasImportance": false,
           "rationale": "Personality, vulnerability, setting expectations",
           "placeholder": "Example: \"I take a little time to open up, but I'm thoughtful, loyal, and genuinely invested once I do.\"",
