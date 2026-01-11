@@ -11,17 +11,14 @@
 
 import {
   categoricalExactMatch,
-  singleSelectSame,
-  multiSelectJaccard,
-  singleVsMultiSelect,
-  compoundDrugUse,
-  ordinalLikert,
-  directionalLikert,
-  differentPreference,
-  loveLangauges,
-  conflictResolution,
-  sleepSchedule,
-  calculateSimilarity,
+  singleSelectSimilarity,
+  multiSelectJaccardSimilarity,
+  singleVsMultiSelectSimilarity,
+  compoundDrugUseSimilarity,
+  ordinalLikertSimilarity,
+  directionalLikertSimilarity,
+  differentPreferenceSimilarity,
+  specialCaseSimilarity,
 } from "../similarityV2";
 import { QuestionResponse } from "@/src/lib/questionnaire-types";
 
@@ -82,7 +79,7 @@ describe("categoricalExactMatch", () => {
     const personA: QuestionResponse = {
       ownAnswer: "atheist",
       preference: {
-        type: "specific_values",
+        type: "specific",
         value: ["atheist", "agnostic"],
         doesntMatter: false,
       },
@@ -91,7 +88,7 @@ describe("categoricalExactMatch", () => {
     };
     const personB: QuestionResponse = {
       ownAnswer: "agnostic",
-      preference: { type: "same", doesntMatter: true },
+      preference: { type: "doesntMatter", doesntMatter: true },
       importance: 1,
       dealbreaker: false,
     };
@@ -102,7 +99,7 @@ describe("categoricalExactMatch", () => {
     const personA: QuestionResponse = {
       ownAnswer: "atheist",
       preference: {
-        type: "specific_values",
+        type: "specific",
         value: ["atheist", "agnostic"],
         doesntMatter: false,
       },
@@ -111,7 +108,7 @@ describe("categoricalExactMatch", () => {
     };
     const personB: QuestionResponse = {
       ownAnswer: "christian",
-      preference: { type: "same", doesntMatter: true },
+      preference: { type: "doesntMatter", doesntMatter: true },
       importance: 1,
       dealbreaker: false,
     };
@@ -121,13 +118,13 @@ describe("categoricalExactMatch", () => {
   test("both doesn't matter", () => {
     const personA: QuestionResponse = {
       ownAnswer: "man",
-      preference: { type: "same", doesntMatter: true },
+      preference: { type: "doesntMatter", doesntMatter: true },
       importance: 1,
       dealbreaker: false,
     };
     const personB: QuestionResponse = {
       ownAnswer: "woman",
-      preference: { type: "same", doesntMatter: true },
+      preference: { type: "doesntMatter", doesntMatter: true },
       importance: 1,
       dealbreaker: false,
     };
@@ -143,7 +140,7 @@ describe("categoricalExactMatch", () => {
     };
     const personB: QuestionResponse = {
       ownAnswer: "woman",
-      preference: { type: "same", doesntMatter: true },
+      preference: { type: "doesntMatter", doesntMatter: true },
       importance: 1,
       dealbreaker: false,
     };
@@ -156,7 +153,7 @@ describe("categoricalExactMatch", () => {
 // TYPE B: Single-Select Similarity
 // ============================================
 
-describe("singleSelectSame", () => {
+describe("singleSelectSimilarity", () => {
   test("similar preference - exact match", () => {
     const personA: QuestionResponse = {
       ownAnswer: "very_important",
@@ -170,7 +167,7 @@ describe("singleSelectSame", () => {
       importance: 3,
       dealbreaker: false,
     };
-    expect(singleSelectSame(personA, personB)).toBe(1.0);
+    expect(singleSelectSimilarity(personA, personB)).toBe(1.0);
   });
 
   test("similar preference - adjacent options", () => {
@@ -187,7 +184,7 @@ describe("singleSelectSame", () => {
       dealbreaker: false,
     };
     // Adjacent = 0.67 score
-    expect(singleSelectSame(personA, personB)).toBeCloseTo(0.67, 2);
+    expect(singleSelectSimilarity(personA, personB)).toBeCloseTo(0.67, 2);
   });
 
   test("similar preference - distant options", () => {
@@ -204,7 +201,7 @@ describe("singleSelectSame", () => {
       dealbreaker: false,
     };
     // 2 steps away = 0.33
-    expect(singleSelectSame(personA, personB)).toBeCloseTo(0.33, 2);
+    expect(singleSelectSimilarity(personA, personB)).toBeCloseTo(0.33, 2);
   });
 
   test("compatible preference - overlapping sets", () => {
@@ -229,7 +226,7 @@ describe("singleSelectSame", () => {
       dealbreaker: false,
     };
     // Both accept "somewhat_important"
-    expect(singleSelectSame(personA, personB)).toBe(1.0);
+    expect(singleSelectSimilarity(personA, personB)).toBe(1.0);
   });
 
   test("compatible preference - no overlap", () => {
@@ -253,7 +250,7 @@ describe("singleSelectSame", () => {
       importance: 2,
       dealbreaker: false,
     };
-    expect(singleSelectSame(personA, personB)).toBe(0.0);
+    expect(singleSelectSimilarity(personA, personB)).toBe(0.0);
   });
 });
 
@@ -261,7 +258,7 @@ describe("singleSelectSame", () => {
 // TYPE C: Multi-Select Jaccard Similarity
 // ============================================
 
-describe("multiSelectJaccard", () => {
+describe("multiSelectJaccardSimilarity", () => {
   test("similar preference - identical sets", () => {
     const personA: QuestionResponse = {
       ownAnswer: ["reading", "hiking", "gaming"],
@@ -275,7 +272,7 @@ describe("multiSelectJaccard", () => {
       importance: 3,
       dealbreaker: false,
     };
-    expect(multiSelectJaccard(personA, personB)).toBe(1.0);
+    expect(multiSelectJaccardSimilarity(personA, personB)).toBe(1.0);
   });
 
   test("similar preference - partial overlap", () => {
@@ -292,7 +289,7 @@ describe("multiSelectJaccard", () => {
       dealbreaker: false,
     };
     // Jaccard: 1 common / 3 total = 0.33
-    expect(multiSelectJaccard(personA, personB)).toBeCloseTo(0.33, 2);
+    expect(multiSelectJaccardSimilarity(personA, personB)).toBeCloseTo(0.33, 2);
   });
 
   test("similar preference - no overlap", () => {
@@ -308,7 +305,7 @@ describe("multiSelectJaccard", () => {
       importance: 3,
       dealbreaker: false,
     };
-    expect(multiSelectJaccard(personA, personB)).toBe(0.0);
+    expect(multiSelectJaccardSimilarity(personA, personB)).toBe(0.0);
   });
 
   test("specific_values preference - must have certain hobbies", () => {
@@ -329,7 +326,7 @@ describe("multiSelectJaccard", () => {
       dealbreaker: false,
     };
     // A requires B to have "hiking" → yes (1.0), B wants similar → Jaccard 1/4 = 0.25 → min = 0.25
-    expect(multiSelectJaccard(personA, personB)).toBeCloseTo(0.25, 2);
+    expect(multiSelectJaccardSimilarity(personA, personB)).toBeCloseTo(0.25, 2);
   });
 
   test("specific_values preference - missing required hobby", () => {
@@ -350,7 +347,7 @@ describe("multiSelectJaccard", () => {
       dealbreaker: false,
     };
     // A requires B to have "gaming" → no (0.0)
-    expect(multiSelectJaccard(personA, personB)).toBe(0.0);
+    expect(multiSelectJaccardSimilarity(personA, personB)).toBe(0.0);
   });
 });
 
@@ -358,7 +355,7 @@ describe("multiSelectJaccard", () => {
 // TYPE D: Single vs Multi-Select Similarity
 // ============================================
 
-describe("singleVsMultiSelect", () => {
+describe("singleVsMultiSelectSimilarity", () => {
   test("similar preference - contained in set", () => {
     const personA: QuestionResponse = {
       ownAnswer: "english",
@@ -372,7 +369,7 @@ describe("singleVsMultiSelect", () => {
       importance: 2,
       dealbreaker: false,
     };
-    expect(singleVsMultiSelect(personA, personB)).toBe(1.0);
+    expect(singleVsMultiSelectSimilarity(personA, personB)).toBe(1.0);
   });
 
   test("similar preference - not in set", () => {
@@ -388,7 +385,7 @@ describe("singleVsMultiSelect", () => {
       importance: 2,
       dealbreaker: false,
     };
-    expect(singleVsMultiSelect(personA, personB)).toBe(0.0);
+    expect(singleVsMultiSelectSimilarity(personA, personB)).toBe(0.0);
   });
 
   test("specific_values - must contain language", () => {
@@ -409,7 +406,7 @@ describe("singleVsMultiSelect", () => {
       dealbreaker: false,
     };
     // A requires B to have "english" → yes
-    expect(singleVsMultiSelect(personA, personB)).toBe(1.0);
+    expect(singleVsMultiSelectSimilarity(personA, personB)).toBe(1.0);
   });
 });
 
@@ -417,7 +414,7 @@ describe("singleVsMultiSelect", () => {
 // TYPE E: Compound Drug Use Similarity
 // ============================================
 
-describe("compoundDrugUse", () => {
+describe("compoundDrugUseSimilarity", () => {
   test("matching substance and frequency", () => {
     const personA: QuestionResponse = {
       ownAnswer: { substance: "never", frequency: null },
@@ -431,7 +428,7 @@ describe("compoundDrugUse", () => {
       importance: 3,
       dealbreaker: false,
     };
-    expect(compoundDrugUse(personA, personB)).toBe(1.0);
+    expect(compoundDrugUseSimilarity(personA, personB)).toBe(1.0);
   });
 
   test("same substance, different frequency - partial match", () => {
@@ -448,7 +445,7 @@ describe("compoundDrugUse", () => {
       dealbreaker: false,
     };
     // Substance match (0.7) + frequency mismatch (0) = 0.35 avg
-    expect(compoundDrugUse(personA, personB)).toBeCloseTo(0.35, 2);
+    expect(compoundDrugUseSimilarity(personA, personB)).toBeCloseTo(0.35, 2);
   });
 
   test("different substances - zero match", () => {
@@ -464,7 +461,7 @@ describe("compoundDrugUse", () => {
       importance: 2,
       dealbreaker: false,
     };
-    expect(compoundDrugUse(personA, personB)).toBe(0.0);
+    expect(compoundDrugUseSimilarity(personA, personB)).toBe(0.0);
   });
 
   test("less preference - accepting lower frequency", () => {
@@ -481,7 +478,7 @@ describe("compoundDrugUse", () => {
       dealbreaker: false,
     };
     // A wants less/equal (B is less) → 1.0
-    expect(compoundDrugUse(personA, personB)).toBe(1.0);
+    expect(compoundDrugUseSimilarity(personA, personB)).toBe(1.0);
   });
 
   test("more preference - wanting higher frequency", () => {
@@ -498,7 +495,7 @@ describe("compoundDrugUse", () => {
       dealbreaker: false,
     };
     // A wants more/equal (B is more) → 1.0
-    expect(compoundDrugUse(personA, personB)).toBe(1.0);
+    expect(compoundDrugUseSimilarity(personA, personB)).toBe(1.0);
   });
 });
 
@@ -506,7 +503,7 @@ describe("compoundDrugUse", () => {
 // TYPE F: Ordinal/Likert Similarity
 // ============================================
 
-describe("ordinalLikert", () => {
+describe("ordinalLikertSimilarity", () => {
   test("similar preference - exact match", () => {
     const personA: QuestionResponse = {
       ownAnswer: 4,
@@ -520,9 +517,7 @@ describe("ordinalLikert", () => {
       importance: 3,
       dealbreaker: false,
     };
-    expect(ordinalLikert(personA, personB, ["1", "2", "3", "4", "5"])).toBe(
-      1.0
-    );
+    expect(ordinalLikertSimilarity(personA, personB, 5)).toBe(1.0);
   });
 
   test("similar preference - adjacent values", () => {
@@ -539,9 +534,7 @@ describe("ordinalLikert", () => {
       dealbreaker: false,
     };
     // Distance 1 on scale of 5 → 1 - 1/4 = 0.75
-    expect(ordinalLikert(personA, personB, ["1", "2", "3", "4", "5"])).toBe(
-      0.75
-    );
+    expect(ordinalLikertSimilarity(personA, personB, 5)).toBe(0.75);
   });
 
   test("similar preference - opposite ends", () => {
@@ -558,9 +551,7 @@ describe("ordinalLikert", () => {
       dealbreaker: false,
     };
     // Distance 4 on scale of 5 → 1 - 4/4 = 0
-    expect(ordinalLikert(personA, personB, ["1", "2", "3", "4", "5"])).toBe(
-      0.0
-    );
+    expect(ordinalLikertSimilarity(personA, personB, 5)).toBe(0.0);
   });
 
   test("more preference - higher values accepted", () => {
@@ -577,9 +568,7 @@ describe("ordinalLikert", () => {
       dealbreaker: false,
     };
     // A wants B ≥ 3 → yes (1.0), B wants similar → distance score
-    expect(
-      ordinalLikert(personA, personB, ["1", "2", "3", "4", "5"])
-    ).toBeGreaterThan(0.7);
+    expect(ordinalLikertSimilarity(personA, personB, 5)).toBeGreaterThan(0.7);
   });
 
   test("less preference - lower values accepted", () => {
@@ -596,9 +585,7 @@ describe("ordinalLikert", () => {
       dealbreaker: false,
     };
     // A wants B ≤ 4 → yes (1.0)
-    expect(
-      ordinalLikert(personA, personB, ["1", "2", "3", "4", "5"])
-    ).toBeGreaterThan(0.5);
+    expect(ordinalLikertSimilarity(personA, personB, 5)).toBeGreaterThan(0.5);
   });
 });
 
@@ -606,7 +593,7 @@ describe("ordinalLikert", () => {
 // TYPE G: Directional Likert Similarity
 // ============================================
 
-describe("directionalLikert", () => {
+describe("directionalLikertSimilarity", () => {
   test("similar preference - close values", () => {
     const personA: QuestionResponse = {
       ownAnswer: 60,
@@ -621,21 +608,7 @@ describe("directionalLikert", () => {
       dealbreaker: false,
     };
     // Distance 5 on scale of 100 → high similarity
-    expect(
-      directionalLikert(personA, personB, [
-        "0",
-        "10",
-        "20",
-        "30",
-        "40",
-        "50",
-        "60",
-        "70",
-        "80",
-        "90",
-        "100",
-      ])
-    ).toBeGreaterThan(0.9);
+    expect(directionalLikertSimilarity(personA, personB)).toBeGreaterThan(0.9);
   });
 
   test("more preference - accepting higher values", () => {
@@ -652,21 +625,7 @@ describe("directionalLikert", () => {
       dealbreaker: false,
     };
     // A wants B ≥ 40 → yes
-    expect(
-      directionalLikert(personA, personB, [
-        "0",
-        "10",
-        "20",
-        "30",
-        "40",
-        "50",
-        "60",
-        "70",
-        "80",
-        "90",
-        "100",
-      ])
-    ).toBeGreaterThan(0.5);
+    expect(directionalLikertSimilarity(personA, personB)).toBeGreaterThan(0.5);
   });
 
   test("less preference - accepting lower values", () => {
@@ -683,21 +642,7 @@ describe("directionalLikert", () => {
       dealbreaker: false,
     };
     // A wants B ≤ 80 → yes
-    expect(
-      directionalLikert(personA, personB, [
-        "0",
-        "10",
-        "20",
-        "30",
-        "40",
-        "50",
-        "60",
-        "70",
-        "80",
-        "90",
-        "100",
-      ])
-    ).toBeGreaterThan(0.3);
+    expect(directionalLikertSimilarity(personA, personB)).toBeGreaterThan(0.3);
   });
 
   test("specific_values preference - age range match", () => {
@@ -722,21 +667,7 @@ describe("directionalLikert", () => {
       dealbreaker: false,
     };
     // A wants B in [23-28], B is 26 → yes; B wants A in [24-30], A is 25 → yes
-    expect(
-      directionalLikert(personA, personB, [
-        "0",
-        "10",
-        "20",
-        "30",
-        "40",
-        "50",
-        "60",
-        "70",
-        "80",
-        "90",
-        "100",
-      ])
-    ).toBe(1.0);
+    expect(directionalLikertSimilarity(personA, personB)).toBe(1.0);
   });
 
   test("specific_values preference - age outside range", () => {
@@ -757,21 +688,7 @@ describe("directionalLikert", () => {
       dealbreaker: false,
     };
     // A wants B in [25-30], B is 32 → no
-    expect(
-      directionalLikert(personA, personB, [
-        "0",
-        "10",
-        "20",
-        "30",
-        "40",
-        "50",
-        "60",
-        "70",
-        "80",
-        "90",
-        "100",
-      ])
-    ).toBe(0.0);
+    expect(directionalLikertSimilarity(personA, personB)).toBe(0.0);
   });
 });
 
@@ -779,7 +696,7 @@ describe("directionalLikert", () => {
 // TYPE H: Different Preference Similarity
 // ============================================
 
-describe("differentPreference", () => {
+describe("differentPreferenceSimilarity", () => {
   test("different preference - dissimilar answers", () => {
     const personA: QuestionResponse = {
       ownAnswer: ["morning"],
@@ -794,7 +711,7 @@ describe("differentPreference", () => {
       dealbreaker: false,
     };
     // Jaccard distance = 1 - 0 = 1.0 (completely different)
-    expect(differentPreference(personA, personB)).toBe(1.0);
+    expect(differentPreferenceSimilarity(personA, personB)).toBe(1.0);
   });
 
   test("different preference - partial overlap", () => {
@@ -811,7 +728,10 @@ describe("differentPreference", () => {
       dealbreaker: false,
     };
     // Jaccard = 1/3, distance = 0.67
-    expect(differentPreference(personA, personB)).toBeCloseTo(0.67, 2);
+    expect(differentPreferenceSimilarity(personA, personB)).toBeCloseTo(
+      0.67,
+      2
+    );
   });
 
   test("different preference - identical answers (worst case)", () => {
@@ -828,7 +748,7 @@ describe("differentPreference", () => {
       dealbreaker: false,
     };
     // Jaccard = 1.0, distance = 0.0 (both want different but are same)
-    expect(differentPreference(personA, personB)).toBe(0.0);
+    expect(differentPreferenceSimilarity(personA, personB)).toBe(0.0);
   });
 });
 
@@ -836,7 +756,7 @@ describe("differentPreference", () => {
 // TYPE I: Special Case Similarity
 // ============================================
 
-describe("loveLangauges - Q21 Love Languages", () => {
+describe("specialCaseSimilarity - Q21 Love Languages", () => {
   test("bidirectional match - receive matches show", () => {
     const personA: QuestionResponse = {
       ownAnswer: {
@@ -857,7 +777,7 @@ describe("loveLangauges - Q21 Love Languages", () => {
       dealbreaker: false,
     };
     // A shows words → B receives words (1.0), B shows touch → A receives touch (1.0)
-    expect(loveLangauges(personA, personB)).toBe(1.0);
+    expect(specialCaseSimilarity(personA, personB, "q21")).toBe(1.0);
   });
 
   test("partial match - one direction satisfied", () => {
@@ -877,7 +797,7 @@ describe("loveLangauges - Q21 Love Languages", () => {
       dealbreaker: false,
     };
     // A shows words → B receives words (1.0), B shows quality → A receives touch (0.0) → avg 0.5
-    expect(loveLangauges(personA, personB)).toBeCloseTo(0.5, 2);
+    expect(specialCaseSimilarity(personA, personB, "q21")).toBeCloseTo(0.5, 2);
   });
 
   test("no match - incompatible languages", () => {
@@ -896,11 +816,11 @@ describe("loveLangauges - Q21 Love Languages", () => {
       importance: 2,
       dealbreaker: false,
     };
-    expect(loveLangauges(personA, personB)).toBe(0.0);
+    expect(specialCaseSimilarity(personA, personB, "q21")).toBe(0.0);
   });
 });
 
-describe("conflictResolution - Q25 Conflict Resolution", () => {
+describe("specialCaseSimilarity - Q25 Conflict Resolution", () => {
   test("compatible matrix - good pairing", () => {
     const personA: QuestionResponse = {
       ownAnswer: "direct_communication",
@@ -915,7 +835,7 @@ describe("conflictResolution - Q25 Conflict Resolution", () => {
       dealbreaker: false,
     };
     // Direct + Direct = 1.0 (perfect compatibility)
-    expect(conflictResolution(personA, personB)).toBe(1.0);
+    expect(specialCaseSimilarity(personA, personB, "q25")).toBe(1.0);
   });
 
   test("incompatible matrix - poor pairing", () => {
@@ -932,11 +852,11 @@ describe("conflictResolution - Q25 Conflict Resolution", () => {
       dealbreaker: false,
     };
     // Avoid + Direct = 0.3 (low compatibility)
-    expect(conflictResolution(personA, personB)).toBeLessThan(0.5);
+    expect(specialCaseSimilarity(personA, personB, "q25")).toBeLessThan(0.5);
   });
 });
 
-describe("sleepSchedule - Q29 Political Views (Wildcard)", () => {
+describe("specialCaseSimilarity - Q29 Political Views (Wildcard)", () => {
   test("wildcard flexible - accepts all", () => {
     const personA: QuestionResponse = {
       ownAnswer: "flexible",
@@ -951,9 +871,7 @@ describe("sleepSchedule - Q29 Political Views (Wildcard)", () => {
       dealbreaker: false,
     };
     // "flexible" matches anything
-    expect(
-      sleepSchedule(personA, personB, ["early", "flexible", "night"])
-    ).toBe(1.0);
+    expect(specialCaseSimilarity(personA, personB, "q29")).toBe(1.0);
   });
 
   test("specific views - exact match", () => {
@@ -969,9 +887,7 @@ describe("sleepSchedule - Q29 Political Views (Wildcard)", () => {
       importance: 3,
       dealbreaker: false,
     };
-    expect(
-      sleepSchedule(personA, personB, ["early", "flexible", "night"])
-    ).toBe(1.0);
+    expect(specialCaseSimilarity(personA, personB, "q29")).toBe(1.0);
   });
 
   test("specific views - mismatch", () => {
@@ -987,9 +903,7 @@ describe("sleepSchedule - Q29 Political Views (Wildcard)", () => {
       importance: 4,
       dealbreaker: true,
     };
-    expect(
-      sleepSchedule(personA, personB, ["early", "flexible", "night"])
-    ).toBe(0.0);
+    expect(specialCaseSimilarity(personA, personB, "q29")).toBe(0.0);
   });
 });
 
@@ -1031,6 +945,6 @@ describe("Edge Cases", () => {
       importance: 2,
       dealbreaker: false,
     };
-    expect(multiSelectJaccard(personA, personB)).toBe(0);
+    expect(multiSelectJaccardSimilarity(personA, personB)).toBe(0);
   });
 });

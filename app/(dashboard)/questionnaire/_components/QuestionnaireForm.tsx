@@ -8,7 +8,6 @@ import {
   QuestionnaireConfig,
   ImportanceRatings,
   ImportanceLevel,
-  QuestionResponse,
 } from "@/src/lib/questionnaire-types";
 import {
   calculateProgress,
@@ -27,18 +26,6 @@ import { Button } from "@/components/ui/button";
 import { Check, ArrowUp, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Send } from "lucide-react";
-
-/**
- * Helper function to check if a value is an age range object
- */
-function isObjectWithMinMax(value: any): value is { min: number; max: number } {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "min" in value &&
-    "max" in value
-  );
-}
 
 interface QuestionnaireFormProps {
   initialResponses: Responses;
@@ -107,12 +94,21 @@ export function QuestionnaireForm({
 
   // Handle response change
   const handleResponseChange = useCallback(
-    (questionId: string, value: QuestionResponse) => {
+    (questionId: string, value: ResponseValue) => {
       if (isSubmitted) return;
-      setResponses((prev) => ({
-        ...prev,
-        [questionId]: value,
-      }));
+      setResponses((prev) => {
+        if (value === undefined) {
+          // Remove the entry entirely when value is undefined
+          const newResponses = { ...prev };
+          delete newResponses[questionId];
+          return newResponses;
+        } else {
+          return {
+            ...prev,
+            [questionId]: value,
+          };
+        }
+      });
       // Clear validation error for this question when user makes changes
       if (validationErrors.has(questionId)) {
         setValidationErrors((prev) => {
@@ -276,13 +272,8 @@ export function QuestionnaireForm({
     // Count as answered if not empty (matching calculateProgress logic)
     return (
       response &&
-      response.ownAnswer &&
-      (typeof response.ownAnswer !== "string" ||
-        response.ownAnswer.trim() !== "") &&
-      (!Array.isArray(response.ownAnswer) || response.ownAnswer.length > 0) &&
-      (!isObjectWithMinMax(response.ownAnswer) ||
-        (response.ownAnswer.min !== undefined &&
-          response.ownAnswer.max !== undefined))
+      (typeof response !== "string" || response.trim() !== "") &&
+      (!Array.isArray(response) || response.length > 0)
     );
   }).length;
   const progress = calculateProgress(responses);

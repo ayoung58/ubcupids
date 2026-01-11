@@ -20,22 +20,23 @@ interface ImportanceSelectorV2Props {
 /**
  * ImportanceSelectorV2 Component
  *
- * Dropdown selector for importance ratings (1-4 scale).
+ * Dropdown selector for importance ratings (1-5 scale).
  * Used in V2 questionnaire on the right side (preference panel).
  *
  * Importance weights in matching algorithm:
- * - 1 (Low): 0.25× weight
- * - 2 (Moderate): 0.5× weight
- * - 3 (Important): 0.75× weight
- * - 4 (Very Important): 1.0× weight
+ * - 1 (Not Important): 0.0 weight
+ * - 2 (Somewhat Important): 0.5 weight
+ * - 3 (Important): 1.0 weight (baseline)
+ * - 4 (Very Important): 2.0 weight
+ * - 5 (Deal Breaker): Hard filter (handled separately)
  *
- * Note: Disabled when "Doesn't Matter" is active OR when dealbreaker is checked.
+ * Note: Disabled when "Doesn't Matter" is active (weight automatically 0).
  */
 const IMPORTANCE_OPTIONS = [
-  { value: 1, label: "Low Importance" },
-  { value: 2, label: "Moderate Importance" },
-  { value: 3, label: "Important" },
-  { value: 4, label: "Very Important" },
+  { value: 1, label: "Not Important", description: "Nice to have" },
+  { value: 2, label: "Somewhat Important", description: "Preferred" },
+  { value: 3, label: "Important", description: "Matters to me" },
+  { value: 4, label: "Very Important", description: "High priority" },
 ] as const;
 
 export function ImportanceSelectorV2({
@@ -76,7 +77,12 @@ export function ImportanceSelectorV2({
               value={option.value.toString()}
               className="cursor-pointer"
             >
-              {option.label}
+              <div className="flex flex-col">
+                <span className="font-medium">{option.label}</span>
+                <span className="text-xs text-gray-500">
+                  {option.description}
+                </span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>

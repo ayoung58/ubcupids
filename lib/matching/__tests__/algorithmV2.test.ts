@@ -10,14 +10,12 @@
  */
 
 import {
-  runMatchingAlgorithm,
-  passesHardFilters,
   calculatePairScore,
+  filterByDealbreakers,
   prepareBlossomEdges,
-  User,
-  QuestionScore,
-  BlossomEdge,
+  runMatchingAlgorithm,
 } from "../algorithmV2";
+import { User } from "../algorithmV2";
 import { Responses, QuestionResponse } from "@/src/lib/questionnaire-types";
 
 // ============================================
@@ -25,7 +23,46 @@ import { Responses, QuestionResponse } from "@/src/lib/questionnaire-types";
 // ============================================
 
 function createMockUser(id: string, responses: Partial<Responses>): User {
-  const fullResponses: Responses = responses as Responses;
+  const fullResponses: Responses = {
+    q1: responses.q1,
+    q2: responses.q2,
+    q3: responses.q3,
+    q4: responses.q4,
+    q5: responses.q5,
+    q6: responses.q6,
+    q7: responses.q7,
+    q8: responses.q8,
+    q9: responses.q9,
+    q10: responses.q10,
+    q11: responses.q11,
+    q12: responses.q12,
+    q13: responses.q13,
+    q14: responses.q14,
+    q15: responses.q15,
+    q16: responses.q16,
+    q17: responses.q17,
+    q18: responses.q18,
+    q19: responses.q19,
+    q20: responses.q20,
+    q21: responses.q21,
+    q22: responses.q22,
+    q23: responses.q23,
+    q24: responses.q24,
+    q25: responses.q25,
+    q26: responses.q26,
+    q27: responses.q27,
+    q28: responses.q28,
+    q29: responses.q29,
+    q30: responses.q30,
+    q31: responses.q31,
+    q32: responses.q32,
+    q33: responses.q33,
+    q34: responses.q34,
+    q35: responses.q35,
+    q36: responses.q36,
+    q37: responses.q37,
+    q38: responses.q38,
+  };
 
   return {
     id,
@@ -43,21 +80,13 @@ describe("filterByDealbreakers - Hard Filters (Q1, Q2, Q4)", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: true,
       },
       q2: {
         ownAnswer: "woman",
-        preference: {
-          type: "specific_values",
-          value: ["man"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["man"], doesntMatter: false },
         importance: 4,
         dealbreaker: true,
       },
@@ -66,40 +95,28 @@ describe("filterByDealbreakers - Hard Filters (Q1, Q2, Q4)", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "woman",
-        preference: {
-          type: "specific_values",
-          value: ["man"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["man"], doesntMatter: false },
         importance: 4,
         dealbreaker: true,
       },
       q2: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: true,
       },
     });
 
-    const result = passesHardFilters(userA, userB);
-    expect(result.passes ? [userA] : []).toHaveLength(1);
-    expect(result.passes ? [] : [userA]).toHaveLength(0);
+    const result = filterByDealbreakers([userA], [userB]);
+    expect(result.passed).toHaveLength(1);
+    expect(result.failed).toHaveLength(0);
   });
 
   test("Q1 gender dealbreaker - incompatible genders", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: true,
       },
@@ -108,27 +125,23 @@ describe("filterByDealbreakers - Hard Filters (Q1, Q2, Q4)", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: true,
       },
     });
 
-    const result = passesHardFilters(userA, userB);
-    expect(result.passes ? [userA] : []).toHaveLength(0);
-    expect(result.passes ? [] : [userA]).toHaveLength(1);
-    expect(result.reason).toContain("Q1");
+    const result = filterByDealbreakers([userA], [userB]);
+    expect(result.passed).toHaveLength(0);
+    expect(result.failed).toHaveLength(1);
+    expect(result.failed[0].reason).toContain("Q1");
   });
 
   test("Q2 sexual orientation - wildcard 'anyone'", () => {
     const userA = createMockUser("A", {
       q2: {
         ownAnswer: "anyone",
-        preference: { type: "same", doesntMatter: true },
+        preference: { type: "doesntMatter", doesntMatter: true },
         importance: 1,
         dealbreaker: false,
       },
@@ -138,7 +151,7 @@ describe("filterByDealbreakers - Hard Filters (Q1, Q2, Q4)", () => {
       q2: {
         ownAnswer: "gay",
         preference: {
-          type: "specific_values",
+          type: "specific",
           value: ["anyone", "gay", "bisexual"],
           doesntMatter: false,
         },
@@ -147,9 +160,9 @@ describe("filterByDealbreakers - Hard Filters (Q1, Q2, Q4)", () => {
       },
     });
 
-    const result = passesHardFilters(userA, userB);
+    const result = filterByDealbreakers([userA], [userB]);
     // "anyone" wildcard should pass
-    expect(result.passes ? [userA] : []).toHaveLength(1);
+    expect(result.passed).toHaveLength(1);
   });
 
   test("Q4 relationship type dealbreaker - mismatch", () => {
@@ -171,20 +184,16 @@ describe("filterByDealbreakers - Hard Filters (Q1, Q2, Q4)", () => {
       },
     });
 
-    const result = passesHardFilters(userA, userB);
-    expect(result.passes ? [] : [userA]).toHaveLength(1);
-    expect(result.reason).toContain("Q4");
+    const result = filterByDealbreakers([userA], [userB]);
+    expect(result.failed).toHaveLength(1);
+    expect(result.failed[0].reason).toContain("Q4");
   });
 
   test("No dealbreakers set - passes", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 3,
         dealbreaker: false, // Not a dealbreaker
       },
@@ -193,18 +202,14 @@ describe("filterByDealbreakers - Hard Filters (Q1, Q2, Q4)", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "man", // Doesn't match preference but not a dealbreaker
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 3,
         dealbreaker: false,
       },
     });
 
-    const result = passesHardFilters(userA, userB);
-    expect(result.passes ? [userA] : []).toHaveLength(1); // Should pass hard filters
+    const result = filterByDealbreakers([userA], [userB]);
+    expect(result.passed).toHaveLength(1); // Should pass hard filters
   });
 });
 
@@ -217,11 +222,7 @@ describe("calculatePairScore - Full Pipeline", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -233,7 +234,7 @@ describe("calculatePairScore - Full Pipeline", () => {
       },
       q5: {
         ownAnswer: "asian",
-        preference: { type: "same", doesntMatter: true },
+        preference: { type: "doesntMatter", doesntMatter: true },
         importance: 1,
         dealbreaker: false,
       },
@@ -242,11 +243,7 @@ describe("calculatePairScore - Full Pipeline", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "woman",
-        preference: {
-          type: "specific_values",
-          value: ["man"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["man"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -258,7 +255,7 @@ describe("calculatePairScore - Full Pipeline", () => {
       },
       q5: {
         ownAnswer: "white",
-        preference: { type: "same", doesntMatter: true },
+        preference: { type: "doesntMatter", doesntMatter: true },
         importance: 1,
         dealbreaker: false,
       },
@@ -330,9 +327,7 @@ describe("calculatePairScore - Full Pipeline", () => {
     const score = calculatePairScore(userA, userB);
 
     // Find Q10 score
-    const q10Score = score.questionScores.find(
-      (q: QuestionScore) => q.questionId === "q10"
-    );
+    const q10Score = score.questionScores.find((q) => q.questionId === "q10");
     expect(q10Score).toBeDefined();
     expect(q10Score!.similarity).toBeLessThan(0.5); // Low similarity
     expect(q10Score!.weightedScore).toBeLessThan(0.5); // Should be weighted down
@@ -343,11 +338,7 @@ describe("calculatePairScore - Full Pipeline", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -365,11 +356,7 @@ describe("calculatePairScore - Full Pipeline", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "woman",
-        preference: {
-          type: "specific_values",
-          value: ["man"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["man"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -391,11 +378,7 @@ describe("calculatePairScore - Full Pipeline", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -404,11 +387,7 @@ describe("calculatePairScore - Full Pipeline", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -432,18 +411,14 @@ describe("Eligibility Thresholds", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
       q2: {
         ownAnswer: "straight",
         preference: {
-          type: "specific_values",
+          type: "specific",
           value: ["straight"],
           doesntMatter: false,
         },
@@ -455,18 +430,14 @@ describe("Eligibility Thresholds", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "woman",
-        preference: {
-          type: "specific_values",
-          value: ["man"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["man"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
       q2: {
         ownAnswer: "straight",
         preference: {
-          type: "specific_values",
+          type: "specific",
           value: ["straight"],
           doesntMatter: false,
         },
@@ -487,11 +458,7 @@ describe("Eligibility Thresholds", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -500,11 +467,7 @@ describe("Eligibility Thresholds", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -527,11 +490,7 @@ describe("prepareBlossomEdges - Graph Format", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -540,11 +499,7 @@ describe("prepareBlossomEdges - Graph Format", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "woman",
-        preference: {
-          type: "specific_values",
-          value: ["man"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["man"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -601,8 +556,8 @@ describe("prepareBlossomEdges - Graph Format", () => {
 
     const edges = prepareBlossomEdges([highScore, lowScore]);
 
-    const highEdge = edges.find((e: BlossomEdge) => e.from === "A");
-    const lowEdge = edges.find((e: BlossomEdge) => e.from === "C");
+    const highEdge = edges.find((e) => e.from === "A");
+    const lowEdge = edges.find((e) => e.from === "C");
 
     expect(highEdge!.weight).toBeGreaterThan(lowEdge!.weight);
   });
@@ -619,7 +574,7 @@ describe("runMatchingAlgorithm - Full Integration", () => {
         q1: {
           ownAnswer: "man",
           preference: {
-            type: "specific_values",
+            type: "specific",
             value: ["woman"],
             doesntMatter: false,
           },
@@ -629,7 +584,7 @@ describe("runMatchingAlgorithm - Full Integration", () => {
         q2: {
           ownAnswer: "straight",
           preference: {
-            type: "specific_values",
+            type: "specific",
             value: ["straight", "bisexual"],
             doesntMatter: false,
           },
@@ -646,18 +601,14 @@ describe("runMatchingAlgorithm - Full Integration", () => {
       createMockUser("C2", {
         q1: {
           ownAnswer: "woman",
-          preference: {
-            type: "specific_values",
-            value: ["man"],
-            doesntMatter: false,
-          },
+          preference: { type: "specific", value: ["man"], doesntMatter: false },
           importance: 4,
           dealbreaker: true,
         },
         q2: {
           ownAnswer: "straight",
           preference: {
-            type: "specific_values",
+            type: "specific",
             value: ["straight"],
             doesntMatter: false,
           },
@@ -677,18 +628,14 @@ describe("runMatchingAlgorithm - Full Integration", () => {
       createMockUser("M1", {
         q1: {
           ownAnswer: "woman",
-          preference: {
-            type: "specific_values",
-            value: ["man"],
-            doesntMatter: false,
-          },
+          preference: { type: "specific", value: ["man"], doesntMatter: false },
           importance: 4,
           dealbreaker: true,
         },
         q2: {
           ownAnswer: "straight",
           preference: {
-            type: "specific_values",
+            type: "specific",
             value: ["straight"],
             doesntMatter: false,
           },
@@ -704,7 +651,7 @@ describe("runMatchingAlgorithm - Full Integration", () => {
       }),
     ];
 
-    const result = runMatchingAlgorithm([...candidates, ...matches]);
+    const result = runMatchingAlgorithm(candidates, matches);
 
     expect(result).toBeDefined();
     expect(result.eligiblePairs).toBeDefined();
@@ -725,7 +672,7 @@ describe("runMatchingAlgorithm - Full Integration", () => {
         q1: {
           ownAnswer: "man",
           preference: {
-            type: "specific_values",
+            type: "specific",
             value: ["woman"],
             doesntMatter: false,
           },
@@ -740,7 +687,7 @@ describe("runMatchingAlgorithm - Full Integration", () => {
         q1: {
           ownAnswer: "man", // Same gender, incompatible
           preference: {
-            type: "specific_values",
+            type: "specific",
             value: ["woman"],
             doesntMatter: false,
           },
@@ -750,7 +697,7 @@ describe("runMatchingAlgorithm - Full Integration", () => {
       }),
     ];
 
-    const result = runMatchingAlgorithm([...candidates, ...matches]);
+    const result = runMatchingAlgorithm(candidates, matches);
 
     expect(result.filteredByDealbreaker.length).toBeGreaterThan(0);
   });
@@ -762,7 +709,7 @@ describe("runMatchingAlgorithm - Full Integration", () => {
 
 describe("Edge Cases", () => {
   test("empty user lists", () => {
-    const result = runMatchingAlgorithm([]);
+    const result = runMatchingAlgorithm([], []);
 
     expect(result.eligiblePairs).toHaveLength(0);
     expect(result.filteredByDealbreaker).toHaveLength(0);
@@ -773,11 +720,7 @@ describe("Edge Cases", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: {
-          type: "specific_values",
-          value: ["woman"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["woman"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -787,11 +730,7 @@ describe("Edge Cases", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "woman",
-        preference: {
-          type: "specific_values",
-          value: ["man"],
-          doesntMatter: false,
-        },
+        preference: { type: "specific", value: ["man"], doesntMatter: false },
         importance: 4,
         dealbreaker: false,
       },
@@ -808,13 +747,13 @@ describe("Edge Cases", () => {
     const userA = createMockUser("A", {
       q1: {
         ownAnswer: "man",
-        preference: { type: "same", doesntMatter: true },
+        preference: { type: "doesntMatter", doesntMatter: true },
         importance: 1,
         dealbreaker: false,
       },
       q2: {
         ownAnswer: "straight",
-        preference: { type: "same", doesntMatter: true },
+        preference: { type: "doesntMatter", doesntMatter: true },
         importance: 1,
         dealbreaker: false,
       },
@@ -823,13 +762,13 @@ describe("Edge Cases", () => {
     const userB = createMockUser("B", {
       q1: {
         ownAnswer: "woman",
-        preference: { type: "same", doesntMatter: true },
+        preference: { type: "doesntMatter", doesntMatter: true },
         importance: 1,
         dealbreaker: false,
       },
       q2: {
         ownAnswer: "gay",
-        preference: { type: "same", doesntMatter: true },
+        preference: { type: "doesntMatter", doesntMatter: true },
         importance: 1,
         dealbreaker: false,
       },

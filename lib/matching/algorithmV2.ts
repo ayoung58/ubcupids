@@ -2,7 +2,7 @@
  * Matching Algorithm V2 - 8-Phase Scoring & Filtering
  *
  * This module implements the complete matching algorithm with:
- * - Phase 1: Dealbreaker hard filters (Q1, Q2, Q4, Q4a)
+ * - Phase 1: Dealbreaker hard filters (Q1, Q2, Q4)
  * - Phase 2: Question-level similarity calculation (all 36 algorithm questions)
  * - Phase 3: Importance weighting (1-4 scale)
  * - Phase 4: Directional scoring (min of A→B and B→A)
@@ -117,10 +117,9 @@ const SECTION_2_QUESTIONS = [
  * Check if two users pass hard filter criteria
  * Q1: Gender identity
  * Q2: Gender preference
- * Q4: Age
- * Q4a: Age preference (range)
+ * Q4: Age (within range)
  */
-export function passesHardFilters(
+function passesHardFilters(
   userA: User,
   userB: User
 ): { passes: boolean; reason?: string } {
@@ -145,14 +144,14 @@ export function passesHardFilters(
     return { passes: false, reason: "Gender preference mismatch" };
   }
 
-  // Q4 & Q4a: Age and age preference compatibility
-  const aAge = parseInt(userA.responses.q4?.ownAnswer as string);
-  const bAge = parseInt(userB.responses.q4?.ownAnswer as string);
-  const aAgePref = userA.responses.q4a?.ownAnswer as
-    | { min: number; max: number }
+  // Q4: Age range compatibility
+  const aAge = userA.responses.q4?.ownAnswer as number;
+  const bAge = userB.responses.q4?.ownAnswer as number;
+  const aAgePref = userA.responses.q4?.preference?.value as
+    | { minAge: number; maxAge: number }
     | undefined;
-  const bAgePref = userB.responses.q4a?.ownAnswer as
-    | { min: number; max: number }
+  const bAgePref = userB.responses.q4?.preference?.value as
+    | { minAge: number; maxAge: number }
     | undefined;
 
   if (!aAge || !bAge) {
@@ -161,13 +160,13 @@ export function passesHardFilters(
 
   // Check if ages are within each other's preferred ranges
   if (aAgePref) {
-    if (bAge < aAgePref.min || bAge > aAgePref.max) {
+    if (bAge < aAgePref.minAge || bAge > aAgePref.maxAge) {
       return { passes: false, reason: "Age outside A's preferred range" };
     }
   }
 
   if (bAgePref) {
-    if (aAge < bAgePref.min || aAge > bAgePref.max) {
+    if (aAge < bAgePref.minAge || aAge > bAgePref.maxAge) {
       return { passes: false, reason: "Age outside B's preferred range" };
     }
   }
@@ -249,7 +248,7 @@ function calculateSectionScore(
  * Calculate complete pair score between two users
  * Combines section scores with section weights
  */
-export function calculatePairScore(userA: User, userB: User): PairScore {
+function calculatePairScore(userA: User, userB: User): PairScore {
   const algorithmQuestions = getAlgorithmQuestions();
   const questionScores: QuestionScore[] = [];
 
@@ -295,7 +294,7 @@ export function calculatePairScore(userA: User, userB: User): PairScore {
 
 /**
  * Check if any question-level dealbreakers prevent this match
- * (Separate from hard filter dealbreakers Q1, Q2, Q4, Q4a)
+ * (Separate from hard filter dealbreakers Q1, Q2, Q4)
  */
 function passesQuestionDealbreakers(
   userA: User,
@@ -308,7 +307,7 @@ function passesQuestionDealbreakers(
     const bResponse = userB.responses[question.id];
 
     // Skip hard filters (already checked)
-    if (["q1", "q2", "q4", "q4a"].includes(question.id)) continue;
+    if (["q1", "q2", "q4"].includes(question.id)) continue;
 
     // Check if A marked this as dealbreaker
     if (
@@ -355,7 +354,7 @@ function passesQuestionDealbreakers(
  * Convert eligible pairs to Blossom graph format
  * Blossom algorithm expects edges with weights
  */
-export function prepareBlossomEdges(eligiblePairs: PairScore[]): BlossomEdge[] {
+function prepareBlossomEdges(eligiblePairs: PairScore[]): BlossomEdge[] {
   return eligiblePairs.map((pair) => ({
     from: pair.userA,
     to: pair.userB,
@@ -389,7 +388,7 @@ export function runMatchingAlgorithm(users: User[]): MatchingResult {
       const userA = users[i];
       const userB = users[j];
 
-      // PHASE 1: Check hard filters (Q1, Q2, Q4, Q4a)
+      // PHASE 1: Check hard filters (Q1, Q2, Q4)
       const hardFilterResult = passesHardFilters(userA, userB);
       if (!hardFilterResult.passes) {
         filteredByDealbreaker.push({
@@ -546,10 +545,6 @@ export function validateUsersForMatching(users: User[]): {
     }
     if (!user.responses.q4?.ownAnswer) {
       invalid.push({ userId: user.id, reason: "Missing Q4 (age)" });
-      continue;
-    }
-    if (!user.responses.q4a?.ownAnswer) {
-      invalid.push({ userId: user.id, reason: "Missing Q4a (age preference)" });
       continue;
     }
 
