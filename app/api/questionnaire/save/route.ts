@@ -67,7 +67,12 @@ const saveSchema = z.object({
     ])
   ),
   // V1 importance field (deprecated, kept for backward compatibility)
-  importance: z.record(z.string(), z.number().int().min(1).max(5)).optional(),
+  importance: z
+    .record(
+      z.string(),
+      z.number().int().min(1).max(5)
+    )
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
