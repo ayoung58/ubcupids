@@ -4,19 +4,18 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { decryptJSON } from "@/lib/encryption";
-import { getQuestionnaireConfig } from "@/src/lib/questionnaire-utils";
-import { QuestionnaireForm } from "./_components/QuestionnaireForm";
+import { getQuestionnaireConfig } from "@/src/lib/questionnaire-utils-v2";
+import { QuestionnaireFormV2 } from "./_components/QuestionnaireFormV2";
 import { QuestionnaireLoading } from "./_components/QuestionnaireLoading";
-import { Responses, ImportanceRatings } from "@/src/lib/questionnaire-types";
+import { Responses } from "@/src/lib/questionnaire-types";
 
 async function getQuestionnaireData(userId: string) {
   const existingResponse = await prisma.questionnaireResponse.findUnique({
     where: { userId },
   });
 
-  // Decrypt responses and importance if they exist
+  // Decrypt responses if they exist (V2 format: includes nested preference/importance/dealbreaker)
   let responses: Responses = {};
-  let importance: ImportanceRatings = {};
 
   if (existingResponse?.responses) {
     try {
@@ -35,19 +34,8 @@ async function getQuestionnaireData(userId: string) {
     }
   }
 
-  if (existingResponse?.importance) {
-    try {
-      importance = decryptJSON<ImportanceRatings>(existingResponse.importance);
-    } catch (error) {
-      console.error("Failed to decrypt importance:", error);
-      // Importance ratings are optional, so we can continue without them
-      importance = {};
-    }
-  }
-
   return {
     responses,
-    importance,
     isSubmitted: existingResponse?.isSubmitted || false,
   };
 }
@@ -63,9 +51,8 @@ async function QuestionnairePage() {
   const config = getQuestionnaireConfig();
 
   return (
-    <QuestionnaireForm
+    <QuestionnaireFormV2
       initialResponses={data.responses}
-      initialImportance={data.importance}
       isSubmitted={data.isSubmitted}
       config={config}
     />
