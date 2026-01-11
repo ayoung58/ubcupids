@@ -12,31 +12,65 @@ import { QUESTIONNAIRE_DEADLINE } from "@/lib/matching/config";
  *
  * Request body:
  * - responses: Object mapping questionId -> answer
- * - importance: Optional object mapping questionId -> importance level (1-5 scale)
+ *   V2 Format: { "q7": { ownAnswer: 2, preference: {...}, importance: 4, dealbreaker: false } }
+ *   V1 Format (Legacy): { "q1": "man", "q2": "pizza" }
+ * - importance: Optional (V1 only, deprecated in V2)
  *
  * Behavior:
  * - Creates new record if none exists
  * - Updates existing record if found
  * - Rejects if questionnaire already submitted (locked)
  * - Encrypts responses and importance before saving to database
+ * - Supports both V1 and V2 formats for backward compatibility
  */
 
-// Validation schema for save request
+// V2 Response value types (union of all possible answer formats)
+const responseValueSchema = z.union([
+  z.string(), // Single-choice, text, textarea
+  z.array(z.string()), // Multi-choice, ranking
+  z.number(), // Scale, age
+  z.object({ value: z.string(), text: z.string() }), // Single-choice with text input
+  z.object({ minAge: z.number(), maxAge: z.number() }), // Age-range
+]);
+
+// V2 Preference configuration
+const preferenceConfigSchema = z.object({
+  type: z.enum([
+    "same",
+    "similar",
+    "different",
+    "same_or_similar",
+    "more",
+    "less",
+    "compatible",
+    "specific_values",
+  ]),
+  value: responseValueSchema.optional(), // For specific_values preference type
+  doesntMatter: z.boolean(), // When true, importance/dealbreaker disabled
+});
+
+// V2 Question response structure
+const questionResponseSchema = z.object({
+  ownAnswer: responseValueSchema, // User's own answer (left side)
+  preference: preferenceConfigSchema, // User's preference for match (right side)
+  importance: z.number().int().min(1).max(5), // 1-5 scale (ignored if doesntMatter=true)
+  dealbreaker: z.boolean(), // Hard filter flag (ignored if doesntMatter=true)
+});
+
+// Validation schema for save request (supports both V1 and V2 formats)
 const saveSchema = z.object({
   responses: z.record(
     z.string(),
     z.union([
-      z.string(), // Single-choice, text, textarea
-      z.array(z.string()), // Multi-choice, ranking
-      z.number(), // Scale
-      z.object({ value: z.string(), text: z.string() }), // Single-choice with text input
-      z.object({ minAge: z.number(), maxAge: z.number() }), // Age-range
+      questionResponseSchema, // V2 format (split-screen)
+      responseValueSchema, // V1 format (legacy, for backward compatibility)
     ])
   ),
+  // V1 importance field (deprecated, kept for backward compatibility)
   importance: z
     .record(
       z.string(),
-      z.number().int().min(1).max(5) // 1=Not Important, 3=Important (default), 5=Deal Breaker
+      z.number().int().min(1).max(5)
     )
     .optional(),
 });
