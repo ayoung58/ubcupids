@@ -63,7 +63,37 @@ export interface QuestionnaireConfig {
   sections: Section[];
 }
 
-// Response value types (what users submit)
+// ============================================
+// V2 Response Format (Split-Screen)
+// ============================================
+
+// Preference type for split-screen questions
+export type PreferenceType =
+  | "same"
+  | "similar"
+  | "different"
+  | "same_or_similar"
+  | "more"
+  | "less"
+  | "compatible"
+  | "specific_values"; // For multi-select preferences
+
+// Preference configuration for each question
+export interface PreferenceConfig {
+  type: PreferenceType;
+  value?: string | string[] | number | { minAge: number; maxAge: number }; // For specific values
+  doesntMatter: boolean; // When true, importance/dealbreaker disabled and weight=0
+}
+
+// Individual question response (V2 format)
+export interface QuestionResponse {
+  ownAnswer: ResponseValue; // User's own answer (left side)
+  preference: PreferenceConfig; // User's preference for match (right side)
+  importance: ImportanceLevel; // 1-5 scale (disabled if doesntMatter=true)
+  dealbreaker: boolean; // Hard filter flag (disabled if doesntMatter=true)
+}
+
+// Legacy response value types (V1 format - for backward compatibility)
 export type ResponseValue =
   | string
   | string[]
@@ -72,8 +102,11 @@ export type ResponseValue =
   | { minAge: number; maxAge: number }
   | undefined;
 
-// User's responses (questionId -> value)
-export type Responses = Record<string, ResponseValue>;
+// User's responses - V2 format (questionId -> QuestionResponse)
+export type Responses = Record<string, QuestionResponse>;
+
+// Legacy format (V1) - simple key-value
+export type LegacyResponses = Record<string, ResponseValue>;
 
 // Importance levels for question weighting (1-5 numeric scale)
 // 1 = Not Important

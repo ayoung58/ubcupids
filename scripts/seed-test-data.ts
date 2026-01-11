@@ -580,7 +580,21 @@ function generateGenderPreferences(
   return Math.random() > 0.5 ? ["anyone"] : ["men", "women", "non-binary"];
 }
 
+// DISABLED: Questionnaire V2 revamp in progress
+// This function needs to be rewritten for the new split-screen format
+// TODO: Reimplement for V2 response structure (see Step 10 of revamp plan)
 function generateQuestionnaireResponses(userAge: number): {
+  responses: Record<string, unknown>;
+  importance: Record<string, number>;
+} {
+  // Temporary: Return empty responses to prevent errors
+  console.warn(
+    "[SEED] generateQuestionnaireResponses is disabled during V2 revamp"
+  );
+  return { responses: {}, importance: {} };
+
+  /* V1 IMPLEMENTATION - DO NOT USE
+function generateQuestionnaireResponses_V1_DISABLED(userAge: number): {
   responses: Record<string, unknown>;
   importance: Record<string, number>;
 } {
@@ -640,6 +654,8 @@ function generateQuestionnaireResponses(userAge: number): {
   }
 
   return { responses, importance };
+}
+*/ // End V1 implementation
 }
 
 // ============================================
