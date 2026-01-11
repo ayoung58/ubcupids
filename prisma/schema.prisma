@@ -100,6 +100,9 @@ model User {
   questionnaireTutorialCompleted Boolean @default(false) // Questionnaire tutorial
   cupidPortalTutorialCompleted Boolean @default(false)   // Cupid matching portal tutorial
   
+  // Questionnaire Version Tracking
+  needsQuestionnaireUpdate Boolean @default(false) // Set to true when user needs to complete V2 questionnaire
+  
   // Legacy fields (keeping for backwards compatibility)
   yearOfStudy   Int?
   
@@ -117,6 +120,7 @@ model User {
   // Application Relations
   questionnaire Questionnaire?
   questionnaireResponse QuestionnaireResponse?
+  questionnaireResponseV2 QuestionnaireResponseV2? // New V2 questionnaire
   matchesGiven  Match[]   @relation("UserMatches")
   matchesReceived Match[] @relation("MatchedUser")
   uploads       Upload[]
@@ -158,6 +162,49 @@ model QuestionnaireResponse {
   responses   String   @db.Text // Encrypted JSON: { "q0.1": "man", "q1": "pizza", ... }
   importance  String?  @db.Text // Encrypted JSON: { "q1": 3, "q5": 5, ... } (1-5 scale)
   
+  isSubmitted Boolean  @default(false)  // false = draft, true = locked
+  submittedAt DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([isSubmitted])
+}
+
+// ============================================
+// Questionnaire V2 Model (2026 Revamp)
+// ============================================
+
+model QuestionnaireResponseV2 {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Split-screen responses stored as JSONB
+  // Structure: {
+  //   "q1": { "answer": "Woman", "preference": null, "importance": null, "dealbreaker": false },
+  //   "q3": { "answer": "Bisexual", "preference": ["Bisexual", "Pansexual"], "importance": "important", "dealbreaker": false },
+  //   "q7": { "answer": 2, "preference": "similar", "importance": "very_important", "dealbreaker": false },
+  //   "q9": { "answer": { "substances": ["Cannabis"], "frequency": "occasionally" }, "preference": { "substances": ["Cannabis", "None"], "frequency": "similar" }, "importance": "somewhat_important", "dealbreaker": false },
+  //   ...
+  // }
+  responses   Json     @default("{}")
+  
+  // Free response questions (separate for easier access)
+  // Mandatory questions
+  freeResponse1 String? @db.Text // "What do you value most in a relationship?"
+  freeResponse2 String? @db.Text // "Ask your match a question!"
+  
+  // Optional questions
+  freeResponse3 String? @db.Text // "One thing you want match to know"
+  freeResponse4 String? @db.Text // "Something you're passionate about"
+  freeResponse5 String? @db.Text // "Something you cannot compromise on"
+  
+  // Progress tracking
+  questionsCompleted Int @default(0) // Out of 38 (36 main + 2 mandatory free response)
+  
+  // Submission status
   isSubmitted Boolean  @default(false)  // false = draft, true = locked
   submittedAt DateTime?
   
