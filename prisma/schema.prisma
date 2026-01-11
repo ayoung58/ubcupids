@@ -155,16 +155,8 @@ model QuestionnaireResponse {
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // V2 Format (Split-Screen): Encrypted JSON with nested structure
-  // Each question has: { ownAnswer, preference: { type, value, doesntMatter }, importance, dealbreaker }
-  // Example: { "q7": { ownAnswer: 2, preference: { type: "similar", doesntMatter: false }, importance: 4, dealbreaker: false } }
-  // Legacy V1 Format (Deprecated): Simple key-value { "q1": "man", "q2": "pizza", ... }
-  responses   String   @db.Text // Encrypted JSON responses
-  
-  // V2: importance is now stored within each question's response object (above)
-  // Legacy V1: This field stores separate importance ratings { "q1": 3, "q5": 5 } (1-5 scale)
-  // This field may be NULL for V2 responses and will be deprecated in future
-  importance  String?  @db.Text // Encrypted JSON importance ratings (V1 only, deprecated)
+  responses   String   @db.Text // Encrypted JSON: { "q0.1": "man", "q1": "pizza", ... }
+  importance  String?  @db.Text // Encrypted JSON: { "q1": 3, "q5": 5, ... } (1-5 scale)
   
   isSubmitted Boolean  @default(false)  // false = draft, true = locked
   submittedAt DateTime?
