@@ -96,10 +96,10 @@ export function AdminDashboardClient({
     });
 
     try {
-      const response = await fetch("/api/admin/seed-test-users-v2", {
+      const response = await fetch("/api/admin/generate-test-users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ count: 125, type: userType }),
+        body: JSON.stringify({ count: 125, userType }),
       });
 
       const data = await response.json();
@@ -335,7 +335,7 @@ export function AdminDashboardClient({
                 onClick={() =>
                   handleAction(
                     "start-matching-test",
-                    "/api/admin/start-matching-v2"
+                    "/api/admin/start-matching-test"
                   )
                 }
                 disabled={loadingAction !== null}
@@ -346,7 +346,7 @@ export function AdminDashboardClient({
                 ) : (
                   <Play className="mr-2 h-5 w-5" />
                 )}
-                Run Matching V2 (Test Users Only)
+                Run Matching (Test Users Only)
               </Button>
             </div>
           </div>
@@ -498,7 +498,7 @@ export function AdminDashboardClient({
                 onClick={() =>
                   handleAction(
                     "start-matching-production",
-                    "/api/admin/start-matching-v2"
+                    "/api/admin/start-matching-production"
                   )
                 }
                 disabled={
@@ -518,7 +518,7 @@ export function AdminDashboardClient({
                 ) : (
                   <Play className="mr-2 h-5 w-5" />
                 )}
-                Run Matching V2 (Production Users)
+                Run Matching (Production Users)
               </Button>
             </div>
           </div>
@@ -647,10 +647,9 @@ export function AdminDashboardClient({
       {/* Test Data Generation */}
       <Card className="border-blue-200 bg-blue-50/50">
         <CardHeader>
-          <CardTitle className="text-blue-900">🧪 Test Data V2</CardTitle>
+          <CardTitle className="text-blue-900">🧪 Test Data</CardTitle>
           <p className="text-sm text-blue-700">
-            Generate test users with V2 questionnaire format (split-screen
-            responses)
+            Generate test users for development and testing
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -711,12 +710,8 @@ export function AdminDashboardClient({
             </code>
           </p>
           <p className="text-xs text-blue-600">
-            ✅ V2 format: QuestionResponse objects with ownAnswer + preference +
-            importance + dealbreaker
-          </p>
-          <p className="text-xs text-blue-600">
-            📊 Match users include completed questionnaires (38 questions, 2
-            sections)
+            ✅ Match users include completed questionnaires with randomized
+            responses
           </p>
           <p className="text-xs text-blue-600">
             ℹ️ Each button click adds 125 more users (cumulative)
