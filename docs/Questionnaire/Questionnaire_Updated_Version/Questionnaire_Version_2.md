@@ -711,9 +711,9 @@ Comments:
 FREE RESPONSE QUESTIONS:
 (Mandatory ones):
 
-37. What do you value most in a relationship (or a friendship)?
+ What do you value most in a relationship (or a friendship)?
 
-38. Ask your match a question! Write one question you'd want your match to answer. This could be fun, deep, or anything in between.
+ Ask your match a question! Write one question you'd want your match to answer. This could be fun, deep, or anything in between.
 
 (Optional ones):
 

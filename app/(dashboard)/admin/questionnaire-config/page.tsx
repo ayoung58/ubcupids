@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
+import { QuestionnaireEditor } from "./_components/QuestionnaireEditor";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -42,23 +43,8 @@ export default async function QuestionnaireConfigPage() {
         </Button>
       </Link>
 
-      {/* Questionnaire V2 Configuration - Coming Soon */}
-      <div className="bg-white rounded-lg shadow p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Questionnaire Configuration
-        </h1>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <p className="text-blue-800 font-medium mb-2">
-            ⚙️ Configuration Editor Under Development
-          </p>
-          <p className="text-blue-700 text-sm">
-            The questionnaire configuration editor is being redesigned to
-            support the new split-screen format with preferences, importance
-            ratings, and dealbreaker logic. This feature will be available after
-            the V2 revamp is complete.
-          </p>
-        </div>
-      </div>
+      {/* Editor */}
+      <QuestionnaireEditor />
     </div>
   );
 }

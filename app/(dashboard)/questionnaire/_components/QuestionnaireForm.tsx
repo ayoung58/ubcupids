@@ -22,6 +22,7 @@ import { SubmitConfirmDialog } from "./SubmitConfirmDialog";
 import { PreQuestionnaireAgreement } from "./PreQuestionnaireAgreement";
 import { InfoPanel } from "./InfoPanel";
 import { SkipLink } from "./SkipLink";
+import { QuestionnaireTutorial } from "./QuestionnaireTutorial";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowUp, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +33,7 @@ interface QuestionnaireFormProps {
   initialImportance?: ImportanceRatings;
   isSubmitted: boolean;
   config: QuestionnaireConfig;
+  questionnaireTutorialCompleted?: boolean;
 }
 
 export function QuestionnaireForm({
@@ -39,6 +41,7 @@ export function QuestionnaireForm({
   initialImportance,
   isSubmitted,
   config,
+  questionnaireTutorialCompleted = false,
 }: QuestionnaireFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -290,6 +293,11 @@ export function QuestionnaireForm({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Tutorial for first-time users */}
+      <QuestionnaireTutorial
+        initialCompleted={questionnaireTutorialCompleted}
+      />
+
       <SkipLink />
       <ProgressBar
         value={progress}
