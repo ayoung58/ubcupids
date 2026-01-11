@@ -62,8 +62,9 @@ export function DrugUseQuestion({ value, onChange }: DrugUseQuestionProps) {
     });
   };
 
-  const isNoneSelected = value.substances.includes("none");
-  const hasSubstancesSelected = value.substances.length > 0 && !isNoneSelected;
+  const isNoneSelected = value.substances?.includes("none") ?? false;
+  const hasSubstancesSelected =
+    (value.substances?.length ?? 0) > 0 && !isNoneSelected;
 
   return (
     <div className="space-y-6">

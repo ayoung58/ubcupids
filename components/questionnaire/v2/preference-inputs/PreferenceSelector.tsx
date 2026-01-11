@@ -21,18 +21,15 @@ interface PreferenceSelectorProps {
   preferenceValue: QuestionPreference;
   onPreferenceChange: (value: QuestionPreference) => void;
   answerOptions?: Option[]; // For multi-select preference (mirror left side options)
+  preferenceFormat?: string; // The raw preference format from config
   disabled?: boolean;
 }
 
 /**
  * PreferenceSelector Component
  *
- * Routes to the correct preference input component based on question type.
- * Handles:
- * - Same/Similar/Different selector
- * - Multi-select preferences
- * - Age range input
- * - Special cases (Q9, Q21, Q25, Q29)
+ * Routes to the correct preference input component based on question configuration.
+ * Uses preferenceFormat from config to determine which input to show.
  */
 export function PreferenceSelector({
   questionType,
@@ -40,41 +37,25 @@ export function PreferenceSelector({
   preferenceValue,
   onPreferenceChange,
   answerOptions,
+  preferenceFormat,
   disabled = false,
 }: PreferenceSelectorProps) {
-  // Age range (Q4)
+  // Q4 Age - handled by AgeInput component (includes preference range inputs)
   if (
-    questionType === QuestionType.CATEGORICAL_NO_PREFERENCE &&
-    answerOptions === undefined
+    questionType === QuestionType.SPECIAL_AGE ||
+    preferenceFormat === "special"
   ) {
-    type AgeRange = { min: number; max: number };
-    const ageRange: AgeRange =
-      preferenceValue &&
-      typeof preferenceValue === "object" &&
-      "min" in preferenceValue
-        ? (preferenceValue as AgeRange)
-        : { min: 18, max: 40 };
-
-    return (
-      <AgeRangeInput
-        minAge={ageRange.min}
-        maxAge={ageRange.max}
-        onMinChange={(min) => onPreferenceChange({ min, max: ageRange.max })}
-        onMaxChange={(max) => onPreferenceChange({ min: ageRange.min, max })}
-      />
-    );
+    // Age range is handled within AgeInput, so no preference input needed here
+    // Special cases like Q25 will have custom components
+    return null;
   }
 
-  // Multi-select preference (Q5, Q6, Q8, Q13, Q14, Q15, Q19, Q20, etc.)
-  if (
-    Array.isArray(preferenceValue) &&
-    answerOptions &&
-    answerOptions.length > 0
-  ) {
+  // Multi-select preference (Q3, Q5, Q8, Q9a, Q13, Q14, Q15, Q19, Q20, Q21)
+  if (preferenceFormat === "multi-select" && answerOptions) {
     return (
       <MultiSelectPreference
         options={answerOptions}
-        values={preferenceValue ?? []}
+        values={Array.isArray(preferenceValue) ? preferenceValue : []}
         onChange={onPreferenceChange}
         disabled={disabled}
       />

@@ -16,6 +16,7 @@ interface MultiSelectInputProps {
   includeOther?: boolean;
   otherValue?: string;
   onOtherChange?: (value: string) => void;
+  disabled?: boolean;
 }
 
 /**
@@ -33,12 +34,15 @@ export function MultiSelectInput({
   includeOther = false,
   otherValue = "",
   onOtherChange,
+  disabled = false,
 }: MultiSelectInputProps) {
   const isOtherSelected = values.includes("other");
   const isMaxReached =
     maxSelections !== undefined && values.length >= maxSelections;
 
   const handleToggle = (optionValue: string) => {
+    if (disabled) return;
+
     if (values.includes(optionValue)) {
       // Remove
       onChange(values.filter((v) => v !== optionValue));
@@ -62,14 +66,14 @@ export function MultiSelectInput({
 
       {options.map((option) => {
         const isChecked = values.includes(option.value);
-        const isDisabled = !isChecked && isMaxReached;
+        const isDisabledOption = !isChecked && (isMaxReached || disabled);
 
         return (
           <label
             key={option.value}
             className={cn(
               "flex items-center gap-3 p-3 rounded-md border-2 transition-all",
-              isDisabled
+              isDisabledOption
                 ? "opacity-50 cursor-not-allowed border-slate-200"
                 : "cursor-pointer hover:bg-slate-50",
               isChecked ? "border-blue-500 bg-blue-50" : "border-slate-200"
@@ -78,11 +82,11 @@ export function MultiSelectInput({
             <input
               type="checkbox"
               checked={isChecked}
-              disabled={isDisabled}
+              disabled={isDisabledOption}
               onChange={() => handleToggle(option.value)}
               className={cn(
                 "h-4 w-4 text-blue-600 rounded focus:ring-blue-500",
-                isDisabled ? "cursor-not-allowed" : "cursor-pointer"
+                isDisabledOption ? "cursor-not-allowed" : "cursor-pointer"
               )}
             />
             <span className="text-sm text-slate-700">{option.label}</span>

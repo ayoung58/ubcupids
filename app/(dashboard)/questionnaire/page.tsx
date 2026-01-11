@@ -3,60 +3,47 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
-import { decryptJSON } from "@/lib/encryption";
-import { getQuestionnaireConfig } from "@/src/lib/questionnaire-utils";
-import { QuestionnaireForm } from "./_components/QuestionnaireForm";
-import { QuestionnaireLoading } from "./_components/QuestionnaireLoading";
-import { Responses, ImportanceRatings } from "@/src/lib/questionnaire-types";
+import { QuestionnaireV2 } from "@/components/questionnaire/v2/QuestionnaireV2";
+import { QuestionnaireResponses } from "@/types/questionnaire-v2";
 
-async function getQuestionnaireData(userId: string) {
-  const existingResponse = await prisma.questionnaireResponse.findUnique({
+/**
+ * Fetch QuestionnaireResponseV2 data from database
+ * Phase 5 will add save/autosave functionality
+ */
+async function getQuestionnaireV2Data(userId: string) {
+  const response = await prisma.questionnaireResponseV2.findUnique({
     where: { userId },
+    select: {
+      responses: true,
+      freeResponse1: true,
+      freeResponse2: true,
+      freeResponse3: true,
+      freeResponse4: true,
+      freeResponse5: true,
+      isSubmitted: true,
+    },
   });
 
-  // Fetch tutorial completion status
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { questionnaireTutorialCompleted: true },
-  });
-
-  // Decrypt responses and importance if they exist
-  let responses: Responses = {};
-  let importance: ImportanceRatings = {};
-
-  if (existingResponse?.responses) {
-    try {
-      responses = decryptJSON<Responses>(existingResponse.responses);
-    } catch (error) {
-      console.error("Failed to decrypt responses:", error);
-      // If decryption fails for submitted questionnaire, this is a critical error
-      // Don't silently return empty - the data exists but can't be read
-      if (existingResponse.isSubmitted) {
-        throw new Error(
-          "Unable to decrypt submitted questionnaire data. Please contact support."
-        );
-      }
-      // For drafts, we can start fresh
-      responses = {};
-    }
+  if (!response) {
+    return {
+      responses: {},
+      isSubmitted: false,
+    };
   }
 
-  if (existingResponse?.importance) {
+  // Parse JSONB responses
+  let parsedResponses: Partial<QuestionnaireResponses> = {};
+  if (response.responses) {
     try {
-      importance = decryptJSON<ImportanceRatings>(existingResponse.importance);
+      parsedResponses = response.responses as Partial<QuestionnaireResponses>;
     } catch (error) {
-      console.error("Failed to decrypt importance:", error);
-      // Importance ratings are optional, so we can continue without them
-      importance = {};
+      console.error("Failed to parse questionnaire responses:", error);
     }
   }
 
   return {
-    responses,
-    importance,
-    isSubmitted: existingResponse?.isSubmitted || false,
-    questionnaireTutorialCompleted:
-      user?.questionnaireTutorialCompleted || false,
+    responses: parsedResponses,
+    isSubmitted: response.isSubmitted,
   };
 }
 
@@ -67,23 +54,21 @@ async function QuestionnairePage() {
     redirect("/login");
   }
 
-  const data = await getQuestionnaireData(session.user.id);
-  const config = getQuestionnaireConfig();
+  const data = await getQuestionnaireV2Data(session.user.id);
 
-  return (
-    <QuestionnaireForm
-      initialResponses={data.responses}
-      initialImportance={data.importance}
-      isSubmitted={data.isSubmitted}
-      config={config}
-      questionnaireTutorialCompleted={data.questionnaireTutorialCompleted}
-    />
-  );
+  // Redirect if already submitted
+  if (data.isSubmitted) {
+    redirect("/dashboard/questionnaire/success");
+  }
+
+  return <QuestionnaireV2 initialResponses={data.responses} />;
 }
 
 export default function Page() {
   return (
-    <Suspense fallback={<QuestionnaireLoading />}>
+    <Suspense
+      fallback={<div className="p-8 text-center">Loading questionnaire...</div>}
+    >
       <QuestionnairePage />
     </Suspense>
   );

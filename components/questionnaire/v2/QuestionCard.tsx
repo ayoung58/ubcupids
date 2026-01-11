@@ -47,7 +47,7 @@ export function QuestionCard({
 
       {/* Main Content */}
       {showSplitScreen ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6">
           {/* Left Side - User's Answer */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-3">

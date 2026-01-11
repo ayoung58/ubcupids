@@ -296,7 +296,7 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
   {
     id: "q4",
     section: Section.SECTION_1,
-    type: QuestionType.CATEGORICAL_NO_PREFERENCE,
+    type: QuestionType.SPECIAL_AGE,
     questionText: "What is your age?",
     answerFormat: "numeric",
     hasPreference: true,
@@ -384,22 +384,37 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
     validation: {},
   },
 
-  // Q9: Drug Use (Compound Question)
+  // Q9a: Drug Use - Substances
   {
-    id: "q9",
+    id: "q9a",
     section: Section.SECTION_1,
-    type: QuestionType.COMPOUND_SUBSTANCES_FREQUENCY,
-    questionText: "Which of the following do you use, and how often?",
-    answerFormat: "compound",
+    type: QuestionType.MULTI_SELECT_WITH_PREFERENCE,
+    questionText: "Which of the following do you use?",
+    answerFormat: "multi-select",
     options: DRUG_SUBSTANCE_OPTIONS,
     hasPreference: true,
-    preferenceText:
-      "I prefer my match to use [selected substances] at a [frequency]",
-    preferenceFormat: "special",
+    preferenceText: "I prefer my match to use",
+    preferenceFormat: "multi-select",
+    preferenceOptions: DRUG_SUBSTANCE_OPTIONS,
     validation: {
       minSelections: 1,
     },
-    helpText: "Select substances and overall frequency",
+    helpText: "Select all substances that apply",
+  },
+
+  // Q9b: Drug Use - Frequency
+  {
+    id: "q9b",
+    section: Section.SECTION_1,
+    type: QuestionType.SINGLE_SELECT_MULTI_PREFERENCE,
+    questionText: "How often do you use these substances?",
+    answerFormat: "single-select",
+    options: DRUG_FREQUENCY_OPTIONS,
+    hasPreference: true,
+    preferenceText: "I prefer my match to use substances",
+    preferenceFormat: "same-or-similar",
+    validation: {},
+    helpText: "Overall frequency of substance use",
   },
 
   // Q10: Exercise / Physical Activity
@@ -440,7 +455,7 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
   {
     id: "q12",
     section: Section.SECTION_1,
-    type: QuestionType.SINGLE_SELECT_MULTI_PREFERENCE,
+    type: QuestionType.LIKERT_SAME_SIMILAR,
     questionText:
       "Which best describes your expectations around sexual activity in a relationship?",
     answerFormat: "single-select",
@@ -593,23 +608,25 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
 // ============================================
 
 export const QUESTIONS_SECTION_2: QuestionConfig[] = [
-  // Q21: Love Languages (Special Case)
+  // Q21: Love Languages
   {
     id: "q21",
     section: Section.SECTION_2,
-    type: QuestionType.SPECIAL_LOVE_LANGUAGES,
+    type: QuestionType.MULTI_SELECT_WITH_PREFERENCE,
     questionText:
-      "Which love languages best describe how you show and receive affection?",
-    answerFormat: "compound",
+      "Which 2 love languages best describe how you show affection?",
+    answerFormat: "multi-select",
     options: LOVE_LANGUAGES_OPTIONS,
     hasPreference: true,
-    preferenceText: "I prefer my match to have",
-    preferenceFormat: "same-or-similar",
+    preferenceText: "Which 2 love languages do you like to receive?",
+    preferenceFormat: "multi-select",
+    preferenceOptions: LOVE_LANGUAGES_OPTIONS,
     validation: {
-      minSelections: MULTI_SELECT_LIMITS.Q21_LOVE_LANGUAGES.SHOW,
-      maxSelections: MULTI_SELECT_LIMITS.Q21_LOVE_LANGUAGES.SHOW,
+      minSelections: 2,
+      maxSelections: 2,
     },
-    helpText: "Select exactly 2 you show and 2 you like to receive",
+    helpText:
+      "LEFT: Select exactly 2 you show. RIGHT: Select 2 you like to receive.",
   },
 
   // Q22: Social Energy Level

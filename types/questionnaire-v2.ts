@@ -51,6 +51,7 @@ export enum QuestionType {
   SPECIAL_LOVE_LANGUAGES = "special_love_languages",
   SPECIAL_SLEEP_SCHEDULE = "special_sleep_schedule",
   SPECIAL_CONFLICT_RESOLUTION = "special_conflict_resolution",
+  SPECIAL_AGE = "special_age",
 }
 
 /**
@@ -214,14 +215,19 @@ export interface QuestionResponse {
     | null;
 
   // User's preference for their match (right side of split screen)
-  // Null for Q1, Q2, Q4 (hard filters)
+  // Null for Q1, Q2, Q4 (hard filters) or when doesntMatter is true
   preference: QuestionPreference;
 
-  // Importance level (disabled when preference = doesnt_matter)
+  // Importance level (disabled when doesntMatter = true)
   importance: ImportanceLevel | null;
 
-  // Dealbreaker flag (disabled when preference = doesnt_matter)
+  // Dealbreaker flag (disabled when doesntMatter = true)
   dealbreaker: boolean;
+
+  // "Doesn't matter" flag - when true, this question is excluded from matching
+  // Also aliased as isDealer for dealbreaker to maintain compatibility
+  doesntMatter?: boolean;
+  isDealer?: boolean; // Alias for dealbreaker
 }
 
 /**

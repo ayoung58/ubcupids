@@ -5,7 +5,7 @@ import { ImportanceLevel } from "@/types/questionnaire-v2";
 import { cn } from "@/lib/utils";
 
 interface ImportanceScaleProps {
-  value: ImportanceLevel;
+  value: ImportanceLevel | null;
   onChange: (value: ImportanceLevel) => void;
   onDealbreakerToggle: (isDealer: boolean) => void;
   isDealer: boolean;
@@ -58,7 +58,7 @@ export function ImportanceScale({
   return (
     <div className="space-y-3">
       <label className="text-sm font-medium text-slate-700">
-        How important is this to you?
+        How important is it for your match to be as you specified?
       </label>
 
       {/* Importance Scale */}
