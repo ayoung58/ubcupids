@@ -286,161 +286,10 @@ const INTERESTS = [
   "camping",
 ];
 
-// Question option values from questionnaire-config.json
-const QUESTION_OPTIONS: Record<string, string[] | string> = {
-  q1: ["man", "woman", "non-binary"],
-  q2: [
-    "heterosexual",
-    "gay-lesbian",
-    "bisexual",
-    "pansexual",
-    "asexual",
-    "questioning",
-  ],
-  q3: ["men", "women", "non-binary", "anyone"], // Multi-choice
-  q4: ["sleep-noon", "early-active", "friends", "productive"],
-  q5: ["talk-out", "alone", "physical", "escapism"],
-  q6: ["confident", "warm-up", "corner", "leave-early", "wouldnt-go"],
-  q7: ["organizer", "flow", "suggests", "shows-up", "terrible"],
-  q8: ["quick", "few-hours", "slow-thoughtful", "terrible"],
-  q9: ["going-out", "treat", "sleep", "stress-next", "no-celebrate"],
-  q10: [
-    "clever-wordplay",
-    "absurd-random",
-    "dark-edgy",
-    "wholesome-goofy",
-    "sarcastic-dry",
-    "self-deprecating",
-  ],
-  q11: ["dj", "navigator", "entertainer", "sleeper", "driver"],
-  q12: ["thrive", "occasionally", "advance-notice", "stresses"],
-  q13: [
-    "rejected",
-    "never",
-    "once-twice",
-    "multiple",
-    "experienced",
-    "very-experienced",
-  ],
-  q14: ["high", "moderate", "low-key"],
-  q15: ["career-focused", "balanced", "life-first"],
-  q16: ["talk-immediately", "space-first", "distract", "bottle-up"],
-  q17: ["central", "important", "occasional", "not-priority", "unsure"],
-  q18: ["infinite", "high", "moderate", "low", "hermit"],
-  q19: ["spotless", "clean-enough", "organized-chaos", "mess"],
-  q20: ["save-aggressively", "save-regularly", "save-when-can", "live-moment"],
-  q21: ["early-morning", "mid-day", "late-night", "varies"],
-  q22: ["huge-part", "few-times", "inconsistent", "not-thing", "walking"],
-  q23: [
-    "direct",
-    "time-then-talk",
-    "process-internally",
-    "emotional-need-space",
-  ],
-  q24: ["healthy", "bit-normal", "insecurity", "not-jealous", "not-sure"],
-  q25: ["direct", "thoughtful", "casual", "indirect"],
-  q26: [
-    "social",
-    "occasional",
-    "rarely",
-    "dont-drink",
-    "prefer-partner-doesnt",
-  ],
-  q27: ["always-down", "open", "cautious", "resistant"],
-  q28: ["stability", "growth", "freedom", "connection", "achievement"],
-  q29: ["very", "somewhat", "not-very", "not-important", "non-religious"],
-  q30: ["physical-touch", "words", "quality-time", "acts-service", "gifts"], // Ranking - top 3
-  q31: ["open-quickly", "time-trust", "private", "struggle"],
-  q32: ["solve", "listen", "space", "distract", "struggle"],
-  q33: ["high", "moderate", "low-key", "similar", "doesnt-matter"],
-  q34: "age-range", // Special handling
-  q35: ["outgoing", "somewhat-social", "introverted", "doesnt-matter"],
-  q36: [
-    "highly-driven",
-    "balanced",
-    "relationships-first",
-    "doesnt-matter",
-    "similar",
-  ],
-  q37: [
-    "help-solve",
-    "listen-support",
-    "give-space",
-    "distract-cheer",
-    "match-style",
-  ],
-  q38: [
-    "absolutely-not",
-    "probably-not",
-    "could-deal",
-    "dont-care",
-    "im-messy",
-  ],
-  q39: ["makes-laugh", "can-joke", "genuine", "challenges"],
-  q40: ["immediate", "space-discuss", "resolve", "similar"],
-  q41: ["physical-touch", "words", "quality-time", "acts-service", "gifts"], // Ranking - top 3
-  q42: ["very-open", "somewhat-open", "reserved", "meet-where"],
-  q43: ["active-outdoorsy", "some-activity", "low-key-indoor", "common-ground"],
-  q44: ["organized", "spontaneous", "mix", "doesnt-matter"],
-  q45: ["exact-views", "same-direction", "respectful-disagree", "not-factor"],
-  q46: ["similar", "doesnt-matter", "less", "more"],
-  q47: [
-    "never-dated",
-    "once-twice",
-    "few-times",
-    "experienced",
-    "no-preference",
-  ],
-  q48: [
-    "serious-long-term",
-    "dating-potential",
-    "casual-fun",
-    "friendship-first",
-    "exploring",
-  ],
-  q49: ["constant", "regular", "casual", "independent"],
-  q50: [
-    "comfortable-excited",
-    "excited-anxious",
-    "enjoy-distance",
-    "want-scared",
-    "none-fit",
-  ],
-  q51: ["activities", "same-space", "deep-conversations", "figuring-out"],
-  q52: [
-    "equally-focused",
-    "values-not-intense",
-    "accept-as-is",
-    "challenges-me",
-  ],
-  q53: ["healthy", "rare", "uncomfortable", "incompatibility"],
-  q54: ["lot-independence", "balance", "most-time", "figuring-out"],
-  q55: [
-    "exclusivity",
-    "showing-up",
-    "planning-future",
-    "prioritizing",
-    "honest-vulnerable",
-    "figuring-out",
-  ],
-  q56: ["very", "somewhat", "not-very", "not-important"],
-  q57: [
-    "trust-honesty",
-    "communication",
-    "fun-laughter",
-    "intimacy",
-    "shared-values",
-    "support",
-    "loyalty",
-  ],
-  q58: ["slowly", "naturally", "early-physical", "not-sure"],
-  q59: ["same-campus", "same-city", "long-distance", "doesnt-matter"],
-  // Open-ended questions (q60-q63)
-  q60: "textarea",
-  q61: "textarea",
-  q62: "textarea",
-  q63: "textarea",
-};
+// V2 questionnaire uses dynamic question generation instead of static options
+// Old V1 QUESTION_OPTIONS removed
+
+// NOTE: For V2, question options are defined in questionnaireConfigV2.ts
 
 // Sample open-ended responses
 const DEALBREAKERS = [
@@ -469,31 +318,8 @@ const PASSIONS = [
   "Competitive puzzle solving - speedcubing specifically. My best 3x3 time is under 15 seconds.",
 ];
 
-const MATCH_MESSAGES = [
-  "I take a while to open up, but once I do, I'm incredibly loyal and always there for my partner. I value deep connections over surface-level interactions.",
-  "I'm a planner who loves spontaneous adventures. Seems contradictory but I think structure enables freedom. Looking for someone who gets that.",
-  "I'm ambitious about my career but never at the expense of relationships. Family and friendships are my priority, work is just work.",
-  "I communicate directly and appreciate the same in return. No games, no guessing - just honest conversations about feelings.",
-  "I'm an introvert who loves social situations in small doses. Quality time with one person means more to me than big group hangs.",
-  "I'm working on being more vulnerable - it doesn't come naturally but I recognize it's essential for real connection.",
-  "I have strong opinions but I'm always open to changing my mind with good arguments. Debate is fun for me, not personal.",
-  "I show love through actions more than words. If I make you coffee every morning, that's my 'I love you.'",
-  "I need alone time to recharge but that doesn't mean I'm not thinking about you. Space makes the heart grow fonder for me.",
-  "I'm genuinely curious about everything. First dates with me involve a lot of questions - I want to know what makes people tick.",
-];
-
-const MATCH_QUESTIONS = [
-  "What's a belief you held strongly 5 years ago that you've completely changed your mind about?",
-  "If you could have dinner with anyone, living or dead, who would it be and why?",
-  "What's something small that makes you unreasonably happy?",
-  "What's the most valuable lesson a past relationship taught you?",
-  "If money wasn't a factor, how would you spend your Tuesdays?",
-  "What's a book/movie/show that fundamentally changed how you see the world?",
-  "What would your best friend say is your most annoying habit?",
-  "What's something you're proud of that has nothing to do with work or school?",
-  "If you had to eat one cuisine for the rest of your life, what would it be?",
-  "What's the kindest thing a stranger has ever done for you?",
-];
+// V2 uses only DEALBREAKERS and PASSIONS for Q37-Q38 free response
+// Old V1 MATCH_MESSAGES and MATCH_QUESTIONS removed
 
 // ============================================
 // Helper Functions
@@ -535,127 +361,536 @@ function generateInterests(): string {
   );
 }
 
-function generateImportance(): number {
-  // 1-5 scale with most being 3-4
-  const weights = [5, 15, 40, 30, 10];
-  const values = [1, 2, 3, 4, 5];
-  const total = weights.reduce((a, b) => a + b, 0);
-  let random = Math.random() * total;
-  for (let i = 0; i < weights.length; i++) {
-    random -= weights[i];
-    if (random <= 0) return values[i];
-  }
-  return 3;
-}
+// V2 helper functions moved inline into generateQuestionnaireResponses()
+// Old V1 helpers removed
 
-function generateAgeRange(userAge: number): { minAge: number; maxAge: number } {
-  // Generate reasonable age ranges based on user's age
-  const minOffset = Math.floor(Math.random() * 3) + 1; // 1-3 years younger
-  const maxOffset = Math.floor(Math.random() * 4) + 1; // 1-4 years older
-  return {
-    minAge: Math.max(18, userAge - minOffset),
-    maxAge: Math.min(35, userAge + maxOffset),
-  };
-}
-
-function generateGenderPreferences(
+/**
+ * Generate V2 questionnaire responses with split-screen format
+ * Each response includes: ownAnswer, preference, importance, dealbreaker
+ */
+function generateQuestionnaireResponses(
+  userAge: number,
   gender: string,
-  orientation: string
-): string[] {
-  // Generate realistic matching preferences based on gender and orientation
-  if (orientation === "heterosexual") {
-    if (gender === "man") return ["women"];
-    if (gender === "woman") return ["men"];
-    return ["men", "women"];
-  }
-  if (orientation === "gay-lesbian") {
-    if (gender === "man") return ["men"];
-    if (gender === "woman") return ["women"];
-    return [gender === "man" ? "men" : "women"];
-  }
-  if (orientation === "bisexual" || orientation === "pansexual") {
-    return Math.random() > 0.7 ? ["anyone"] : ["men", "women"];
-  }
-  // For asexual, questioning, etc.
-  return Math.random() > 0.5 ? ["anyone"] : ["men", "women", "non-binary"];
-}
-
-// DISABLED: Questionnaire V2 revamp in progress
-// This function needs to be rewritten for the new split-screen format
-// TODO: Reimplement for V2 response structure (see Step 10 of revamp plan)
-function generateQuestionnaireResponses(userAge: number): {
-  responses: Record<string, unknown>;
-  importance: Record<string, number>;
-} {
-  // Temporary: Return empty responses to prevent errors
-  console.warn(
-    "[SEED] generateQuestionnaireResponses is disabled during V2 revamp"
-  );
-  return { responses: {}, importance: {} };
-
-  /* V1 IMPLEMENTATION - DO NOT USE
-function generateQuestionnaireResponses_V1_DISABLED(userAge: number): {
-  responses: Record<string, unknown>;
-  importance: Record<string, number>;
-} {
+  orientation: string,
+  genderPreference: string[]
+): Record<string, unknown> {
   const responses: Record<string, unknown> = {};
-  const importance: Record<string, number> = {};
 
-  // Generate gender and orientation first (affects q3)
-  const gender = randomElement(QUESTION_OPTIONS.q1 as string[]);
-  const orientation = randomElement(QUESTION_OPTIONS.q2 as string[]);
-
-  responses.q1 = gender;
-  responses.q2 = orientation;
-  responses.q3 = generateGenderPreferences(gender, orientation);
-
-  // Generate answers for all other questions
-  for (const [questionId, optionsOrType] of Object.entries(QUESTION_OPTIONS)) {
-    if (["q1", "q2", "q3"].includes(questionId)) continue;
-
-    if (typeof optionsOrType === "string" && optionsOrType === "age-range") {
-      // q34 - age range
-      responses[questionId] = generateAgeRange(userAge);
-    } else if (
-      typeof optionsOrType === "string" &&
-      optionsOrType === "textarea"
-    ) {
-      // Open-ended questions
-      switch (questionId) {
-        case "q60":
-          responses[questionId] = randomElement(DEALBREAKERS);
-          break;
-        case "q61":
-          responses[questionId] = randomElement(PASSIONS);
-          break;
-        case "q62":
-          responses[questionId] = randomElement(MATCH_MESSAGES);
-          break;
-        case "q63":
-          responses[questionId] = randomElement(MATCH_QUESTIONS);
-          break;
-      }
-    } else if (Array.isArray(optionsOrType)) {
-      if (["q30", "q41"].includes(questionId)) {
-        // Ranking questions - select top 3
-        responses[questionId] = randomElements(optionsOrType, 3);
-        importance[questionId] = generateImportance();
-      } else {
-        // Single-choice questions
-        responses[questionId] = randomElement(optionsOrType);
-        // Add importance for questions that have it (skip section 0 and section 5)
-        if (
-          !["q1", "q2", "q3", "q60", "q61", "q62", "q63"].includes(questionId)
-        ) {
-          importance[questionId] = generateImportance();
-        }
-      }
+  // Helper: Generate random importance (1-4 scale for V2)
+  const randImportance = () => {
+    const weights = [10, 25, 40, 25]; // 1=10%, 2=25%, 3=40%, 4=25%
+    const values = [1, 2, 3, 4];
+    const total = weights.reduce((a, b) => a + b, 0);
+    let random = Math.random() * total;
+    for (let i = 0; i < weights.length; i++) {
+      random -= weights[i];
+      if (random <= 0) return values[i];
     }
-  }
+    return 3;
+  };
 
-  return { responses, importance };
-}
-*/ // End V1 implementation
+  // Helper: Create QuestionResponse object
+  const createResponse = (
+    ownAnswer: unknown,
+    preferenceType: string,
+    preferenceValue?: unknown,
+    importance: number = randImportance(),
+    dealbreaker: boolean = false
+  ) => ({
+    ownAnswer,
+    preference: {
+      type: preferenceType,
+      value: preferenceValue,
+      doesntMatter: preferenceType === "doesntMatter",
+    },
+    importance: preferenceType === "doesntMatter" ? 1 : importance,
+    dealbreaker: preferenceType === "doesntMatter" ? false : dealbreaker,
+  });
+
+  // ============================================
+  // SECTION 1: Lifestyle (Q1-Q20)
+  // ============================================
+
+  // Q1: Gender Identity (Hard Filter)
+  responses.q1 = createResponse(
+    gender,
+    "specific_values",
+    genderPreference,
+    4,
+    false
+  );
+
+  // Q2: Gender Preference (Hard Filter)
+  responses.q2 = createResponse(genderPreference, "same", undefined, 4, false);
+
+  // Q3: Sexual Orientation
+  responses.q3 = createResponse(
+    orientation,
+    Math.random() > 0.6 ? "same" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q4: Age (Hard Filter)
+  const ageRange = {
+    minAge: Math.max(18, userAge - (Math.floor(Math.random() * 3) + 1)),
+    maxAge: Math.min(35, userAge + (Math.floor(Math.random() * 4) + 2)),
+  };
+  responses.q4 = createResponse(
+    userAge.toString(),
+    "specific_values",
+    ageRange,
+    4,
+    false
+  );
+
+  // Q5: Cultural/Ethnic Background
+  const cultures = [
+    "east-asian",
+    "south-asian",
+    "southeast-asian",
+    "black",
+    "middle-eastern",
+    "latin-american",
+    "white",
+    "indigenous",
+    "mixed",
+  ];
+  const userCulture = randomElements(cultures, Math.random() > 0.7 ? 2 : 1);
+  responses.q5 = createResponse(
+    userCulture,
+    Math.random() > 0.5 ? "doesntMatter" : "similar",
+    undefined,
+    randImportance()
+  );
+
+  // Q6: Religious Beliefs
+  const religions = [
+    "not-religious",
+    "spiritual-not-religious",
+    "christian",
+    "muslim",
+    "jewish",
+    "hindu",
+    "buddhist",
+    "sikh",
+  ];
+  const userReligion = randomElement(religions);
+  responses.q6 = createResponse(
+    userReligion,
+    userReligion === "not-religious"
+      ? "doesntMatter"
+      : Math.random() > 0.6
+        ? "same"
+        : "similar",
+    undefined,
+    randImportance()
+  );
+
+  // Q7: Political Leaning (Scale 1-5)
+  const politicalLeaning = Math.floor(Math.random() * 5) + 1;
+  responses.q7 = createResponse(
+    politicalLeaning,
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q8: Alcohol Consumption
+  const alcoholOptions = ["never", "rarely", "socially", "frequently"];
+  const userAlcohol = randomElement(alcoholOptions);
+  responses.q8 = createResponse(
+    userAlcohol,
+    Math.random() > 0.6 ? "specific_values" : "similar",
+    Math.random() > 0.6 ? randomElements(alcoholOptions, 2) : undefined,
+    randImportance()
+  );
+
+  // Q9: Drug Use (Compound)
+  const drugOptions = [
+    "cannabis",
+    "cigarettes",
+    "vaping",
+    "other-recreational",
+    "none",
+  ];
+  const userDrugs =
+    Math.random() > 0.6
+      ? ["none"]
+      : randomElements(
+          drugOptions.filter((d) => d !== "none"),
+          Math.floor(Math.random() * 2) + 1
+        );
+  responses.q9 = createResponse(
+    userDrugs,
+    Math.random() > 0.5 ? "similar" : "specific_values",
+    Math.random() > 0.5 ? ["none", "cannabis"] : undefined,
+    randImportance(),
+    userDrugs.includes("none") && Math.random() > 0.8 // Some non-users make it dealbreaker
+  );
+
+  // Q10: Exercise Level (Scale 1-5)
+  const exerciseLevel = Math.floor(Math.random() * 5) + 1;
+  responses.q10 = createResponse(
+    exerciseLevel,
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q11: Diet Type
+  const dietOptions = [
+    "omnivore",
+    "vegetarian",
+    "vegan",
+    "pescatarian",
+    "other",
+  ];
+  const userDiet = randomElement(dietOptions);
+  responses.q11 = createResponse(
+    userDiet,
+    userDiet === "vegan"
+      ? Math.random() > 0.7
+        ? "same"
+        : "similar"
+      : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q12: Smoking/Vaping
+  const smokingOptions = ["never", "socially", "regularly", "trying-to-quit"];
+  const userSmoking = randomElement(smokingOptions);
+  responses.q12 = createResponse(
+    userSmoking,
+    userSmoking === "never"
+      ? Math.random() > 0.7
+        ? "same"
+        : "doesntMatter"
+      : "similar",
+    undefined,
+    randImportance(),
+    userSmoking === "never" && Math.random() > 0.85
+  );
+
+  // Q13-Q20: Continue with similar patterns
+  // Q13: Bedtime
+  const bedtimes = [
+    "before-11pm",
+    "11pm-1am",
+    "1am-3am",
+    "after-3am",
+    "flexible",
+  ];
+  responses.q13 = createResponse(
+    randomElement(bedtimes),
+    Math.random() > 0.5 ? "similar" : "compatible",
+    undefined,
+    randImportance()
+  );
+
+  // Q14: Morning Person vs Night Owl
+  const morningNight = ["early-bird", "moderate", "night-owl"];
+  responses.q14 = createResponse(
+    randomElement(morningNight),
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q15: Social Battery
+  const socialBattery = Math.floor(Math.random() * 5) + 1;
+  responses.q15 = createResponse(
+    socialBattery,
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q16: Cleanliness Level
+  const cleanlinessOptions = [
+    "very-clean",
+    "clean",
+    "organized-chaos",
+    "messy",
+  ];
+  responses.q16 = createResponse(
+    randomElement(cleanlinessOptions),
+    Math.random() > 0.6 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q17: Financial Habits
+  const financialOptions = ["saver", "balanced", "spender", "depends"];
+  responses.q17 = createResponse(
+    randomElement(financialOptions),
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q18: Travel Frequency
+  const travelOptions = ["frequently", "occasionally", "rarely", "never"];
+  responses.q18 = createResponse(
+    randomElement(travelOptions),
+    Math.random() > 0.6 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q19: Pets
+  const petOptions = ["have-love", "dont-have-love", "allergic", "indifferent"];
+  responses.q19 = createResponse(
+    randomElement(petOptions),
+    Math.random() > 0.5 ? "compatible" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q20: Long-term Goals
+  const goalOptions = [
+    "career-focused",
+    "family-focused",
+    "balanced",
+    "exploring",
+  ];
+  responses.q20 = createResponse(
+    randomElement(goalOptions),
+    Math.random() > 0.6 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // ============================================
+  // SECTION 2: Personality (Q21-Q36)
+  // ============================================
+
+  // Q21: Love Languages (Show vs Receive - bidirectional)
+  const loveLanguages = [
+    "physical-touch",
+    "words-of-affirmation",
+    "quality-time",
+    "acts-of-service",
+    "gifts",
+  ];
+  const userLoveLanguages = {
+    show: randomElements(loveLanguages, 2),
+    receive: randomElements(loveLanguages, 2),
+  };
+  responses.q21 = createResponse(
+    userLoveLanguages,
+    Math.random() > 0.5 ? "compatible" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q22: Communication Style
+  const commStyles = ["direct", "thoughtful", "emotional", "reserved"];
+  responses.q22 = createResponse(
+    randomElement(commStyles),
+    Math.random() > 0.6 ? "similar" : "compatible",
+    undefined,
+    randImportance()
+  );
+
+  // Q23: Conflict Resolution Style
+  const conflictStyles = [
+    "discuss-immediately",
+    "need-space-first",
+    "avoid",
+    "compromise",
+  ];
+  responses.q23 = createResponse(
+    randomElement(conflictStyles),
+    Math.random() > 0.6 ? "compatible" : "similar",
+    undefined,
+    randImportance()
+  );
+
+  // Q24: Emotional Openness
+  const emotionalOptions = [
+    "very-open",
+    "moderately-open",
+    "private",
+    "working-on-it",
+  ];
+  responses.q24 = createResponse(
+    randomElement(emotionalOptions),
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q25: Conflict Frequency Tolerance (Compatibility matrix)
+  const conflictFreq = [
+    "healthy-disagreement",
+    "occasional-only",
+    "avoid-conflict",
+    "doesnt-bother-me",
+  ];
+  responses.q25 = createResponse(
+    randomElement(conflictFreq),
+    "compatible",
+    undefined,
+    randImportance()
+  );
+
+  // Q26: Spontaneity vs Planning
+  const planningStyle = ["spontaneous", "mix", "planner"];
+  responses.q26 = createResponse(
+    randomElement(planningStyle),
+    Math.random() > 0.5 ? "similar" : "compatible",
+    undefined,
+    randImportance()
+  );
+
+  // Q27: Humor Style
+  const humorOptions = ["sarcastic", "playful", "intellectual", "silly", "dry"];
+  responses.q27 = createResponse(
+    randomElement(humorOptions),
+    Math.random() > 0.6 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q28: Introversion/Extroversion (Scale 1-5)
+  const introExtro = Math.floor(Math.random() * 5) + 1;
+  responses.q28 = createResponse(
+    introExtro,
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q29: Sleep Schedule (Flexible wildcard option)
+  const sleepSchedules = ["early-morning", "mid-day", "late-night", "flexible"];
+  responses.q29 = createResponse(
+    randomElement(sleepSchedules),
+    Math.random() > 0.5 ? "similar" : "compatible",
+    undefined,
+    randImportance()
+  );
+
+  // Q30: Decision Making Style
+  const decisionOptions = [
+    "quick-decisive",
+    "thoughtful-slow",
+    "collaborative",
+    "depends",
+  ];
+  responses.q30 = createResponse(
+    randomElement(decisionOptions),
+    Math.random() > 0.5 ? "compatible" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q31: Jealousy Level
+  const jealousyOptions = [
+    "not-jealous",
+    "healthy-amount",
+    "insecure",
+    "working-on-it",
+  ];
+  responses.q31 = createResponse(
+    randomElement(jealousyOptions),
+    Math.random() > 0.6 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q32: Social Media Usage
+  const socialMediaOptions = [
+    "very-active",
+    "moderate",
+    "minimal",
+    "not-on-social",
+  ];
+  responses.q32 = createResponse(
+    randomElement(socialMediaOptions),
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q33: Need for Alone Time
+  const aloneTimeOptions = [
+    "need-daily",
+    "few-times-week",
+    "occasionally",
+    "rarely",
+  ];
+  responses.q33 = createResponse(
+    randomElement(aloneTimeOptions),
+    Math.random() > 0.6 ? "similar" : "compatible",
+    undefined,
+    randImportance()
+  );
+
+  // Q34: Ambition Level
+  const ambitionOptions = [
+    "very-ambitious",
+    "moderately-ambitious",
+    "laid-back",
+    "exploring",
+  ];
+  responses.q34 = createResponse(
+    randomElement(ambitionOptions),
+    Math.random() > 0.5 ? "similar" : "doesntMatter",
+    undefined,
+    randImportance()
+  );
+
+  // Q35: Physical Affection in Public
+  const pda = ["very-comfortable", "some-okay", "minimal", "prefer-private"];
+  responses.q35 = createResponse(
+    randomElement(pda),
+    Math.random() > 0.6 ? "similar" : "compatible",
+    undefined,
+    randImportance()
+  );
+
+  // Q36: Values Priorities
+  const valuesOptions = [
+    "honesty",
+    "loyalty",
+    "adventure",
+    "stability",
+    "growth",
+    "connection",
+  ];
+  const userValues = randomElements(valuesOptions, 3);
+  responses.q36 = createResponse(
+    userValues,
+    Math.random() > 0.6 ? "similar" : "compatible",
+    undefined,
+    randImportance()
+  );
+
+  // ============================================
+  // FREE RESPONSE (Q37-Q38): Cupids only
+  // ============================================
+
+  // Q37: Dealbreakers
+  responses.q37 = createResponse(
+    randomElement(DEALBREAKERS),
+    "doesntMatter", // Free response, no preference
+    undefined,
+    1,
+    false
+  );
+
+  // Q38: Fun Fact / Passion
+  responses.q38 = createResponse(
+    randomElement(PASSIONS),
+    "doesntMatter", // Free response, no preference
+    undefined,
+    1,
+    false
+  );
+
+  return responses;
 }
 
 // ============================================
@@ -663,153 +898,200 @@ function generateQuestionnaireResponses_V1_DISABLED(userAge: number): {
 // ============================================
 
 /**
- * Create a pair of users designed to match well with each other
- * Returns their questionnaire data
+ * Create a pair of users designed to match well with each other (V2 format)
+ * Returns their V2 questionnaire data
  */
 function createPerfectMatchPair(baseAge: number): {
-  user1: {
-    responses: Record<string, unknown>;
-    importance: Record<string, number>;
-  };
-  user2: {
-    responses: Record<string, unknown>;
-    importance: Record<string, number>;
-  };
+  user1: Record<string, unknown>;
+  user2: Record<string, unknown>;
 } {
-  // Shared preferences for high compatibility
-  const sharedResponses = {
-    // Section 1: Icebreakers - Very similar
-    q4: "early-active",
-    q5: "talk-out",
-    q6: "confident",
-    q7: "organizer",
-    q8: "slow-thoughtful",
-    q9: "going-out",
-    q10: "clever-wordplay",
-    q11: "navigator",
-    q12: "thrive",
-    q13: "once-twice",
+  // Helper: Create QuestionResponse
+  const createResponse = (
+    ownAnswer: unknown,
+    preferenceType: string,
+    preferenceValue?: unknown,
+    importance: number = 4,
+    dealbreaker: boolean = false
+  ) => ({
+    ownAnswer,
+    preference: {
+      type: preferenceType,
+      value: preferenceValue,
+      doesntMatter: false,
+    },
+    importance,
+    dealbreaker,
+  });
 
-    // Section 2: What I'm Like - Highly compatible
-    q14: "moderate",
-    q15: "balanced",
-    q16: "talk-immediately",
-    q17: "important",
-    q18: "moderate",
-    q19: "clean-enough",
-    q20: "save-regularly",
-    q21: "mid-day",
-    q22: "few-times",
-    q23: "direct",
-    q24: "healthy",
-    q25: "direct",
-    q26: "occasional",
-    q27: "open",
-    q28: "connection",
-    q29: "somewhat",
-    q30: ["quality-time", "words", "physical-touch"], // Ranking
-    q31: "time-trust",
-    q32: "listen",
-  };
-
+  // ============================================
   // User 1: Woman looking for men
+  // ============================================
   const user1Responses: Record<string, unknown> = {
-    ...sharedResponses,
-    q1: "woman",
-    q2: "heterosexual",
-    q3: ["men"],
-    q34: { minAge: baseAge - 2, maxAge: baseAge + 3 }, // Accepts baseAge
+    // Hard filters
+    q1: createResponse("woman", "specific_values", ["man"], 4, false),
+    q2: createResponse(["men"], "same", undefined, 4, false),
+    q3: createResponse("heterosexual", "same", undefined, 3),
+    q4: createResponse(
+      baseAge.toString(),
+      "specific_values",
+      {
+        minAge: baseAge - 2,
+        maxAge: baseAge + 3,
+      },
+      4,
+      false
+    ),
 
-    // Section 3: Preferences that match User 2's characteristics
-    q33: "moderate", // Wants moderate energy
-    q35: "somewhat-social", // Wants somewhat social
-    q36: "balanced", // Wants balanced ambition
-    q37: "listen-support", // Wants emotional support
-    q38: "could-deal", // Flexible on messiness
-    q39: "can-joke", // Wants humor but not constant
-    q40: "space-discuss", // Wants to take space then discuss
-    q41: ["quality-time", "words", "acts-service"], // Ranking
-    q42: "somewhat-open", // Wants somewhat vulnerable
-    q43: "some-activity", // Wants some activity
-    q44: "mix", // Wants mix of organized/spontaneous
-    q45: "same-direction", // Similar values
-    q46: "similar", // Similar experience
-    q47: "few-times", // Some dating experience
-    q48: "dating-potential", // Looking for serious potential
-    q49: "regular", // Regular communication
-    q50: "comfortable-excited", // Comfortable with intimacy
-    q51: "deep-conversations", // Quality time through conversations
-    q52: "equally-focused", // Balanced personal growth
-    q53: "healthy", // Healthy conflict is normal
-    q54: "balance", // Balance independence and togetherness
-    q55: "showing-up", // Commitment means showing up
-    q56: "very", // Physical attraction very important
-    q57: ["communication", "trust-honesty", "fun-laughter"], // Ranking
-    q58: "naturally", // Let physical intimacy develop
-    q59: "same-campus", // Wants someone on campus
+    // Lifestyle (high compatibility)
+    q5: createResponse(["white", "mixed"], "doesntMatter", undefined, 2),
+    q6: createResponse("not-religious", "similar", undefined, 2),
+    q7: createResponse(2, "similar", undefined, 3), // Progressive
+    q8: createResponse("socially", "similar", undefined, 3),
+    q9: createResponse(["none"], "same", undefined, 3, true), // Dealbreaker
+    q10: createResponse(4, "similar", undefined, 3), // Active
+    q11: createResponse("omnivore", "doesntMatter", undefined, 2),
+    q12: createResponse("never", "same", undefined, 4, true), // Dealbreaker
+    q13: createResponse("11pm-1am", "similar", undefined, 3),
+    q14: createResponse("moderate", "similar", undefined, 2),
+    q15: createResponse(4, "similar", undefined, 3), // Social
+    q16: createResponse("clean", "similar", undefined, 3),
+    q17: createResponse("balanced", "similar", undefined, 3),
+    q18: createResponse("occasionally", "similar", undefined, 2),
+    q19: createResponse("dont-have-love", "compatible", undefined, 3),
+    q20: createResponse("balanced", "similar", undefined, 4),
 
-    // Open-ended
-    q60: "Honesty and trust - I can't be with someone who lies.",
-    q61: "I'm secretly really into astrophotography. I spend weekends driving to dark sky sites to capture the Milky Way.",
-    q62: "I take a while to open up, but once I do, I'm incredibly loyal and always there for my partner.",
-    q63: "What's a belief you held strongly 5 years ago that you've completely changed your mind about?",
+    // Personality (high compatibility)
+    q21: createResponse(
+      {
+        show: ["quality-time", "words-of-affirmation"],
+        receive: ["physical-touch", "quality-time"],
+      },
+      "compatible",
+      undefined,
+      4
+    ),
+    q22: createResponse("direct", "similar", undefined, 4),
+    q23: createResponse("discuss-immediately", "similar", undefined, 4),
+    q24: createResponse("moderately-open", "similar", undefined, 3),
+    q25: createResponse("healthy-disagreement", "compatible", undefined, 3),
+    q26: createResponse("mix", "similar", undefined, 3),
+    q27: createResponse("playful", "similar", undefined, 2),
+    q28: createResponse(3, "similar", undefined, 3), // Balanced intro/extro
+    q29: createResponse("11pm-1am", "similar", undefined, 2),
+    q30: createResponse("collaborative", "compatible", undefined, 3),
+    q31: createResponse("healthy-amount", "similar", undefined, 3),
+    q32: createResponse("moderate", "similar", undefined, 2),
+    q33: createResponse("few-times-week", "similar", undefined, 3),
+    q34: createResponse("moderately-ambitious", "similar", undefined, 4),
+    q35: createResponse("some-okay", "similar", undefined, 3),
+    q36: createResponse(
+      ["honesty", "connection", "growth"],
+      "similar",
+      undefined,
+      4
+    ),
+
+    // Free response
+    q37: createResponse(
+      "Honesty and trust - I can't be with someone who lies.",
+      "doesntMatter",
+      undefined,
+      1
+    ),
+    q38: createResponse(
+      "I'm secretly really into astrophotography. I spend weekends driving to dark sky sites.",
+      "doesntMatter",
+      undefined,
+      1
+    ),
   };
 
-  // User 2: Man looking for women - designed to match User 1's preferences
+  // ============================================
+  // User 2: Man looking for women (matches User 1)
+  // ============================================
   const user2Responses: Record<string, unknown> = {
-    ...sharedResponses,
-    q1: "man",
-    q2: "heterosexual",
-    q3: ["women"],
-    q34: { minAge: baseAge - 3, maxAge: baseAge + 2 }, // Accepts baseAge
+    // Hard filters
+    q1: createResponse("man", "specific_values", ["woman"], 4, false),
+    q2: createResponse(["women"], "same", undefined, 4, false),
+    q3: createResponse("heterosexual", "same", undefined, 3),
+    q4: createResponse(
+      baseAge.toString(),
+      "specific_values",
+      {
+        minAge: baseAge - 3,
+        maxAge: baseAge + 2,
+      },
+      4,
+      false
+    ),
 
-    // Section 3: Matches what User 1 is looking for
-    q33: "moderate", // Has moderate energy (matches q33)
-    q35: "somewhat-social", // Is somewhat social (matches q35)
-    q36: "balanced", // Has balanced ambition (matches q36)
-    q37: "listen-support", // Gives emotional support (matches q37)
-    q38: "could-deal", // Flexible on messiness
-    q39: "can-joke", // Has good humor balance
-    q40: "space-discuss", // Handles conflict similarly
-    q41: ["quality-time", "words", "acts-service"], // Ranking
-    q42: "somewhat-open", // Is somewhat vulnerable
-    q43: "some-activity", // Likes some activity
-    q44: "mix", // Mix of organized/spontaneous
-    q45: "same-direction", // Similar values
-    q46: "similar", // Similar experience
-    q47: "few-times", // Some dating experience
-    q48: "dating-potential", // Looking for serious potential
-    q49: "regular", // Regular communication
-    q50: "comfortable-excited", // Comfortable with intimacy
-    q51: "deep-conversations", // Quality time through conversations
-    q52: "equally-focused", // Balanced personal growth
-    q53: "healthy", // Healthy conflict is normal
-    q54: "balance", // Balance independence and togetherness
-    q55: "showing-up", // Commitment means showing up
-    q56: "very", // Physical attraction very important
-    q57: ["communication", "trust-honesty", "fun-laughter"], // Ranking
-    q58: "naturally", // Let physical intimacy develop
-    q59: "same-campus", // Wants someone on campus
+    // Lifestyle (matches User 1)
+    q5: createResponse(["white"], "doesntMatter", undefined, 2),
+    q6: createResponse("not-religious", "similar", undefined, 2),
+    q7: createResponse(2, "similar", undefined, 3), // Progressive
+    q8: createResponse("socially", "similar", undefined, 3),
+    q9: createResponse(["none"], "same", undefined, 3, true), // Dealbreaker
+    q10: createResponse(4, "similar", undefined, 3), // Active
+    q11: createResponse("omnivore", "doesntMatter", undefined, 2),
+    q12: createResponse("never", "same", undefined, 4, true), // Dealbreaker
+    q13: createResponse("11pm-1am", "similar", undefined, 3),
+    q14: createResponse("moderate", "similar", undefined, 2),
+    q15: createResponse(3, "similar", undefined, 3), // Social
+    q16: createResponse("clean", "similar", undefined, 3),
+    q17: createResponse("balanced", "similar", undefined, 3),
+    q18: createResponse("occasionally", "similar", undefined, 2),
+    q19: createResponse("dont-have-love", "compatible", undefined, 3),
+    q20: createResponse("balanced", "similar", undefined, 4),
 
-    // Open-ended
-    q60: "Communication is essential. I need someone who talks through issues.",
-    q61: "I volunteer at a local animal shelter every weekend. I'm working on my foster license to help more animals find homes.",
-    q62: "I communicate directly and appreciate the same in return. No games, no guessing - just honest conversations about feelings.",
-    q63: "What's the most valuable lesson a past relationship taught you?",
+    // Personality (matches User 1)
+    q21: createResponse(
+      {
+        show: ["physical-touch", "quality-time"],
+        receive: ["quality-time", "words-of-affirmation"],
+      },
+      "compatible",
+      undefined,
+      4
+    ),
+    q22: createResponse("direct", "similar", undefined, 4),
+    q23: createResponse("discuss-immediately", "similar", undefined, 4),
+    q24: createResponse("moderately-open", "similar", undefined, 3),
+    q25: createResponse("healthy-disagreement", "compatible", undefined, 3),
+    q26: createResponse("mix", "similar", undefined, 3),
+    q27: createResponse("playful", "similar", undefined, 2),
+    q28: createResponse(3, "similar", undefined, 3), // Balanced intro/extro
+    q29: createResponse("11pm-1am", "similar", undefined, 2),
+    q30: createResponse("collaborative", "compatible", undefined, 3),
+    q31: createResponse("healthy-amount", "similar", undefined, 3),
+    q32: createResponse("moderate", "similar", undefined, 2),
+    q33: createResponse("few-times-week", "similar", undefined, 3),
+    q34: createResponse("moderately-ambitious", "similar", undefined, 4),
+    q35: createResponse("some-okay", "similar", undefined, 3),
+    q36: createResponse(
+      ["honesty", "connection", "growth"],
+      "similar",
+      undefined,
+      4
+    ),
+
+    // Free response
+    q37: createResponse(
+      "Communication is essential. I need someone who talks through issues.",
+      "doesntMatter",
+      undefined,
+      1
+    ),
+    q38: createResponse(
+      "I volunteer at a local animal shelter every weekend working towards my foster license.",
+      "doesntMatter",
+      undefined,
+      1
+    ),
   };
-
-  // Generate importance ratings - high importance on compatibility factors
-  const importance: Record<string, number> = {};
-  for (const key of Object.keys(sharedResponses)) {
-    if (!["q1", "q2", "q3", "q60", "q61", "q62", "q63"].includes(key)) {
-      // High importance (4 or 5) for most questions
-      importance[key] = Math.random() > 0.3 ? 4 : 5;
-    }
-  }
 
   return {
-    user1: { responses: user1Responses, importance },
-    user2: { responses: user2Responses, importance },
+    user1: user1Responses,
+    user2: user2Responses,
   };
 }
 
@@ -892,8 +1174,7 @@ async function createTestUsers(hashedPassword: string): Promise<string[]> {
     await prisma.questionnaireResponse.create({
       data: {
         userId: femaleUser.id,
-        responses: encryptJSON(matchData.user1.responses),
-        importance: encryptJSON(matchData.user1.importance),
+        responses: encryptJSON(matchData.user1),
         isSubmitted: true,
         submittedAt: new Date(),
       },
@@ -922,8 +1203,7 @@ async function createTestUsers(hashedPassword: string): Promise<string[]> {
     await prisma.questionnaireResponse.create({
       data: {
         userId: maleUser.id,
-        responses: encryptJSON(matchData.user2.responses),
-        importance: encryptJSON(matchData.user2.importance),
+        responses: encryptJSON(matchData.user2),
         isSubmitted: true,
         submittedAt: new Date(),
       },
@@ -969,20 +1249,53 @@ async function createTestUsers(hashedPassword: string): Promise<string[]> {
 
     const createdUsers = await prisma.user.createManyAndReturn({
       data: usersToCreate,
-      select: { id: true, age: true },
+      select: { id: true, age: true, firstName: true },
     });
 
     // Create questionnaire responses for each user
     for (const user of createdUsers) {
-      const { responses, importance } = generateQuestionnaireResponses(
-        user.age!
+      // Generate gender and orientation for random users
+      const genders = ["woman", "man", "non-binary"];
+      const gender = randomElement(genders);
+      const orientations = [
+        "heterosexual",
+        "homosexual",
+        "bisexual",
+        "pansexual",
+      ];
+      const orientation = randomElement(orientations);
+
+      // Generate gender preference based on orientation
+      let genderPreference: string[];
+      if (orientation === "heterosexual") {
+        genderPreference =
+          gender === "man"
+            ? ["women"]
+            : gender === "woman"
+              ? ["men"]
+              : ["men", "women"];
+      } else if (orientation === "homosexual") {
+        genderPreference =
+          gender === "man"
+            ? ["men"]
+            : gender === "woman"
+              ? ["women"]
+              : [gender];
+      } else {
+        genderPreference = Math.random() > 0.5 ? ["anyone"] : ["men", "women"];
+      }
+
+      const responses = generateQuestionnaireResponses(
+        user.age!,
+        gender,
+        orientation,
+        genderPreference
       );
 
       await prisma.questionnaireResponse.create({
         data: {
           userId: user.id,
           responses: encryptJSON(responses),
-          importance: encryptJSON(importance),
           isSubmitted: true,
           submittedAt: new Date(),
         },
@@ -1079,11 +1392,7 @@ async function printStats(): Promise<void> {
     where: { isSubmitted: true },
   });
 
-  // Gender distribution
-  const genderSample = await prisma.questionnaireResponse.findMany({
-    take: 50,
-    select: { responses: true },
-  });
+  // Gender distribution tracked via V2 responses (encrypted)
 
   console.log(`  Total Users: ${totalUsers}`);
   console.log(`  Users Being Matched: ${usersBeingMatched}`);
