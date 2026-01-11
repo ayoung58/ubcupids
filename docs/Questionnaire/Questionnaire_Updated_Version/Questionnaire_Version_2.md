@@ -1,7 +1,7 @@
 Questionnaire
 
 For the importance: it would be an importance scale, with a “dealbreaker” button. 
-For preference: option format is defined, OR options are listed out, separated by a slash. i.e. [same/similar/different]/doesn’t matter means a “scale” of same, similar, different, with a doesn’t matter button next to it. Default is similar. When the Doesn’t matter button is selected, it would disable the other options AND disable importance.
+For preference: option format is defined (i.e. multi-select, where it would have all the options on the left on the right as well), OR options are listed out, separated by a slash. i.e. [same/similar/different]/doesn’t matter means a “scale” of same, similar, different, with a doesn’t matter button next to it. Default is similar. When the Doesn’t matter button is selected, it would disable the other options AND disable importance.
 SECTION 1 — Lifestyle / Surface Compatibility
 
 1. Gender Identity (Hard Filter)
@@ -54,7 +54,7 @@ Anyone (selecting this disables other options)
 Split Screen:
  None (hard filter)
 Comments:
- Placed visually beside Question 1.
+ Placed visually beside Question 1 (in a split screen format)
 
 3. Sexual Orientation
 Primary Question:
