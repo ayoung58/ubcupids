@@ -47,7 +47,7 @@ interface CupidProfileView {
   summary: string;
   keyTraits: string[];
   lookingFor: string;
-  highlights: string[] | Array<{ question: string; answer: string }>;
+  highlights: string[];
   bio?: string | null;
   interests?: string | null;
   major?: string | null;
@@ -1079,24 +1079,14 @@ function ProfileDisplay({ profile }: { profile: CupidProfileView }) {
       {profile.highlights && profile.highlights.length > 0 && (
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-800">Key Responses</h4>
-          {Array.isArray(profile.highlights) &&
-            profile.highlights.map((highlight, idx: number) => {
-              if (typeof highlight === "string") {
-                return (
-                  <div key={idx} className="bg-slate-50 p-3 rounded-lg">
-                    <p className="text-sm text-slate-900">{highlight}</p>
-                  </div>
-                );
-              }
-              return (
-                <div key={idx} className="bg-slate-50 p-3 rounded-lg space-y-1">
-                  <p className="text-xs font-medium text-slate-600">
-                    {highlight.question}
-                  </p>
-                  <p className="text-sm text-slate-900">{highlight.answer}</p>
-                </div>
-              );
-            })}
+          {profile.highlights.map((highlight: any, idx: number) => (
+            <div key={idx} className="bg-slate-50 p-3 rounded-lg space-y-1">
+              <p className="text-xs font-medium text-slate-600">
+                {highlight.question}
+              </p>
+              <p className="text-sm text-slate-900">{highlight.answer}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -1135,103 +1125,6 @@ function QuestionnaireDisplay({
 
               if (!response) return null;
 
-              // Check if response is V2 format (has ownAnswer property)
-              const isV2 =
-                typeof response === "object" &&
-                response !== null &&
-                "ownAnswer" in response;
-
-              if (isV2) {
-                const v2Response = response as {
-                  ownAnswer: unknown;
-                  preference: {
-                    type: string;
-                    value?: unknown;
-                    doesntMatter: boolean;
-                  };
-                  importance: number;
-                  dealbreaker: boolean;
-                };
-                const ownAnswer = v2Response.ownAnswer;
-                const preference = v2Response.preference;
-                const v2Importance = v2Response.importance;
-                const dealbreaker = v2Response.dealbreaker;
-
-                return (
-                  <div
-                    key={question.id}
-                    className={`p-3 rounded-lg space-y-2 ${
-                      dealbreaker
-                        ? "bg-red-50 border border-red-200"
-                        : "bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium text-slate-700">
-                        {question.text}
-                      </p>
-                      <div className="flex gap-2 items-center flex-shrink-0">
-                        {dealbreaker && (
-                          <span className="text-xs font-semibold text-red-700 bg-red-100 px-2 py-1 rounded whitespace-nowrap border border-red-300">
-                            ⚠️ Deal Breaker
-                          </span>
-                        )}
-                        {question.hasImportance && v2Importance && (
-                          <span
-                            className={`text-xs font-semibold px-2 py-1 rounded whitespace-nowrap ${
-                              v2Importance === 4
-                                ? "text-purple-700 bg-purple-100"
-                                : v2Importance === 3
-                                  ? "text-blue-700 bg-blue-100"
-                                  : v2Importance === 2
-                                    ? "text-slate-600 bg-slate-100"
-                                    : "text-slate-500 bg-slate-50"
-                            }`}
-                          >
-                            Importance: {v2Importance}/4
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Own Answer */}
-                    <div className="text-sm">
-                      <span className="font-medium text-blue-600">
-                        Answer:{" "}
-                      </span>
-                      <span className="text-slate-900">
-                        {formatResponse(
-                          ownAnswer as
-                            | string
-                            | string[]
-                            | number
-                            | { value: string; text: string }
-                            | { minAge: number; maxAge: number }
-                        )}
-                      </span>
-                    </div>
-
-                    {/* Preference */}
-                    {preference && !preference.doesntMatter && (
-                      <div className="text-sm pl-4 border-l-2 border-blue-300">
-                        <span className="font-medium text-blue-600">
-                          Preference:{" "}
-                        </span>
-                        <span className="text-slate-700">
-                          {formatPreference(preference)}
-                        </span>
-                      </div>
-                    )}
-                    {preference?.doesntMatter && (
-                      <div className="text-xs text-slate-500 italic">
-                        • Doesn&apos;t matter for match preference
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              // V1 format (legacy)
               return (
                 <div
                   key={question.id}
@@ -1277,56 +1170,9 @@ function formatResponse(
     if ("minAge" in response && "maxAge" in response) {
       return `${response.minAge} - ${response.maxAge} years old`;
     }
-    if ("show" in response && "receive" in response) {
-      // Love languages (Q21)
-      const loveLanguages = response as { show: string[]; receive: string[] };
-      return `Shows: ${loveLanguages.show.join(", ")} | Receives: ${loveLanguages.receive.join(", ")}`;
-    }
     return JSON.stringify(response);
   }
   return String(response);
-}
-
-function formatPreference(preference: {
-  type: string;
-  value?: unknown;
-  doesntMatter?: boolean;
-}): string {
-  const { type, value } = preference;
-
-  switch (type) {
-    case "same":
-      return "Looking for someone with the same answer";
-    case "similar":
-      return "Looking for someone with a similar answer";
-    case "different":
-      return "Looking for someone with a different answer";
-    case "compatible":
-      return "Looking for someone with compatible values";
-    case "more":
-      return "Looking for someone with more of this trait";
-    case "less":
-      return "Looking for someone with less of this trait";
-    case "specific_values":
-      if (value) {
-        if (
-          typeof value === "object" &&
-          "minAge" in value &&
-          "maxAge" in value
-        ) {
-          return `Prefers age range: ${value.minAge} - ${value.maxAge}`;
-        }
-        if (Array.isArray(value)) {
-          return `Prefers: ${value.join(", ")}`;
-        }
-        return `Prefers: ${value}`;
-      }
-      return "Has specific preferences";
-    case "doesntMatter":
-      return "Doesn't matter";
-    default:
-      return type || "No preference specified";
-  }
 }
 
 function LoadingSkeleton() {
