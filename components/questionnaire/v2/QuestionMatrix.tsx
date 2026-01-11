@@ -57,6 +57,61 @@ export function QuestionMatrix({
       return true;
     }
 
+    // Q4 Age special case - needs answer and (preference or doesn't matter), no importance required
+    if (questionId === "q4") {
+      const ageAnswer = response.answer as {
+        userAge: number | null;
+        minAge: number | null;
+        maxAge: number | null;
+      };
+      if (!ageAnswer) return false;
+
+      // Check if user age is valid (18-40)
+      const isUserAgeValid =
+        ageAnswer.userAge !== null &&
+        ageAnswer.userAge >= 18 &&
+        ageAnswer.userAge <= 40;
+
+      // Check if preference is filled and valid (unless doesn't matter)
+      const doesntMatter = response.doesntMatter === true;
+      if (!doesntMatter) {
+        const hasValidPreference =
+          ageAnswer.minAge !== null &&
+          ageAnswer.maxAge !== null &&
+          ageAnswer.minAge >= 18 &&
+          ageAnswer.maxAge <= 40 &&
+          ageAnswer.minAge < ageAnswer.maxAge;
+
+        return isUserAgeValid && hasValidPreference;
+      } else {
+        return isUserAgeValid;
+      }
+    }
+
+    // Q21 Love Languages - special check for exactly 2 selections
+    if (questionId === "q21") {
+      const answerArray = Array.isArray(response.answer) ? response.answer : [];
+      const preferenceArray = Array.isArray(response.preference)
+        ? response.preference
+        : [];
+      const doesntMatter = response.doesntMatter === true;
+
+      // Need exactly 2 on left (answer)
+      if (answerArray.length !== 2) return false;
+
+      // Need (exactly 2 on right OR doesn't matter)
+      if (!doesntMatter && preferenceArray.length !== 2) return false;
+
+      // Need (importance OR doesn't matter OR dealbreaker)
+      const hasImportance =
+        response.importance !== null && response.importance !== undefined;
+      const hasDealer =
+        response.isDealer === true || response.dealbreaker === true;
+      if (!hasImportance && !doesntMatter && !hasDealer) return false;
+
+      return true;
+    }
+
     // Must have (preference OR doesn't matter)
     const hasPreference =
       response.preference !== null && response.preference !== undefined;

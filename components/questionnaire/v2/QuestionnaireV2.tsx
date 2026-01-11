@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ProgressBar } from "./ProgressBar";
 import { FreeResponseSection } from "./FreeResponseSection";
 import { QuestionCard } from "./QuestionCard";
@@ -14,6 +14,7 @@ import { DoesntMatterButton } from "./DoesntMatterButton";
 import { PreferenceSelector } from "./preference-inputs/PreferenceSelector";
 import { DrugUseQuestion } from "./special-questions/DrugUseQuestion";
 import { LoveLanguagesQuestion } from "./special-questions/LoveLanguagesQuestion";
+import { SaveStatusIndicator } from "./SaveStatusIndicator";
 import {
   ALL_QUESTIONS,
   FREE_RESPONSE_QUESTIONS,
@@ -27,6 +28,7 @@ import {
   QuestionOption,
 } from "@/types/questionnaire-v2";
 import { cn } from "@/lib/utils";
+import { useAutosave } from "@/hooks/useAutosave";
 
 /**
  * Map preferenceFormat from config to PreferenceType enum
@@ -65,9 +67,10 @@ interface QuestionnaireV2Props {
  * - Free response section (2 mandatory + 3 optional)
  * - Navigation (prev/next buttons)
  * - Progress tracking (38 total views: Q1+Q2, Q3-Q36+Q9b, Free Response)
+ * - Autosave (debounced 3 seconds)
+ * - Load existing responses on mount
  *
  * Note: Q9 is split into Q9a (substances) and Q9b (frequency) as separate views
- * Note: Autosave will be implemented in Phase 5
  */
 export function QuestionnaireV2({
   initialResponses = {},
@@ -78,12 +81,58 @@ export function QuestionnaireV2({
   const [freeResponseValues, setFreeResponseValues] = useState<
     Record<string, string>
   >({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Total steps: Q1+Q2 together (1), Q3-Q8 (6), Q9a (1), Q9b (1), Q10-Q36 (27), Free Response (1) = 37 steps (0-36)
   // Questions: Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9a, Q9b, Q10-Q36 = 37 questions
   // Step 0 = Q1+Q2, Steps 1-35 = Q3-Q36+Q9a+Q9b (35 questions), Step 36 = Free Response
   const totalSteps = 36;
   const totalQuestions = 39; // Q1+Q2 (2) + Q3-Q8 (6) + Q9a+Q9b (2) + Q10-Q36 (27) + 2 mandatory free response = 39
+
+  // Load existing responses on mount
+  useEffect(() => {
+    const loadResponses = async () => {
+      try {
+        const response = await fetch("/api/questionnaire/v2/load");
+
+        if (response.status === 404) {
+          // No existing responses, start fresh
+          setIsLoading(false);
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error("Failed to load questionnaire");
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setResponses(data.responses || {});
+          setFreeResponseValues({
+            freeResponse1: data.freeResponses?.freeResponse1 || "",
+            freeResponse2: data.freeResponses?.freeResponse2 || "",
+            freeResponse3: data.freeResponses?.freeResponse3 || "",
+            freeResponse4: data.freeResponses?.freeResponse4 || "",
+            freeResponse5: data.freeResponses?.freeResponse5 || "",
+          });
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error loading questionnaire:", error);
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load questionnaire"
+        );
+        setIsLoading(false);
+      }
+    };
+
+    loadResponses();
+  }, []);
 
   // Calculate completed questions with proper completion logic
   // A question is complete when: answer + (preference OR doesn't matter) + (importance OR doesn't matter OR dealbreaker)
@@ -192,6 +241,20 @@ export function QuestionnaireV2({
   };
 
   const completedCount = calculateCompletedCount();
+
+  // Autosave hook
+  const {
+    saveStatus,
+    lastSaved,
+    error: saveError,
+    manualSave,
+  } = useAutosave({
+    responses,
+    freeResponseValues,
+    questionsCompleted: completedCount,
+    debounceMs: 3000,
+    enabled: !isLoading,
+  });
 
   // Get current question(s)
   const getCurrentContent = () => {
@@ -670,9 +733,56 @@ export function QuestionnaireV2({
     currentQuestionNumber = currentStep + 1;
   }
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mb-4"></div>
+          <p className="text-slate-600">Loading your questionnaire...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show load error state
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <div className="text-red-600 mb-4">
+            <svg
+              className="h-12 w-12 mx-auto"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            Failed to Load Questionnaire
+          </h2>
+          <p className="text-slate-600 mb-4">{loadError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Progress Bar with Back to Dashboard button */}
+      {/* Progress Bar with Back to Dashboard button and Save Status */}
       <div className="flex items-center gap-4 px-4 py-3 bg-white border-b border-slate-200">
         <a
           href="/dashboard"
@@ -687,6 +797,12 @@ export function QuestionnaireV2({
             completedQuestions={completedCount}
           />
         </div>
+        <SaveStatusIndicator
+          status={saveStatus}
+          lastSaved={lastSaved}
+          error={saveError}
+          onManualSave={manualSave}
+        />
       </div>
 
       {/* Question Matrix */}
