@@ -10,11 +10,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { PreferenceSelector, PREFERENCE_OPTIONS } from "./PreferenceSelector";
 import { ImportanceSelectorV2 } from "./ImportanceSelectorV2";
 import { DealBreakerToggle } from "./DealBreakerToggle";
 import { DoesntMatterButton } from "./DoesntMatterButton";
-import { DealBreakerConfirmDialog } from "./DealBreakerConfirmDialog";
 import { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 
@@ -53,9 +53,6 @@ export function QuestionRendererV2({
   // State for "other" text input fields
   const [otherText, setOtherText] = useState<string>("");
 
-  // State for dealbreaker confirmation dialog
-  const [showDealBreakerConfirm, setShowDealBreakerConfirm] = useState(false);
-
   // Initialize default values if none exists
   useEffect(() => {
     if (!value && !disabled) {
@@ -74,7 +71,7 @@ export function QuestionRendererV2({
   }, []); // Only run once on mount
 
   // Hard filter questions (no preference panel)
-  const isHardFilter = ["q1", "q2", "q4"].includes(question.id);
+  const isHardFilter = ["q1", "q2", "q4", "q4a"].includes(question.id);
 
   // Free response questions (no preference panel)
   const isFreeResponse = ["q37", "q38"].includes(question.id);
@@ -104,23 +101,13 @@ export function QuestionRendererV2({
     });
   };
 
-  // Handle dealbreaker toggle with confirmation
+  // Handle dealbreaker toggle - when checked, set importance to 4
   const handleDealBreakerChange = (checked: boolean) => {
-    if (checked && !value?.dealbreaker) {
-      // Show confirmation dialog for first-time dealbreaker
-      setShowDealBreakerConfirm(true);
+    if (checked) {
+      updatePreference({ dealbreaker: true, importance: 4 });
     } else {
-      updatePreference({ dealbreaker: checked });
+      updatePreference({ dealbreaker: false });
     }
-  };
-
-  const confirmDealbreaker = () => {
-    updatePreference({ dealbreaker: true });
-    setShowDealBreakerConfirm(false);
-  };
-
-  const cancelDealbreaker = () => {
-    setShowDealBreakerConfirm(false);
   };
 
   // Validation error display
@@ -217,8 +204,21 @@ export function QuestionRendererV2({
           <div className="space-y-2">
             {question.options?.map((option) => {
               const isChecked = multiValue.includes(option.value);
+              const hasPreferNotToAnswer = multiValue.includes(
+                "prefer-not-to-answer"
+              );
+              const isPreferNotToAnswer =
+                option.value === "prefer-not-to-answer";
+
+              // Disable if:
+              // - Already at max selections and not checked
+              // - "Prefer not to answer" is selected and this is not that option
+              // - This is "Prefer not to answer" and other options are selected
               const isDisabled =
-                disabled || (!isChecked && multiValue.length >= maxSelections);
+                disabled ||
+                (!isChecked && multiValue.length >= maxSelections) ||
+                (hasPreferNotToAnswer && !isPreferNotToAnswer) ||
+                (isPreferNotToAnswer && multiValue.length > 0 && !isChecked);
 
               return (
                 <div key={option.value} className="flex items-center space-x-2">
@@ -226,8 +226,19 @@ export function QuestionRendererV2({
                     id={`${question.id}-own-${option.value}`}
                     checked={isChecked}
                     onCheckedChange={(checked) => {
-                      if (checked && multiValue.length < maxSelections) {
-                        updateOwnAnswer([...multiValue, option.value]);
+                      if (checked) {
+                        // If selecting "prefer not to answer", clear all others
+                        if (isPreferNotToAnswer) {
+                          updateOwnAnswer([option.value]);
+                        }
+                        // If selecting another option while "prefer not to answer" is checked, replace it
+                        else if (hasPreferNotToAnswer) {
+                          updateOwnAnswer([option.value]);
+                        }
+                        // Normal add
+                        else if (multiValue.length < maxSelections) {
+                          updateOwnAnswer([...multiValue, option.value]);
+                        }
                       } else if (!checked) {
                         updateOwnAnswer(
                           multiValue.filter((v) => v !== option.value)
@@ -259,20 +270,34 @@ export function QuestionRendererV2({
         );
 
       case "scale":
+        const scaleValue = (ownAnswer as number) || question.min || 1;
         return (
-          <div className="space-y-2">
-            <Input
-              type="number"
-              value={(ownAnswer as number) || ""}
-              onChange={(e) => updateOwnAnswer(Number(e.target.value))}
-              min={question.min}
-              max={question.max}
-              step={question.step}
-              disabled={disabled}
-              className="w-32"
-            />
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">
+                  Value:
+                </span>
+                <span className="text-lg font-bold text-primary">
+                  {scaleValue}
+                </span>
+              </div>
+              <Slider
+                value={[scaleValue]}
+                onValueChange={([val]) => updateOwnAnswer(val)}
+                min={question.min || 1}
+                max={question.max || 5}
+                step={question.step || 1}
+                disabled={disabled}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>{question.min || 1}</span>
+                <span>{question.max || 5}</span>
+              </div>
+            </div>
             {question.options && question.options.length > 0 && (
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className="text-sm text-gray-600 space-y-1 border-t pt-2">
                 {question.options.map((opt) => (
                   <div key={opt.value}>
                     <strong>{opt.value}:</strong> {opt.label}
@@ -315,6 +340,59 @@ export function QuestionRendererV2({
             min={question.id === "q4" ? question.min : undefined}
             max={question.id === "q4" ? question.max : undefined}
           />
+        );
+
+      case "age-range":
+        const ageRange = (ownAnswer as { min: number; max: number }) || {
+          min: 18,
+          max: 25,
+        };
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor={`${question.id}-min`}>Minimum Age</Label>
+                <Input
+                  id={`${question.id}-min`}
+                  type="number"
+                  value={ageRange.min || ""}
+                  onChange={(e) => {
+                    const newMin = parseInt(e.target.value) || 18;
+                    const currentMax = ageRange.max || 25;
+                    // Ensure min is at least 18
+                    const validMin = Math.max(18, newMin);
+                    updateOwnAnswer({ min: validMin, max: currentMax });
+                  }}
+                  min={18}
+                  max={40}
+                  disabled={disabled}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor={`${question.id}-max`}>Maximum Age</Label>
+                <Input
+                  id={`${question.id}-max`}
+                  type="number"
+                  value={ageRange.max || ""}
+                  onChange={(e) => {
+                    const newMax = parseInt(e.target.value) || 25;
+                    const currentMin = ageRange.min || 18;
+                    // Ensure max is greater than min
+                    const validMax = Math.max(currentMin + 1, newMax);
+                    updateOwnAnswer({ min: currentMin, max: validMax });
+                  }}
+                  min={(ageRange.min || 18) + 1}
+                  max={40}
+                  disabled={disabled}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">
+              Age range: {ageRange.min || 18} - {ageRange.max || 25} years old
+            </p>
+          </div>
         );
 
       default:
@@ -398,7 +476,7 @@ export function QuestionRendererV2({
                   questionId={question.id}
                   value={importance}
                   onChange={(imp) => updatePreference({ importance: imp })}
-                  disabled={disabled}
+                  disabled={disabled || dealbreaker}
                 />
               </div>
               <DealBreakerToggle
@@ -573,7 +651,7 @@ export function QuestionRendererV2({
                     questionId={question.id}
                     value={value?.importance || 3}
                     onChange={(imp) => updatePreference({ importance: imp })}
-                    disabled={disabled}
+                    disabled={disabled || value?.dealbreaker || false}
                   />
                 </div>
                 <DealBreakerToggle
@@ -586,14 +664,6 @@ export function QuestionRendererV2({
             )}
           </div>
         </div>
-
-        {/* Dealbreaker confirm dialog */}
-        <DealBreakerConfirmDialog
-          isOpen={showDealBreakerConfirm}
-          onConfirm={confirmDealbreaker}
-          onCancel={cancelDealbreaker}
-          questionText={question.text}
-        />
       </div>
     );
   }
@@ -619,14 +689,6 @@ export function QuestionRendererV2({
           {/* Right side: Preference panel */}
           {renderPreferencePanel()}
         </div>
-
-        {/* Dealbreaker confirm dialog */}
-        <DealBreakerConfirmDialog
-          isOpen={showDealBreakerConfirm}
-          onConfirm={confirmDealbreaker}
-          onCancel={cancelDealbreaker}
-          questionText={question.text}
-        />
       </div>
     );
   }

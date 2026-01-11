@@ -81,7 +81,7 @@ export type PreferenceType =
 // Preference configuration for each question
 export interface PreferenceConfig {
   type: PreferenceType;
-  value?: string | string[] | number | { minAge: number; maxAge: number }; // For specific values
+  value?: string | string[] | number | { min: number; max: number }; // For specific values (age range)
   doesntMatter: boolean; // When true, importance/dealbreaker disabled and weight=0
 }
 
@@ -99,7 +99,9 @@ export type ResponseValue =
   | string[]
   | number
   | { value: string; text: string }
-  | { minAge: number; maxAge: number }
+  | { min: number; max: number } // Age range (q4a)
+  | { show: string[]; receive: string[] } // Love languages (q21)
+  | { substance: string; frequency: string | null } // Drug use (q9)
   | undefined;
 
 // User's responses - V2 format (questionId -> QuestionResponse)

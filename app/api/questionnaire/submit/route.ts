@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { validateResponses } from "@/src/lib/questionnaire-utils";
+import { Responses } from "@/src/lib/questionnaire-types";
 import { encryptJSON } from "@/lib/encryption";
 import { QUESTIONNAIRE_DEADLINE } from "@/lib/matching/config";
 
@@ -35,7 +36,17 @@ const responseValueSchema = z.union([
   z.array(z.string()), // Multi-choice, ranking
   z.number(), // Scale, age
   z.object({ value: z.string(), text: z.string() }), // Single-choice with text input
-  z.object({ minAge: z.number(), maxAge: z.number() }), // Age-range
+  z.object({ min: z.number(), max: z.number() }), // Age-range (q4a)
+  z.object({ show: z.array(z.string()), receive: z.array(z.string()) }), // Love languages (q21)
+  z.object({ substance: z.string(), frequency: z.string().nullable() }), // Drug use (q9)
+]);
+
+// V2 Preference value types (subset of response values used for preferences)
+const preferenceValueSchema = z.union([
+  z.string(),
+  z.array(z.string()),
+  z.number(),
+  z.object({ min: z.number(), max: z.number() }), // Age-range preferences
 ]);
 
 // V2 Preference configuration
@@ -50,7 +61,7 @@ const preferenceConfigSchema = z.object({
     "compatible",
     "specific_values",
   ]),
-  value: responseValueSchema.optional(), // For specific_values preference type
+  value: preferenceValueSchema.optional(), // For specific_values preference type
   doesntMatter: z.boolean(), // When true, importance/dealbreaker disabled
 });
 
@@ -62,17 +73,10 @@ const questionResponseSchema = z.object({
   dealbreaker: z.boolean(), // Hard filter flag (ignored if doesntMatter=true)
 });
 
-// Validation schema for submit request (supports both V1 and V2 formats)
+// Validation schema for submit request (V2 format only)
 const submitSchema = z.object({
-  responses: z.record(
-    z.string(),
-    z.union([
-      questionResponseSchema, // V2 format (split-screen)
-      responseValueSchema, // V1 format (legacy, for backward compatibility)
-    ])
-  ),
-  // V1 importance field (deprecated, kept for backward compatibility)
-  importance: z.record(z.string(), z.number().int().min(1).max(5)).optional(),
+  responses: z.record(z.string(), questionResponseSchema), // V2 format only
+  // V1 importance field removed (V2 handles importance per question)
 });
 
 export async function POST(request: NextRequest) {
@@ -103,7 +107,9 @@ export async function POST(request: NextRequest) {
     const validatedData = submitSchema.parse(body);
 
     // Validate all required questions are answered
-    const validationErrors = validateResponses(validatedData.responses);
+    const validationErrors = validateResponses(
+      validatedData.responses as Responses
+    );
     if (validationErrors.length > 0) {
       return NextResponse.json(
         {
@@ -129,16 +135,12 @@ export async function POST(request: NextRequest) {
 
     // Encrypt data before saving
     const encryptedResponses = encryptJSON(validatedData.responses);
-    const encryptedImportance = validatedData.importance
-      ? encryptJSON(validatedData.importance)
-      : undefined;
 
     // Submit questionnaire (lock responses)
     const result = await prisma.questionnaireResponse.upsert({
       where: { userId: session.user.id },
       update: {
         responses: encryptedResponses,
-        importance: encryptedImportance,
         isSubmitted: true,
         submittedAt: new Date(),
         updatedAt: new Date(),
@@ -146,7 +148,6 @@ export async function POST(request: NextRequest) {
       create: {
         userId: session.user.id,
         responses: encryptedResponses,
-        importance: encryptedImportance,
         isSubmitted: true,
         submittedAt: new Date(),
       },

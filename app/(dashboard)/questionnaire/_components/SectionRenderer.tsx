@@ -6,9 +6,10 @@ import {
   ResponseValue,
   ImportanceRatings,
   ImportanceLevel,
+  QuestionResponse,
 } from "@/src/lib/questionnaire-types";
 import { Question } from "@/src/lib/questionnaire-types";
-import { QuestionRenderer } from "./QuestionRenderer";
+import { QuestionRendererV2 } from "./QuestionRendererV2";
 import {
   Card,
   CardContent,
@@ -21,7 +22,7 @@ interface SectionRendererProps {
   section: Section;
   responses: Responses;
   importance: ImportanceRatings;
-  onChange: (questionId: string, value: ResponseValue) => void;
+  onChange: (questionId: string, value: QuestionResponse) => void;
   onImportanceChange: (questionId: string, importance: ImportanceLevel) => void;
   disabled?: boolean;
   validationErrors?: Map<string, string>; // Map of questionId -> error message
@@ -60,18 +61,13 @@ export function SectionRenderer({
               className="pb-6 border-b last:border-b-0 last:pb-0"
               data-tutorial={isFirstQuestion ? "first-question" : undefined}
             >
-              <QuestionRenderer
+              <QuestionRendererV2
                 question={question}
                 value={responses[question.id]}
                 onChange={(value) => onChange(question.id, value)}
-                importance={importance[question.id] || 3}
-                onImportanceChange={(imp) =>
-                  onImportanceChange(question.id, imp)
-                }
                 disabled={disabled}
                 validationError={validationErrors?.get(question.id)}
                 questionNumber={globalNumber}
-                isFirstQuestion={isFirstQuestion}
               />
             </div>
           );

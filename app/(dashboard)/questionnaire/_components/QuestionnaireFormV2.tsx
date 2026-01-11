@@ -219,6 +219,24 @@ export function QuestionnaireFormV2({
   // Calculate progress
   const progress = calculateProgress(responses);
 
+  // Jump to first unanswered question
+  const jumpToFirstUnanswered = () => {
+    const allQuestions = config.sections.flatMap(
+      (section) => section.questions
+    );
+    const firstUnanswered = allQuestions.find((q) => {
+      const resp = responses[q.id] as QuestionResponse | undefined;
+      return !resp?.ownAnswer || resp.ownAnswer === "";
+    });
+
+    if (firstUnanswered) {
+      const element = document.getElementById(firstUnanswered.id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  };
+
   // Show agreement screen first
   if (!hasAgreed) {
     return (
@@ -233,13 +251,29 @@ export function QuestionnaireFormV2({
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold">Questionnaire</h1>
-        <p className="text-muted-foreground">
-          {isSubmitted
-            ? "Your questionnaire has been submitted. You cannot make changes."
-            : "Complete all questions to find your matches. Your progress is automatically saved."}
-        </p>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/dashboard")}
+            disabled={isSubmitting}
+          >
+            ← Back to Dashboard
+          </Button>
+          {!isSubmitted && progress < 100 && (
+            <Button variant="secondary" onClick={jumpToFirstUnanswered}>
+              Jump to First Unanswered
+            </Button>
+          )}
+        </div>
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold">Questionnaire</h1>
+          <p className="text-muted-foreground">
+            {isSubmitted
+              ? "Your questionnaire has been submitted. You cannot make changes."
+              : "Complete all questions to find your matches. Your progress is automatically saved every 3 seconds."}
+          </p>
+        </div>
       </div>
 
       {/* Progress Bar */}

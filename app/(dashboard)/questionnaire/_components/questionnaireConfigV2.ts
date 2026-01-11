@@ -85,8 +85,20 @@ const section1Questions: Question[] = [
     hasImportance: false, // Hard filter
     min: 18,
     max: 40,
+    helpText: "You must be 18 or older.",
+  },
+
+  // Q4a: Age Preference (Hard Filter)
+  {
+    id: "q4a",
+    type: "age-range",
+    text: "What age range are you looking for in a match?",
+    required: true,
+    hasImportance: false, // Hard filter
+    min: 18,
+    max: 40,
     helpText:
-      "You must be 18 or older. Your match's age range will be a hard filter.",
+      "Your match's age must fall within this range. This is a hard filter.",
   },
 
   // Q5: Cultural / Ethnic Background

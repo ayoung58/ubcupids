@@ -400,9 +400,9 @@ export function QuestionRenderer({
       );
 
     case "age-range":
-      const ageRangeValue = (value as { minAge: number; maxAge: number }) || {
-        minAge: -1,
-        maxAge: -1,
+      const ageRangeValue = (value as { min: number; max: number }) || {
+        min: -1,
+        max: -1,
       };
 
       return wrapWithImportance(
@@ -426,17 +426,17 @@ export function QuestionRenderer({
                 id={`${question.id}-min`}
                 type="number"
                 min={0}
-                value={ageRangeValue.minAge === -1 ? "" : ageRangeValue.minAge}
+                value={ageRangeValue.min === -1 ? "" : ageRangeValue.min}
                 onChange={(e) => {
                   const inputValue = e.target.value;
                   const newMin = inputValue === "" ? -1 : Number(inputValue);
-                  const newMax = ageRangeValue.maxAge;
+                  const newMax = ageRangeValue.max;
                   const newValue =
                     newMin === -1 && newMax === -1
                       ? undefined
                       : {
-                          minAge: newMin,
-                          maxAge: newMax,
+                          min: newMin,
+                          max: newMax,
                         };
                   onChange(newValue);
                 }}
@@ -455,17 +455,17 @@ export function QuestionRenderer({
                 id={`${question.id}-max`}
                 type="number"
                 min={0}
-                value={ageRangeValue.maxAge === -1 ? "" : ageRangeValue.maxAge}
+                value={ageRangeValue.max === -1 ? "" : ageRangeValue.max}
                 onChange={(e) => {
                   const inputValue = e.target.value;
                   const newMax = inputValue === "" ? -1 : Number(inputValue);
-                  const newMin = ageRangeValue.minAge;
+                  const newMin = ageRangeValue.min;
                   const newValue =
                     newMin === -1 && newMax === -1
                       ? undefined
                       : {
-                          minAge: newMin,
-                          maxAge: newMax,
+                          min: newMin,
+                          max: newMax,
                         };
                   onChange(newValue);
                 }}

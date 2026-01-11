@@ -10,6 +10,18 @@ import {
 } from "./questionnaire-types";
 
 /**
+ * Helper function to check if a value is an age range object
+ */
+function isObjectWithMinMax(value: any): value is { min: number; max: number } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "min" in value &&
+    "max" in value
+  );
+}
+
+/**
  * Get the complete questionnaire configuration
  */
 export function getQuestionnaireConfig(): QuestionnaireConfig {
@@ -62,11 +74,27 @@ export function validateResponses(responses: Responses): ValidationError[] {
   requiredQuestions.forEach((question) => {
     const response = responses[question.id];
 
-    // Check if response exists and is not empty
+    // Check if response exists and has an answer
+    if (!response || !response.ownAnswer) {
+      errors.push({
+        questionId: question.id,
+        questionText: question.text,
+        errorMessage: "Please provide an answer to this question",
+      });
+      return; // Skip further validation for this question
+    }
+
+    const ownAnswer = response.ownAnswer;
+
+    // Check if answer is not empty based on type
     if (
-      !response ||
-      (typeof response === "string" && response.trim() === "") ||
-      (Array.isArray(response) && response.length === 0)
+      (typeof ownAnswer === "string" && ownAnswer.trim() === "") ||
+      (Array.isArray(ownAnswer) && ownAnswer.length === 0) ||
+      (typeof ownAnswer === "object" &&
+        ownAnswer !== null &&
+        "min" in ownAnswer &&
+        "max" in ownAnswer &&
+        (ownAnswer.min === undefined || ownAnswer.max === undefined))
     ) {
       errors.push({
         questionId: question.id,
@@ -78,7 +106,7 @@ export function validateResponses(responses: Responses): ValidationError[] {
 
     // Additional validation for text/textarea fields
     if (question.type === "text" || question.type === "textarea") {
-      const textResponse = response as string;
+      const textResponse = ownAnswer as string;
 
       // Only validate max length (minLength removed per user request)
       if (typeof textResponse === "string") {
@@ -94,7 +122,7 @@ export function validateResponses(responses: Responses): ValidationError[] {
 
     // Additional validation for text inputs in options
     if (question.type === "single-choice" && question.options) {
-      const responseValue = response;
+      const responseValue = ownAnswer;
       if (
         responseValue &&
         typeof responseValue === "object" &&
@@ -118,14 +146,14 @@ export function validateResponses(responses: Responses): ValidationError[] {
       }
     }
     if (question.type === "multi-choice") {
-      const arrayResponse = response as string[];
+      const arrayResponse = ownAnswer as string[];
 
       // No specific multi-choice validations needed currently
     }
 
     // Additional validation for ranking questions requiring specific counts
     if (question.type === "ranking") {
-      const arrayResponse = response as string[];
+      const arrayResponse = ownAnswer as string[];
 
       if (question.id === "q30") {
         // Love languages you RECEIVE - require exactly 3 rankings
@@ -192,8 +220,13 @@ export function calculateProgress(responses: Responses): number {
     // Count as answered if not empty
     return (
       response &&
-      (typeof response !== "string" || response.trim() !== "") &&
-      (!Array.isArray(response) || response.length > 0)
+      response.ownAnswer &&
+      (typeof response.ownAnswer !== "string" ||
+        response.ownAnswer.trim() !== "") &&
+      (!Array.isArray(response.ownAnswer) || response.ownAnswer.length > 0) &&
+      (!isObjectWithMinMax(response.ownAnswer) ||
+        (response.ownAnswer.min !== undefined &&
+          response.ownAnswer.max !== undefined))
     );
   }).length;
 
@@ -235,8 +268,13 @@ export function getSectionProgress(
     const response = responses[q.id];
     return (
       response &&
-      (typeof response !== "string" || response.trim() !== "") &&
-      (!Array.isArray(response) || response.length > 0)
+      response.ownAnswer &&
+      (typeof response.ownAnswer !== "string" ||
+        response.ownAnswer.trim() !== "") &&
+      (!Array.isArray(response.ownAnswer) || response.ownAnswer.length > 0) &&
+      (!isObjectWithMinMax(response.ownAnswer) ||
+        (response.ownAnswer.min !== undefined &&
+          response.ownAnswer.max !== undefined))
     );
   }).length;
 
@@ -254,8 +292,13 @@ export function countAnsweredQuestions(responses: Responses): number {
     const response = responses[question.id];
     return (
       response &&
-      (typeof response !== "string" || response.trim() !== "") &&
-      (!Array.isArray(response) || response.length > 0)
+      response.ownAnswer &&
+      (typeof response.ownAnswer !== "string" ||
+        response.ownAnswer.trim() !== "") &&
+      (!Array.isArray(response.ownAnswer) || response.ownAnswer.length > 0) &&
+      (!isObjectWithMinMax(response.ownAnswer) ||
+        (response.ownAnswer.min !== undefined &&
+          response.ownAnswer.max !== undefined))
     );
   }).length;
 }
