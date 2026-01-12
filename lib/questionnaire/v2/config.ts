@@ -528,7 +528,7 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
     },
     hasPreference: true,
     preferenceText: "I prefer my match to have a",
-    preferenceFormat: "similar",
+    preferenceFormat: "same-similar-different",
     validation: {},
   },
 
@@ -547,7 +547,7 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
     },
     hasPreference: true,
     preferenceText: "I prefer my match to have a",
-    preferenceFormat: "similar",
+    preferenceFormat: "same-similar-different",
     validation: {},
   },
 
@@ -644,7 +644,7 @@ export const QUESTIONS_SECTION_2: QuestionConfig[] = [
     },
     hasPreference: true,
     preferenceText: "I prefer someone with a",
-    preferenceFormat: "similar",
+    preferenceFormat: "same-similar-different",
     validation: {},
   },
 
@@ -747,7 +747,7 @@ export const QUESTIONS_SECTION_2: QuestionConfig[] = [
     },
     hasPreference: true,
     preferenceText: "I prefer my match to have a",
-    preferenceFormat: "similar",
+    preferenceFormat: "same-similar-different",
     validation: {},
   },
 
@@ -836,7 +836,7 @@ export const QUESTIONS_SECTION_2: QuestionConfig[] = [
     },
     hasPreference: true,
     preferenceText: "I prefer my match to have a",
-    preferenceFormat: "similar",
+    preferenceFormat: "same-similar-different",
     validation: {},
   },
 
@@ -855,7 +855,7 @@ export const QUESTIONS_SECTION_2: QuestionConfig[] = [
     },
     hasPreference: true,
     preferenceText: "I prefer my match to have",
-    preferenceFormat: "similar",
+    preferenceFormat: "same-similar-different",
     validation: {},
   },
 
@@ -874,7 +874,7 @@ export const QUESTIONS_SECTION_2: QuestionConfig[] = [
     },
     hasPreference: true,
     preferenceText: "I prefer my match to communicate in a",
-    preferenceFormat: "similar",
+    preferenceFormat: "same-similar-different",
     validation: {},
   },
 

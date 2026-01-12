@@ -2,171 +2,24 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
-import { encrypt } from "@/lib/encryption";
-import questionnaireConfig from "@/src/data/questionnaire-config.json";
-
-/**
- * Helper function to generate random responses for questionnaire
- */
-function generateRandomResponses(): {
-  responses: Record<string, string | string[] | { min: number; max: number }>;
-  importance: Record<string, number>;
-} {
-  const responses: Record<
-    string,
-    string | string[] | { min: number; max: number }
-  > = {};
-  const importance: Record<string, number> = {};
-
-  // Gender options for matching logic
-  const genderOptions = ["man", "woman", "non-binary"];
-  const selectedGender =
-    genderOptions[Math.floor(Math.random() * genderOptions.length)];
-  responses["q1"] = selectedGender;
-
-  // Orientation
-  const orientationOptions = [
-    "heterosexual",
-    "gay-lesbian",
-    "bisexual",
-    "pansexual",
-  ];
-  responses["q2"] =
-    orientationOptions[Math.floor(Math.random() * orientationOptions.length)];
-
-  // Match preferences - generate compatible preferences
-  const matchPreferenceOptions = ["men", "women", "non-binary", "anyone"];
-  const numPreferences = Math.floor(Math.random() * 3) + 1; // 1-3 preferences
-  const selectedPreferences: string[] = [];
-  for (let i = 0; i < numPreferences; i++) {
-    const pref =
-      matchPreferenceOptions[
-        Math.floor(Math.random() * matchPreferenceOptions.length)
-      ];
-    if (!selectedPreferences.includes(pref) && pref !== "anyone") {
-      selectedPreferences.push(pref);
-    }
-  }
-  if (selectedPreferences.length === 0 || Math.random() > 0.7) {
-    selectedPreferences.push("anyone");
-  }
-  responses["q3"] = selectedPreferences;
-
-  // Process all sections
-  for (const section of questionnaireConfig.sections) {
-    for (const question of section.questions) {
-      // Skip if already answered (q1, q2, q3)
-      if (responses[question.id]) continue;
-
-      switch (question.type) {
-        case "single-choice":
-          if (
-            "options" in question &&
-            question.options &&
-            question.options.length > 0
-          ) {
-            const option =
-              question.options[
-                Math.floor(Math.random() * question.options.length)
-              ];
-            responses[question.id] = option.value;
-
-            // If option has text input, add some random text
-            if (
-              "hasTextInput" in option &&
-              option.hasTextInput &&
-              Math.random() > 0.5
-            ) {
-              responses[`${question.id}_text`] = "Something unique about me";
-            }
-          }
-          break;
-
-        case "multi-choice":
-          if (
-            "options" in question &&
-            question.options &&
-            question.options.length > 0
-          ) {
-            const numSelections =
-              Math.floor(Math.random() * Math.min(3, question.options.length)) +
-              1;
-            const selected: string[] = [];
-            const availableOptions = [...question.options];
-            for (let i = 0; i < numSelections; i++) {
-              const idx = Math.floor(Math.random() * availableOptions.length);
-              selected.push(availableOptions[idx].value);
-              availableOptions.splice(idx, 1);
-            }
-            responses[question.id] = selected;
-          }
-          break;
-
-        case "ranking":
-          if (
-            "options" in question &&
-            question.options &&
-            question.options.length > 0
-          ) {
-            // Select 3 random options for ranking
-            const availableOptions = [...question.options];
-            const ranked: string[] = [];
-            for (let i = 0; i < Math.min(3, availableOptions.length); i++) {
-              const idx = Math.floor(Math.random() * availableOptions.length);
-              ranked.push(availableOptions[idx].value);
-              availableOptions.splice(idx, 1);
-            }
-            responses[question.id] = ranked;
-          }
-          break;
-
-        case "age-range":
-          // Generate realistic age range (18-30 typically)
-          const minAge = 18 + Math.floor(Math.random() * 5); // 18-22
-          const maxAge = minAge + Math.floor(Math.random() * 8) + 2; // +2 to +10 years
-          responses[question.id] = { min: minAge, max: Math.min(maxAge, 30) };
-          break;
-
-        case "textarea":
-          // Generate some sample text responses
-          const sampleTexts = [
-            "I'm really passionate about this and think it's important.",
-            "This is something I care deeply about and want to share.",
-            "I believe in being genuine and authentic in relationships.",
-            "Communication and honesty are really important to me.",
-            "I love exploring new experiences and meeting new people.",
-          ];
-          responses[question.id] =
-            sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
-          break;
-
-        default:
-          // For any other types, provide a default response
-          if (
-            "options" in question &&
-            question.options &&
-            question.options.length > 0
-          ) {
-            responses[question.id] = question.options[0].value;
-          }
-      }
-
-      // Add importance rating for questions that have it
-      if ("hasImportance" in question && question.hasImportance) {
-        importance[question.id] = Math.floor(Math.random() * 5) + 1; // 1-5
-      }
-    }
-  }
-
-  return { responses, importance };
-}
+import {
+  generateV2Responses,
+  generatePerfectMatchPair,
+  generateDealbreakerConflictPair,
+  generateAsymmetricPair,
+  generateDiversePool,
+} from "@/lib/questionnaire/v2/test-data-generator";
 
 /**
  * Generate Test Users
  * POST /api/admin/generate-test-users
  *
  * Creates test users for development/testing
- * Body: { count: number, userType: "match" | "cupid" }
+ * Body: { 
+ *   count: number, 
+ *   userType: "match" | "cupid",
+ *   scenario?: "random" | "perfect" | "dealbreaker" | "asymmetric" | "diverse"
+ * }
  */
 export async function POST(request: Request) {
   try {
@@ -189,6 +42,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const count = body.count || 125;
     const userType = body.userType || "match"; // "match" or "cupid"
+    const scenario = body.scenario || "random"; // "random", "perfect", "dealbreaker", "asymmetric", "diverse"
 
     const hashedPassword = await hashPassword("TestPassword123!");
 
@@ -256,7 +110,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // If creating match users, also create completed questionnaire responses
+    // If creating match users, also create completed V2 questionnaire responses
     if (userType === "match") {
       const createdUsers = await prisma.user.findMany({
         where: {
@@ -267,26 +121,142 @@ export async function POST(request: Request) {
 
       const questionnaireResponses = [];
 
-      for (const user of createdUsers) {
-        const { responses, importance } = generateRandomResponses();
-
-        // Encrypt the responses and importance data
-        const encryptedResponses = encrypt(JSON.stringify(responses));
-        const encryptedImportance = encrypt(JSON.stringify(importance));
-
-        questionnaireResponses.push({
-          userId: user.id,
-          responses: encryptedResponses,
-          importance: encryptedImportance,
-          isSubmitted: true,
-          submittedAt: new Date(),
-        });
+      // Generate responses based on scenario
+      if (scenario === "perfect" && createdUsers.length >= 2) {
+        // Generate perfect match pairs
+        const pairCount = Math.floor(createdUsers.length / 2);
+        for (let i = 0; i < pairCount; i++) {
+          const [user1Response, user2Response] = generatePerfectMatchPair();
+          
+          questionnaireResponses.push({
+            userId: createdUsers[i * 2].id,
+            responses: user1Response.responses as any,
+            freeResponse1: user1Response.freeResponse1,
+            freeResponse2: user1Response.freeResponse2,
+            freeResponse3: user1Response.freeResponse3 || null,
+            freeResponse4: user1Response.freeResponse4 || null,
+            freeResponse5: user1Response.freeResponse5 || null,
+            isSubmitted: true,
+            submittedAt: new Date(),
+          });
+          
+          if (i * 2 + 1 < createdUsers.length) {
+            questionnaireResponses.push({
+              userId: createdUsers[i * 2 + 1].id,
+              responses: user2Response.responses as any,
+              freeResponse1: user2Response.freeResponse1,
+              freeResponse2: user2Response.freeResponse2,
+              freeResponse3: user2Response.freeResponse3 || null,
+              freeResponse4: user2Response.freeResponse4 || null,
+              freeResponse5: user2Response.freeResponse5 || null,
+              isSubmitted: true,
+              submittedAt: new Date(),
+            });
+          }
+        }
+      } else if (scenario === "dealbreaker" && createdUsers.length >= 2) {
+        // Generate dealbreaker conflict pairs
+        const pairCount = Math.floor(createdUsers.length / 2);
+        for (let i = 0; i < pairCount; i++) {
+          const [user1Response, user2Response] = generateDealbreakerConflictPair();
+          
+          questionnaireResponses.push({
+            userId: createdUsers[i * 2].id,
+            responses: user1Response.responses as any,
+            freeResponse1: user1Response.freeResponse1,
+            freeResponse2: user1Response.freeResponse2,
+            freeResponse3: user1Response.freeResponse3 || null,
+            freeResponse4: user1Response.freeResponse4 || null,
+            freeResponse5: user1Response.freeResponse5 || null,
+            isSubmitted: true,
+            submittedAt: new Date(),
+          });
+          
+          if (i * 2 + 1 < createdUsers.length) {
+            questionnaireResponses.push({
+              userId: createdUsers[i * 2 + 1].id,
+              responses: user2Response.responses as any,
+              freeResponse1: user2Response.freeResponse1,
+              freeResponse2: user2Response.freeResponse2,
+              freeResponse3: user2Response.freeResponse3 || null,
+              freeResponse4: user2Response.freeResponse4 || null,
+              freeResponse5: user2Response.freeResponse5 || null,
+              isSubmitted: true,
+              submittedAt: new Date(),
+            });
+          }
+        }
+      } else if (scenario === "asymmetric" && createdUsers.length >= 2) {
+        // Generate asymmetric pairs
+        const pairCount = Math.floor(createdUsers.length / 2);
+        for (let i = 0; i < pairCount; i++) {
+          const [user1Response, user2Response] = generateAsymmetricPair();
+          
+          questionnaireResponses.push({
+            userId: createdUsers[i * 2].id,
+            responses: user1Response.responses as any,
+            freeResponse1: user1Response.freeResponse1,
+            freeResponse2: user1Response.freeResponse2,
+            freeResponse3: user1Response.freeResponse3 || null,
+            freeResponse4: user1Response.freeResponse4 || null,
+            freeResponse5: user1Response.freeResponse5 || null,
+            isSubmitted: true,
+            submittedAt: new Date(),
+          });
+          
+          if (i * 2 + 1 < createdUsers.length) {
+            questionnaireResponses.push({
+              userId: createdUsers[i * 2 + 1].id,
+              responses: user2Response.responses as any,
+              freeResponse1: user2Response.freeResponse1,
+              freeResponse2: user2Response.freeResponse2,
+              freeResponse3: user2Response.freeResponse3 || null,
+              freeResponse4: user2Response.freeResponse4 || null,
+              freeResponse5: user2Response.freeResponse5 || null,
+              isSubmitted: true,
+              submittedAt: new Date(),
+            });
+          }
+        }
+      } else if (scenario === "diverse") {
+        // Generate diverse pool
+        const diversePool = generateDiversePool(createdUsers.length);
+        for (let i = 0; i < createdUsers.length; i++) {
+          const generated = diversePool[i];
+          questionnaireResponses.push({
+            userId: createdUsers[i].id,
+            responses: generated.responses as any,
+            freeResponse1: generated.freeResponse1,
+            freeResponse2: generated.freeResponse2,
+            freeResponse3: generated.freeResponse3 || null,
+            freeResponse4: generated.freeResponse4 || null,
+            freeResponse5: generated.freeResponse5 || null,
+            isSubmitted: true,
+            submittedAt: new Date(),
+          });
+        }
+      } else {
+        // Default: random generation
+        for (const user of createdUsers) {
+          const generated = generateV2Responses();
+          questionnaireResponses.push({
+            userId: user.id,
+            responses: generated.responses as any,
+            freeResponse1: generated.freeResponse1,
+            freeResponse2: generated.freeResponse2,
+            freeResponse3: generated.freeResponse3 || null,
+            freeResponse4: generated.freeResponse4 || null,
+            freeResponse5: generated.freeResponse5 || null,
+            isSubmitted: true,
+            submittedAt: new Date(),
+          });
+        }
       }
 
-      // Create questionnaire responses in batches
+      // Create V2 questionnaire responses in batches
       for (let i = 0; i < questionnaireResponses.length; i += BATCH_SIZE) {
         const batch = questionnaireResponses.slice(i, i + BATCH_SIZE);
-        await prisma.questionnaireResponse.createMany({
+        await prisma.questionnaireResponseV2.createMany({
           data: batch,
           skipDuplicates: true,
         });
@@ -294,9 +264,10 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      message: `Generated ${created} test ${userType} users${userType === "match" ? " with completed questionnaires" : ""}`,
+      message: `Generated ${created} test ${userType} users${userType === "match" ? ` with completed questionnaires (${scenario} scenario)` : ""}`,
       created,
       userType,
+      scenario: userType === "match" ? scenario : undefined,
     });
   } catch (error) {
     console.error("Error generating test users:", error);

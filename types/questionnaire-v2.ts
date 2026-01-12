@@ -342,6 +342,7 @@ export interface QuestionConfig {
     | "same"
     | "same-or-similar"
     | "similar"
+    | "same-similar-different"
     | "directional"
     | "multi-select"
     | "special";
