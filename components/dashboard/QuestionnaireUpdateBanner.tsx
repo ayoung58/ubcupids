@@ -66,7 +66,7 @@ export function QuestionnaireUpdateBanner({
               Action Required: Complete Updated Questionnaire
             </p>
             <p className="text-xs text-pink-100 leading-4 mt-0.5">
-              We've updated our matching questionnaire with new questions to
+              We&apos;ve updated our matching questionnaire with new questions to
               improve match quality. Please retake the questionnaire to continue
               matching.
             </p>

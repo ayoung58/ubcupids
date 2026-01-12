@@ -291,9 +291,15 @@ export function AdminDashboardClient({
       {/* Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Configuration</CardTitle>
+          <CardTitle>Configuration & Tools</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          <Link href="/admin/matching">
+            <Button className="w-full h-16" variant="default">
+              <Play className="mr-2 h-5 w-5" />
+              Run Matching Algorithm V2.2
+            </Button>
+          </Link>
           <Link href="/admin/questionnaire-config">
             <Button className="w-full h-16" variant="outline">
               <Settings className="mr-2 h-5 w-5" />
@@ -307,7 +313,7 @@ export function AdminDashboardClient({
       <Card className="border-blue-200 bg-blue-50/30">
         <CardHeader>
           <CardTitle className="text-blue-900">
-            🧪 Test Users Matching Workflow
+            Test Users Matching Workflow
           </CardTitle>
           <p className="text-sm text-blue-700">
             Manage matching for test users independently (isTestUser=true)
