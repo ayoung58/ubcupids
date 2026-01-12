@@ -2,27 +2,41 @@
  * Admin Matching Dashboard - Integration Tests
  *
  * Tests the admin UI integration with the matching algorithm V2.2 API.
+ * Updated to support test/production user type filtering.
  */
 
 import { describe, it, expect } from "vitest";
 
 describe("Admin Matching Dashboard", () => {
   describe("Statistics Display", () => {
-    it("should handle initial stats correctly", async () => {
-      const initialStats = {
+    it("should handle separate stats for test and production users", async () => {
+      const testStats = {
+        totalUsers: 30,
+        totalMatches: 12,
+        unmatchedUsers: 6,
+      };
+
+      const productionStats = {
         totalUsers: 50,
         totalMatches: 20,
         unmatchedUsers: 10,
       };
 
-      // Stats should be valid
-      expect(initialStats.totalUsers).toBeGreaterThanOrEqual(0);
-      expect(initialStats.totalMatches).toBeGreaterThanOrEqual(0);
-      expect(initialStats.unmatchedUsers).toBeGreaterThanOrEqual(0);
+      // Both stat sets should be valid
+      expect(testStats.totalUsers).toBeGreaterThanOrEqual(0);
+      expect(testStats.totalMatches).toBeGreaterThanOrEqual(0);
+      expect(testStats.unmatchedUsers).toBeGreaterThanOrEqual(0);
 
-      // Matches should not exceed half of total users
-      expect(initialStats.totalMatches).toBeLessThanOrEqual(
-        initialStats.totalUsers / 2
+      expect(productionStats.totalUsers).toBeGreaterThanOrEqual(0);
+      expect(productionStats.totalMatches).toBeGreaterThanOrEqual(0);
+      expect(productionStats.unmatchedUsers).toBeGreaterThanOrEqual(0);
+
+      // Matches should not exceed half of total users for each type
+      expect(testStats.totalMatches).toBeLessThanOrEqual(
+        testStats.totalUsers / 2
+      );
+      expect(productionStats.totalMatches).toBeLessThanOrEqual(
+        productionStats.totalUsers / 2
       );
     });
 
@@ -42,24 +56,40 @@ describe("Admin Matching Dashboard", () => {
   });
 
   describe("API Integration", () => {
-    it("should construct correct API request for dry run", () => {
+    it("should construct correct API request for test user dry run", () => {
       const dryRunRequest = {
         dryRun: true,
         includeDiagnostics: true,
+        isTestUser: true,
       };
 
       expect(dryRunRequest.dryRun).toBe(true);
       expect(dryRunRequest.includeDiagnostics).toBe(true);
+      expect(dryRunRequest.isTestUser).toBe(true);
+    });
+
+    it("should construct correct API request for production user dry run", () => {
+      const dryRunRequest = {
+        dryRun: true,
+        includeDiagnostics: true,
+        isTestUser: false,
+      };
+
+      expect(dryRunRequest.dryRun).toBe(true);
+      expect(dryRunRequest.includeDiagnostics).toBe(true);
+      expect(dryRunRequest.isTestUser).toBe(false);
     });
 
     it("should construct correct API request for production run", () => {
       const productionRequest = {
         dryRun: false,
         includeDiagnostics: true,
+        isTestUser: false,
       };
 
       expect(productionRequest.dryRun).toBe(false);
       expect(productionRequest.includeDiagnostics).toBe(true);
+      expect(productionRequest.isTestUser).toBe(false);
     });
 
     it("should validate matching result structure", () => {
@@ -190,12 +220,22 @@ describe("Admin Matching Dashboard", () => {
       expect(typeof errorResponse.error).toBe("string");
     });
 
-    it("should validate minimum user requirement", () => {
+    it("should validate minimum user requirement for different user types", () => {
       const minUsers = 2;
 
       expect(minUsers).toBeGreaterThanOrEqual(2);
 
-      // Test cases
+      // Test cases for both test and production users
+      const testUserCount = 5;
+      const productionUserCount = 0;
+
+      // Test users: should enable button
+      expect(testUserCount >= minUsers).toBe(true);
+
+      // Production users: should show warning
+      expect(productionUserCount >= minUsers).toBe(false);
+
+      // Edge cases
       expect(0 < minUsers).toBe(true); // Should show warning
       expect(1 < minUsers).toBe(true); // Should show warning
       expect(2 >= minUsers).toBe(true); // Should enable button

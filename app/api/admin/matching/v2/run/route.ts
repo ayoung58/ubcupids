@@ -19,6 +19,7 @@ import { runMatchingPipeline, MatchingUser } from "@/lib/matching/v2";
  *
  * Request body:
  * - userIds: string[] (optional) - Specific users to match. If omitted, matches all eligible users.
+ * - isTestUser: boolean (optional) - If true, matches test users (isTestUser=true). If false or omitted, matches production users (isTestUser=false).
  * - dryRun: boolean (optional) - If true, runs algorithm but doesn't save matches to database.
  * - includeDiagnostics: boolean (optional) - If true, returns detailed diagnostics.
  *
@@ -52,12 +53,17 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { userIds, dryRun = false, includeDiagnostics = false } = body;
+    const {
+      userIds,
+      isTestUser = false, // Default to production users
+      dryRun = false,
+      includeDiagnostics = false,
+    } = body;
 
     // Fetch users with questionnaire responses
     const usersQuery: any = {
       where: {
-        isTestUser: false, // Exclude test users from production matching
+        isTestUser: isTestUser, // Filter by test/production users
         questionnaireResponseV2: {
           isSubmitted: true, // Only include users who submitted V2
         },

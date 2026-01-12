@@ -9,6 +9,12 @@ export const metadata: Metadata = {
   description: "Run and manage the matching algorithm",
 };
 
+interface Stats {
+  totalUsers: number;
+  totalMatches: number;
+  unmatchedUsers: number;
+}
+
 export default async function AdminMatchingPage() {
   const session = await getCurrentUser();
 
@@ -27,8 +33,8 @@ export default async function AdminMatchingPage() {
     redirect("/dashboard");
   }
 
-  // Get statistics
-  const totalUsers = await prisma.user.count({
+  // Get statistics for PRODUCTION users (isTestUser=false)
+  const productionUsers = await prisma.user.count({
     where: {
       isTestUser: false,
       questionnaireResponseV2: {
@@ -37,14 +43,17 @@ export default async function AdminMatchingPage() {
     },
   });
 
-  const totalMatches = await prisma.match.count({
+  const productionMatches = await prisma.match.count({
     where: {
       matchType: "algorithm",
       batchNumber: 1,
+      user: {
+        isTestUser: false,
+      },
     },
   });
 
-  const unmatchedUsers = await prisma.user.count({
+  const productionUnmatchedUsers = await prisma.user.count({
     where: {
       isTestUser: false,
       questionnaireResponseV2: {
@@ -71,17 +80,73 @@ export default async function AdminMatchingPage() {
     },
   });
 
+  // Get statistics for TEST users (isTestUser=true)
+  const testUsers = await prisma.user.count({
+    where: {
+      isTestUser: true,
+      questionnaireResponseV2: {
+        isSubmitted: true,
+      },
+    },
+  });
+
+  const testMatches = await prisma.match.count({
+    where: {
+      matchType: "algorithm",
+      batchNumber: 1,
+      user: {
+        isTestUser: true,
+      },
+    },
+  });
+
+  const testUnmatchedUsers = await prisma.user.count({
+    where: {
+      isTestUser: true,
+      questionnaireResponseV2: {
+        isSubmitted: true,
+      },
+      AND: [
+        {
+          matchesGiven: {
+            none: {
+              matchType: "algorithm",
+              batchNumber: 1,
+            },
+          },
+        },
+        {
+          matchesReceived: {
+            none: {
+              matchType: "algorithm",
+              batchNumber: 1,
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  const productionStats: Stats = {
+    totalUsers: productionUsers,
+    totalMatches: Math.floor(productionMatches / 2), // Bidirectional, so divide by 2
+    unmatchedUsers: productionUnmatchedUsers,
+  };
+
+  const testStats: Stats = {
+    totalUsers: testUsers,
+    totalMatches: Math.floor(testMatches / 2), // Bidirectional, so divide by 2
+    unmatchedUsers: testUnmatchedUsers,
+  };
+
   // Get recent matching runs from MatchingRun table (if exists)
   // For now, we'll just pass null and create the table later
   const recentRuns = null;
 
   return (
     <AdminMatchingClient
-      initialStats={{
-        totalUsers,
-        totalMatches: totalMatches / 2, // Bidirectional records
-        unmatchedUsers,
-      }}
+      productionStats={productionStats}
+      testStats={testStats}
       recentRuns={recentRuns}
     />
   );

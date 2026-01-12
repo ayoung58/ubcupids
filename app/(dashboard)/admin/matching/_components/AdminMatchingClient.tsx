@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import {
   Loader2,
   Play,
@@ -14,6 +16,8 @@ import {
   Clock,
   TrendingUp,
   BarChart3,
+  Beaker,
+  Rocket,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -50,22 +54,37 @@ interface MatchingRunResult {
 }
 
 interface AdminMatchingClientProps {
-  initialStats: Stats;
+  productionStats: Stats;
+  testStats: Stats;
   recentRuns: any[] | null;
 }
 
 export function AdminMatchingClient({
-  initialStats,
+  productionStats,
+  testStats,
   recentRuns,
 }: AdminMatchingClientProps) {
   const router = useRouter();
-  const [stats, setStats] = useState<Stats>(initialStats);
+  const [userType, setUserType] = useState<"test" | "production">("test");
   const [isRunning, setIsRunning] = useState(false);
   const [lastResult, setLastResult] = useState<MatchingRunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
 
+  // Get the current stats based on selected user type
+  const currentStats = userType === "test" ? testStats : productionStats;
+
   const runMatching = async (dryRun: boolean = false) => {
+    // Confirmation for production user runs (not dry run)
+    if (userType === "production" && !dryRun) {
+      const confirmed = window.confirm(
+        "⚠️ You are about to run matching for PRODUCTION users.\n\n" +
+          "This will create Match records in the database that affect real users.\n\n" +
+          "Are you sure you want to proceed?"
+      );
+      if (!confirmed) return;
+    }
+
     setIsRunning(true);
     setError(null);
     setLastResult(null);
@@ -77,6 +96,7 @@ export function AdminMatchingClient({
         body: JSON.stringify({
           dryRun,
           includeDiagnostics: true,
+          isTestUser: userType === "test",
         }),
       });
 
@@ -111,47 +131,149 @@ export function AdminMatchingClient({
         </p>
       </div>
 
+      {/* User Type Toggle */}
+      <Card
+        className={
+          userType === "test"
+            ? "border-blue-300 bg-blue-50/30"
+            : "border-purple-300 bg-purple-50/30"
+        }
+      >
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {userType === "test" ? (
+              <>
+                <Beaker className="h-5 w-5 text-blue-600" />
+                <span className="text-blue-900">User Type Selection</span>
+              </>
+            ) : (
+              <>
+                <Rocket className="h-5 w-5 text-purple-600" />
+                <span className="text-purple-900">User Type Selection</span>
+              </>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RadioGroup
+            value={userType}
+            onValueChange={(value) => {
+              setUserType(value as "test" | "production");
+              setLastResult(null); // Clear results when switching
+              setError(null);
+            }}
+            className="flex gap-6"
+          >
+            <div className="flex items-center space-x-3 cursor-pointer">
+              <RadioGroupItem value="test" id="test" />
+              <Label
+                htmlFor="test"
+                className="cursor-pointer flex items-center gap-2 text-base"
+              >
+                <Beaker className="h-4 w-4 text-blue-600" />
+                <span className="font-medium">Test Users</span>
+                <span className="text-sm text-slate-500">
+                  (isTestUser=true)
+                </span>
+              </Label>
+            </div>
+            <div className="flex items-center space-x-3 cursor-pointer">
+              <RadioGroupItem value="production" id="production" />
+              <Label
+                htmlFor="production"
+                className="cursor-pointer flex items-center gap-2 text-base"
+              >
+                <Rocket className="h-4 w-4 text-purple-600" />
+                <span className="font-medium">Production Users</span>
+                <span className="text-sm text-slate-500">
+                  (isTestUser=false)
+                </span>
+              </Label>
+            </div>
+          </RadioGroup>
+          <p className="text-xs text-slate-600 mt-3">
+            {userType === "test" ? (
+              <>
+                <span className="font-medium text-blue-700">🧪 Test Mode:</span>{" "}
+                Match test users separately for development and testing. Safe to
+                run multiple times.
+              </>
+            ) : (
+              <>
+                <span className="font-medium text-purple-700">
+                  🚀 Production Mode:
+                </span>{" "}
+                Match real users. This will create database records that affect
+                production data.
+              </>
+            )}
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Current Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card
+          className={
+            userType === "test" ? "border-blue-200" : "border-purple-200"
+          }
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Eligible Users
             </CardTitle>
-            <Users className="h-4 w-4 text-slate-500" />
+            <Users
+              className={`h-4 w-4 ${userType === "test" ? "text-blue-500" : "text-purple-500"}`}
+            />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <div className="text-2xl font-bold">{currentStats.totalUsers}</div>
             <p className="text-xs text-slate-500 mt-1">
               With completed V2 questionnaires
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className={
+            userType === "test" ? "border-blue-200" : "border-purple-200"
+          }
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Current Matches
             </CardTitle>
-            <Heart className="h-4 w-4 text-rose-500" />
+            <Heart
+              className={`h-4 w-4 ${userType === "test" ? "text-blue-500" : "text-purple-500"}`}
+            />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalMatches}</div>
+            <div className="text-2xl font-bold">
+              {currentStats.totalMatches}
+            </div>
             <p className="text-xs text-slate-500 mt-1">
               Active algorithm matches
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className={
+            userType === "test" ? "border-blue-200" : "border-purple-200"
+          }
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Unmatched Users
             </CardTitle>
-            <AlertCircle className="h-4 w-4 text-amber-500" />
+            <AlertCircle
+              className={`h-4 w-4 ${userType === "test" ? "text-blue-500" : "text-purple-500"}`}
+            />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.unmatchedUsers}</div>
+            <div className="text-2xl font-bold">
+              {currentStats.unmatchedUsers}
+            </div>
             <p className="text-xs text-slate-500 mt-1">
               Below quality threshold
             </p>
@@ -170,15 +292,27 @@ export function AdminMatchingClient({
       {/* Action Buttons */}
       <Card>
         <CardHeader>
-          <CardTitle>Run Matching Algorithm</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <span>Run Matching Algorithm</span>
+            {userType === "test" && (
+              <span className="text-sm font-normal text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
+                Test Mode
+              </span>
+            )}
+            {userType === "production" && (
+              <span className="text-sm font-normal text-purple-600 bg-purple-100 px-2 py-0.5 rounded">
+                Production Mode
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">
             <Button
               onClick={() => runMatching(true)}
-              disabled={isRunning || stats.totalUsers < 2}
+              disabled={isRunning || currentStats.totalUsers < 2}
               variant="outline"
-              className="flex-1"
+              className={`flex-1 ${userType === "test" ? "border-blue-300 hover:bg-blue-50" : "border-purple-300 hover:bg-purple-50"}`}
             >
               {isRunning ? (
                 <>
@@ -195,8 +329,8 @@ export function AdminMatchingClient({
 
             <Button
               onClick={() => runMatching(false)}
-              disabled={isRunning || stats.totalUsers < 2}
-              className="flex-1 bg-rose-600 hover:bg-rose-700"
+              disabled={isRunning || currentStats.totalUsers < 2}
+              className={`flex-1 ${userType === "test" ? "bg-blue-600 hover:bg-blue-700" : "bg-purple-600 hover:bg-purple-700"}`}
             >
               {isRunning ? (
                 <>
@@ -206,18 +340,24 @@ export function AdminMatchingClient({
               ) : (
                 <>
                   <Play className="mr-2 h-4 w-4" />
-                  Run Matching (Production)
+                  Run Matching {userType === "production" && "(Production)"}
                 </>
               )}
             </Button>
           </div>
 
-          {stats.totalUsers < 2 && (
-            <Alert>
+          {currentStats.totalUsers < 2 && (
+            <Alert
+              className={
+                userType === "test"
+                  ? "border-blue-200 bg-blue-50"
+                  : "border-purple-200 bg-purple-50"
+              }
+            >
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Need at least 2 users with completed questionnaires to run
-                matching
+                Need at least 2 {userType === "test" ? "test" : "production"}{" "}
+                users with completed questionnaires to run matching
               </AlertDescription>
             </Alert>
           )}
