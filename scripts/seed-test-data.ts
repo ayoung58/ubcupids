@@ -1,6 +1,15 @@
 /**
  * Database Seeding Script
  *
+ * ⚠️ WARNING: This script generates V1 questionnaire data which is incompatible with V2!
+ * ⚠️ DO NOT RUN until updated for Questionnaire V2 format.
+ *
+ * TODO: Update this script to generate QuestionnaireResponseV2 data:
+ * - Use new schema (responses as JSONB with answer/preference/importance/dealbreaker)
+ * - Include free response fields (freeResponse1-5)
+ * - Generate valid V2 question IDs (q1-q37)
+ * - Respect new question types (multi-select with preference, dealbreakers, etc.)
+ *
  * Creates test data for the matching system:
  * - 250 users waiting to be matched (isBeingMatched: true)
  * - 250 cupids (isCupid: true with approved CupidProfile)
@@ -12,6 +21,29 @@
 import { PrismaClient } from "@prisma/client";
 import { encryptJSON } from "../lib/encryption";
 import bcrypt from "bcryptjs";
+
+// ⚠️ SCRIPT DISABLED - See warning above
+console.error(
+  "\n" +
+    "═".repeat(70) +
+    "\n" +
+    "⚠️  ERROR: This script is disabled for Questionnaire V2 migration\n" +
+    "═".repeat(70) +
+    "\n" +
+    "\n" +
+    "This script generates V1 questionnaire data which is incompatible\n" +
+    "with the new V2 format. Running this would create test users with\n" +
+    "invalid questionnaire responses.\n" +
+    "\n" +
+    "TODO: Update script to generate QuestionnaireResponseV2 data\n" +
+    "See: docs/Questionnaire/Questionnaire_Updated_Version/\n" +
+    "\n" +
+    "If you need test data, please:\n" +
+    "1. Update this script for V2 format, OR\n" +
+    "2. Manually create test users through the UI\n" +
+    "\n"
+);
+process.exit(1);
 
 const prisma = new PrismaClient();
 

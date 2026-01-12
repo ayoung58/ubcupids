@@ -39,6 +39,22 @@ import type {
 } from "@/src/lib/questionnaire-types";
 import { CupidPortalTutorial } from "./CupidPortalTutorial";
 
+/**
+ * CupidMatchingPortal Component
+ *
+ * Allows cupids to review candidate profiles and select matches from potential matches.
+ *
+ * ⚠️ NOTE: This component currently displays V1 questionnaire data.
+ * TODO (Phase 8+): Update to display QuestionnaireResponseV2 data:
+ * - Update API endpoints to fetch V2 responses
+ * - Display split-screen format (answer + preference + importance)
+ * - Show dealbreakers and "doesn't matter" selections
+ * - Update matching score calculation display for V2 algorithm
+ *
+ * For now, cupids can still review candidate profiles and bio information,
+ * but questionnaire details will be limited to V1 format until Phase 8.
+ */
+
 // Types
 interface CupidProfileView {
   userId: string;
