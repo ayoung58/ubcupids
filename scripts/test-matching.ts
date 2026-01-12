@@ -15,6 +15,80 @@
 
 import { runMatchingPipeline, MatchingUser } from "../lib/matching/v2";
 import { ResponseValue } from "../lib/matching/v2/types";
+import { MATCHING_CONFIG } from "../lib/matching/v2/config";
+import {
+  SECTION_WEIGHTS,
+  IMPORTANCE_MULTIPLIERS,
+} from "../lib/matching/config";
+import { prisma } from "../lib/prisma";
+
+// Helper functions for testing
+function scoreSingleChoice(
+  a: string | undefined,
+  b: string | undefined
+): number {
+  if (!a || !b) return 0;
+  return a === b ? 100 : 0;
+}
+
+function scoreMultiChoice(a: string[], b: string[]): number {
+  if (!a || !b || a.length === 0 || b.length === 0) return 0;
+  const setA = new Set(a);
+  const setB = new Set(b);
+  const intersection = new Set([...setA].filter((x) => setB.has(x)));
+  const union = new Set([...setA, ...setB]);
+  return (intersection.size / union.size) * 100;
+}
+
+function scoreRanking(a: string[], b: string[]): number {
+  if (!a || !b || a.length !== b.length) return 0;
+  let score = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] === b[i]) score += 100 / a.length;
+  }
+  return score;
+}
+
+function checkGenderFilter(
+  userA: { Q1: string; Q3: string[] },
+  userB: { Q1: string; Q3: string[] },
+  userAId: string,
+  userBId: string
+): {
+  bothPass: boolean;
+  user1PassesFilter: boolean;
+  user2PassesFilter: boolean;
+} {
+  const user1Gender = userA.Q1;
+  const user1Interested = userA.Q3;
+  const user2Gender = userB.Q1;
+  const user2Interested = userB.Q3;
+
+  const user1Passes =
+    user2Interested.includes(user1Gender) || user2Interested.includes("anyone");
+  const user2Passes =
+    user1Interested.includes(user2Gender) || user1Interested.includes("anyone");
+
+  return {
+    bothPass: user1Passes && user2Passes,
+    user1PassesFilter: user1Passes,
+    user2PassesFilter: user2Passes,
+  };
+}
+
+function cosineSimilarity(vec1: number[], vec2: number[]): number {
+  if (vec1.length !== vec2.length) return 0;
+  let dot = 0,
+    norm1 = 0,
+    norm2 = 0;
+  for (let i = 0; i < vec1.length; i++) {
+    dot += vec1[i] * vec2[i];
+    norm1 += vec1[i] ** 2;
+    norm2 += vec2[i] ** 2;
+  }
+  if (norm1 === 0 || norm2 === 0) return 0;
+  return dot / (Math.sqrt(norm1) * Math.sqrt(norm2));
+}
 
 async function main() {
   console.log("\n==========================================");
@@ -77,19 +151,19 @@ async function main() {
   console.log("📋 Test 5: Gender Filter");
   console.log("------------------------");
   const genderTest1 = checkGenderFilter(
-    { Q1: "man", Q3: "women" },
-    { Q1: "woman", Q3: "men" },
+    { Q1: "man", Q3: ["women"] },
+    { Q1: "woman", Q3: ["men"] },
     "user1",
     "user2"
   );
   const genderTest2 = checkGenderFilter(
-    { Q1: "man", Q3: "men" },
-    { Q1: "woman", Q3: "men" },
+    { Q1: "man", Q3: ["men"] },
+    { Q1: "woman", Q3: ["men"] },
     "user1",
     "user2"
   );
   const genderTest3 = checkGenderFilter(
-    { Q1: "man", Q3: "anyone" },
+    { Q1: "man", Q3: ["anyone"] },
     { Q1: "woman", Q3: "women" },
     "user1",
     "user2"

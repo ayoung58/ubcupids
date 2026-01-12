@@ -28,6 +28,12 @@ async function getQuestionnaireStatus(userId: string) {
   }
 }
 
+function isQuestionnaireOpen(): boolean {
+  const now = new Date();
+  const openingDate = new Date('2026-01-16T00:00:00.000Z'); // January 16, 2026, 00:00 UTC
+  return now >= openingDate;
+}
+
 export const metadata: Metadata = {
   title: "Dashboard | UBCupids",
   description: "Your UBCupids dashboard",
@@ -41,6 +47,7 @@ export default async function DashboardPage() {
   }
 
   const questionnaireStatus = await getQuestionnaireStatus(session.user.id);
+  const questionnaireOpen = isQuestionnaireOpen();
 
   // Fetch user profile for display name and account types
   const profile = await prisma.user.findUnique({
@@ -93,20 +100,35 @@ export default async function DashboardPage() {
             <CardTitle className="text-lg">Questionnaire</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
+            {!questionnaireOpen && (
+              <p className="text-sm text-amber-600 mb-2 font-medium">
+                Questionnaires opening on January 16
+              </p>
+            )}
             <p className="text-sm text-slate-600 mb-2">
               {questionnaireStatus === "completed"
                 ? "You've filled out your questionnaire! Matches to be revealed soon! 🎉"
                 : "Fill out your compatibility questionnaire"}
             </p>
-            <Link href="/questionnaire">
-              <Button className="w-full">
+            {questionnaireOpen ? (
+              <Link href="/questionnaire">
+                <Button className="w-full">
+                  {questionnaireStatus === "draft"
+                    ? "Continue"
+                    : questionnaireStatus === "completed"
+                      ? "View Responses"
+                      : "Start"}
+                </Button>
+              </Link>
+            ) : (
+              <Button className="w-full" disabled>
                 {questionnaireStatus === "draft"
                   ? "Continue"
                   : questionnaireStatus === "completed"
                     ? "View Responses"
                     : "Start"}
               </Button>
-            </Link>
+            )}
           </CardContent>
         </Card>
 

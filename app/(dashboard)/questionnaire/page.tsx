@@ -7,6 +7,15 @@ import { QuestionnaireV2 } from "@/components/questionnaire/v2/QuestionnaireV2";
 import { QuestionnaireResponses } from "@/types/questionnaire-v2";
 
 /**
+ * Check if questionnaire is open
+ */
+function isQuestionnaireOpen(): boolean {
+  const now = new Date();
+  const openingDate = new Date('2026-01-16T00:00:00.000Z'); // January 16, 2026, 00:00 UTC
+  return now >= openingDate;
+}
+
+/**
  * Fetch QuestionnaireResponseV2 data from database
  * Phase 5 will add save/autosave functionality
  */
@@ -52,6 +61,11 @@ async function QuestionnairePage() {
 
   if (!session?.user?.id) {
     redirect("/login");
+  }
+
+  // Check if questionnaire is open
+  if (!isQuestionnaireOpen()) {
+    redirect("/dashboard");
   }
 
   // Fetch questionnaire data
