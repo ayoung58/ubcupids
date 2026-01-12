@@ -57,16 +57,13 @@ export async function POST(request: NextRequest) {
     // Fetch users with questionnaire responses
     const usersQuery: any = {
       where: {
-        questionnaireCompleted: true,
         isTestUser: false, // Exclude test users from production matching
-      },
-      select: {
-        id: true,
-        questionnaireResponsesV2: {
-          select: {
-            responses: true,
-          },
+        questionnaireResponseV2: {
+          isSubmitted: true, // Only include users who submitted V2
         },
+      },
+      include: {
+        questionnaireResponseV2: true, // Include full V2 response
       },
     };
 
@@ -79,11 +76,24 @@ export async function POST(request: NextRequest) {
 
     // Transform users to MatchingUser format
     const users: MatchingUser[] = usersRaw
-      .filter((u) => u.questionnaireResponsesV2)
-      .map((u) => ({
-        id: u.id,
-        responses: (u.questionnaireResponsesV2?.responses as any) || {},
-      }));
+      .filter((u: any) => u.questionnaireResponseV2)
+      .map((u: any) => {
+        const responses = (u.questionnaireResponseV2?.responses as any) || {};
+        const gender = responses.q1?.answer || "any";
+        const interestedInGenders = responses.q2?.answer || ["any"];
+
+        return {
+          id: u.id,
+          email: u.email,
+          name: `${u.firstName} ${u.lastName}`,
+          gender: String(gender),
+          interestedInGenders: Array.isArray(interestedInGenders)
+            ? interestedInGenders.map(String)
+            : [String(interestedInGenders)],
+          responses,
+          responseRecord: u.questionnaireResponseV2!,
+        };
+      });
 
     if (users.length === 0) {
       return NextResponse.json(

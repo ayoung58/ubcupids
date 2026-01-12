@@ -7,6 +7,17 @@
 import { QuestionnaireResponseV2 } from "@prisma/client";
 
 /**
+ * Response value for a questionnaire question
+ */
+export type ResponseValue = {
+  answer: any;
+  importance?: number;
+  dealbreaker?: boolean;
+  preference?: any;
+  [key: string]: any;
+};
+
+/**
  * User data prepared for matching
  * Includes parsed responses and metadata
  */

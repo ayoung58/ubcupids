@@ -26,6 +26,29 @@
 import { MATCHING_CONFIG, type MatchingConfig } from "./config";
 
 /**
+ * Calculates directional score for a question pair
+ * Wrapper for applyDirectionalScoring with simplified interface
+ */
+export function calculateDirectionalScore(
+  userAAnswer: number,
+  userBAnswer: number,
+  userAPreference: "more" | "less" | "similar" | "same" | undefined,
+  userBPreference: "more" | "less" | "similar" | "same" | undefined,
+  weightedSimilarity: number,
+  config: MatchingConfig = MATCHING_CONFIG
+): number {
+  const result = applyDirectionalScoring(
+    weightedSimilarity,
+    userAAnswer,
+    userBAnswer,
+    userAPreference,
+    userBPreference,
+    config
+  );
+  return result.averageFinal;
+}
+
+/**
  * Applies directional multiplier to weighted similarity
  *
  * @param weightedSimilarity - Similarity after importance weighting

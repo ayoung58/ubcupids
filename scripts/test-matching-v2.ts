@@ -20,7 +20,22 @@ function createMockUser(
   id: string,
   responses: Record<string, ResponseValue>
 ): MatchingUser {
-  return { id, responses };
+  // Extract gender info from responses
+  const gender = responses.q1?.answer || "any";
+  const interestedInGenders = responses.q2?.answer || ["any"];
+
+  return {
+    id,
+    email: `${id}@test.com`,
+    name: id,
+    gender,
+    interestedInGenders: Array.isArray(interestedInGenders)
+      ? interestedInGenders
+      : [interestedInGenders],
+    responses,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    responseRecord: {} as any,
+  };
 }
 
 // Scenario 1: Perfect Match Pair
@@ -34,24 +49,25 @@ function testPerfectMatch() {
       q3: {
         answer: "heterosexual",
         preference: "same",
-        importance: "important",
+        importance: 4,
       },
       q4: { answer: 25, preference: { min: 23, max: 28 } },
-      q7: { answer: 2, preference: "similar", importance: "very-important" }, // Progressive
+      q7: { answer: 2, preference: "similar", importance: 5 }, // Progressive
       q8: {
         answer: "socially",
         preference: ["socially", "rarely"],
-        importance: "important",
+        importance: 4,
       },
       q10: {
         answer: 3,
         preference: "similar",
-        importance: "somewhat-important",
+        importance: 3,
       }, // Exercise
       q11: {
         answer: "monogamous",
         preference: "same",
-        importance: "dealbreaker",
+        importance: 5,
+        dealbreaker: true,
       },
     }),
     createMockUser("bob", {
@@ -60,24 +76,25 @@ function testPerfectMatch() {
       q3: {
         answer: "heterosexual",
         preference: "same",
-        importance: "important",
+        importance: 4,
       },
       q4: { answer: 26, preference: { min: 23, max: 30 } },
-      q7: { answer: 2, preference: "similar", importance: "very-important" }, // Progressive
+      q7: { answer: 2, preference: "similar", importance: 5 }, // Progressive
       q8: {
         answer: "socially",
         preference: ["socially", "rarely", "frequently"],
-        importance: "important",
+        importance: 4,
       },
       q10: {
         answer: 3,
         preference: "similar",
-        importance: "somewhat-important",
+        importance: 3,
       },
       q11: {
         answer: "monogamous",
         preference: "same",
-        importance: "dealbreaker",
+        importance: 5,
+        dealbreaker: true,
       },
     }),
   ];
@@ -123,11 +140,16 @@ function testDealbreaker() {
     createMockUser("charlie", {
       q1: { answer: "woman" },
       q2: { answer: ["men"], preference: ["men"] },
-      q8: { answer: "never", preference: ["never"], importance: "dealbreaker" }, // No alcohol
+      q8: {
+        answer: "never",
+        preference: ["never"],
+        importance: 5,
+        dealbreaker: true,
+      }, // No alcohol
       q11: {
         answer: "monogamous",
         preference: "same",
-        importance: "important",
+        importance: 4,
       },
     }),
     createMockUser("dave", {
@@ -136,12 +158,12 @@ function testDealbreaker() {
       q8: {
         answer: "frequently",
         preference: ["frequently", "socially"],
-        importance: "important",
+        importance: 4,
       }, // Drinks frequently
       q11: {
         answer: "monogamous",
         preference: "same",
-        importance: "important",
+        importance: 4,
       },
     }),
   ];
@@ -182,37 +204,37 @@ function testAsymmetric() {
     createMockUser("eve", {
       q1: { answer: "woman" },
       q2: { answer: ["men"], preference: ["men"] },
-      q7: { answer: 1, preference: "similar", importance: "very-important" }, // Very progressive
+      q7: { answer: 1, preference: "similar", importance: 5 }, // Very progressive
       q8: {
         answer: "never",
         preference: ["never", "rarely"],
-        importance: "important",
+        importance: 4,
       },
-      q10: { answer: 5, preference: "similar", importance: "very-important" }, // Very active
+      q10: { answer: 5, preference: "similar", importance: 5 }, // Very active
       q11: {
         answer: "monogamous",
         preference: "same",
-        importance: "important",
+        importance: 4,
       },
     }),
     createMockUser("frank", {
       q1: { answer: "man" },
       q2: { answer: ["women"], preference: ["women"] },
-      q7: { answer: 5, preference: "similar", importance: "very-important" }, // Very conservative
+      q7: { answer: 5, preference: "similar", importance: 5 }, // Very conservative
       q8: {
         answer: "socially",
         preference: ["socially", "frequently"],
-        importance: "important",
+        importance: 4,
       },
       q10: {
         answer: 1,
         preference: "similar",
-        importance: "somewhat-important",
+        importance: 3,
       }, // Sedentary
       q11: {
         answer: "monogamous",
         preference: "same",
-        importance: "important",
+        importance: 4,
       },
     }),
   ];
@@ -268,20 +290,20 @@ function testTriangle() {
     createMockUser("grace", {
       q1: { answer: "woman" },
       q2: { answer: ["men"], preference: ["men"] },
-      q7: { answer: 2, preference: "similar", importance: "very-important" },
-      q10: { answer: 5, preference: "similar", importance: "very-important" }, // Very active - likes Hannah
+      q7: { answer: 2, preference: "similar", importance: 5 },
+      q10: { answer: 5, preference: "similar", importance: 5 }, // Very active - likes Hannah
     }),
     createMockUser("hannah", {
       q1: { answer: "woman" }, // Actually prefers women for this scenario
       q2: { answer: ["women"], preference: ["women"] },
-      q7: { answer: 4, preference: "similar", importance: "very-important" },
-      q10: { answer: 3, preference: "similar", importance: "very-important" }, // Moderate - likes Ivan
+      q7: { answer: 4, preference: "similar", importance: 5 },
+      q10: { answer: 3, preference: "similar", importance: 5 }, // Moderate - likes Ivan
     }),
     createMockUser("ivan", {
       q1: { answer: "man" },
       q2: { answer: ["women"], preference: ["women"] },
-      q7: { answer: 1, preference: "similar", importance: "very-important" },
-      q10: { answer: 1, preference: "similar", importance: "very-important" }, // Sedentary - likes Grace
+      q7: { answer: 1, preference: "similar", importance: 5 },
+      q10: { answer: 1, preference: "similar", importance: 5 }, // Sedentary - likes Grace
     }),
   ];
 
@@ -337,22 +359,22 @@ function testLargeBatch() {
         q7: {
           answer: politicalLeaning,
           preference: "similar",
-          importance: "important",
+          importance: 4,
         },
         q8: {
           answer: i % 4 === 0 ? "never" : "socially",
           preference: ["socially", "rarely", "never"],
-          importance: "somewhat-important",
+          importance: 3,
         },
         q10: {
           answer: exerciseLevel,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
         q11: {
           answer: "monogamous",
           preference: "same",
-          importance: "very-important",
+          importance: 5,
         },
       })
     );

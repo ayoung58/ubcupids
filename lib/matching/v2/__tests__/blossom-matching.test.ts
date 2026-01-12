@@ -15,7 +15,13 @@ import { MatchingUser } from "../types";
 function createMockUsers(count: number): MatchingUser[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `user${i + 1}`,
+    email: `user${i + 1}@test.com`,
+    name: `User ${i + 1}`,
+    gender: "any",
+    interestedInGenders: ["any"],
     responses: {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    responseRecord: {} as any,
   }));
 }
 

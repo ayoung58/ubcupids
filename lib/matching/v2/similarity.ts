@@ -23,6 +23,70 @@ import { MatchingUser } from "./types";
 import { MATCHING_CONFIG } from "./config";
 
 /**
+ * Calculates similarity scores for all questions between two users
+ * Returns object with similarity scores by question
+ */
+export function calculateSimilarity(
+  userA: MatchingUser,
+  userB: MatchingUser
+): Record<string, number> {
+  const similarities: Record<string, number> = {};
+
+  // Get all question IDs from both users
+  const questionIds = new Set([
+    ...Object.keys(userA.responses),
+    ...Object.keys(userB.responses),
+  ]);
+
+  questionIds.forEach((qId) => {
+    // Determine question type based on question ID
+    const questionType = determineQuestionType(qId);
+    similarities[qId] = calculateQuestionSimilarity(
+      qId,
+      userA,
+      userB,
+      questionType
+    );
+  });
+
+  return similarities;
+}
+
+/**
+ * Determines the similarity calculation type for a question
+ */
+function determineQuestionType(
+  questionId: string
+):
+  | "numeric"
+  | "categorical-same"
+  | "categorical-multi"
+  | "multi-select"
+  | "age"
+  | "same-similar-different"
+  | "directional"
+  | "binary" {
+  // Map question IDs to their types
+  const typeMap: Record<string, any> = {
+    q3: "age",
+    q4: "age",
+    q7: "numeric",
+    q8: "categorical-multi",
+    q10: "directional",
+    q11: "numeric",
+    q14: "numeric",
+    q15: "multi-select",
+    q16: "binary",
+    q17: "binary",
+    q18: "binary",
+    q19: "binary",
+    q20: "binary",
+  };
+
+  return typeMap[questionId] || "numeric";
+}
+
+/**
  * Calculates similarity for a single question between two users
  *
  * @param questionId - Question ID (e.g., "q10")

@@ -13,7 +13,22 @@ function createUser(
   id: string,
   responses: Record<string, ResponseValue>
 ): MatchingUser {
-  return { id, responses };
+  // Extract gender info from responses
+  const gender = responses.q1?.answer || "any";
+  const interestedInGenders = responses.q2?.answer || ["any"];
+
+  return {
+    id,
+    email: `${id}@test.com`,
+    name: id,
+    gender,
+    interestedInGenders: Array.isArray(interestedInGenders)
+      ? interestedInGenders
+      : [interestedInGenders],
+    responses,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    responseRecord: {} as any,
+  };
 }
 
 describe("Integration Tests - Complete Pipeline", () => {
@@ -37,17 +52,17 @@ describe("Integration Tests - Complete Pipeline", () => {
             q7: {
               answer: political,
               preference: "similar",
-              importance: "important",
+              importance: 4,
             },
             q8: {
               answer: "socially",
               preference: ["socially", "rarely"],
-              importance: "somewhat-important",
+              importance: 3,
             },
             q11: {
               answer: "monogamous",
               preference: "same",
-              importance: "very-important",
+              importance: 5,
             },
           })
         );
@@ -79,7 +94,8 @@ describe("Integration Tests - Complete Pipeline", () => {
           q8: {
             answer: "never",
             preference: ["never"],
-            importance: "dealbreaker",
+            importance: 5,
+            dealbreaker: true,
           },
         }),
         createUser("incompatible2", {
@@ -88,7 +104,7 @@ describe("Integration Tests - Complete Pipeline", () => {
           q8: {
             answer: "frequently",
             preference: ["frequently"],
-            importance: "important",
+            importance: 4,
           },
         }),
       ];
@@ -121,22 +137,22 @@ describe("Integration Tests - Complete Pipeline", () => {
             q7: {
               answer: political,
               preference: "similar",
-              importance: "important",
+              importance: 4,
             },
             q8: {
               answer: i % 4 === 0 ? "never" : "socially",
               preference: ["socially", "rarely", "never"],
-              importance: "somewhat-important",
+              importance: 3,
             },
             q10: {
               answer: exercise,
               preference: "similar",
-              importance: "somewhat-important",
+              importance: 3,
             },
             q11: {
               answer: "monogamous",
               preference: "same",
-              importance: "very-important",
+              importance: 5,
             },
           })
         );
@@ -181,16 +197,16 @@ describe("Integration Tests - Complete Pipeline", () => {
               answer: isWoman ? ["men"] : ["women"],
               preference: isWoman ? ["men"] : ["women"],
             },
-            q7: { answer: 3, preference: "similar", importance: "important" },
+            q7: { answer: 3, preference: "similar", importance: 4 },
             q8: {
               answer: "socially",
               preference: ["socially"],
-              importance: "important",
+              importance: 4,
             },
             q11: {
               answer: "monogamous",
               preference: "same",
-              importance: "very-important",
+              importance: 5,
             },
           })
         );
@@ -227,22 +243,22 @@ describe("Integration Tests - Complete Pipeline", () => {
             q7: {
               answer: political,
               preference: "similar",
-              importance: "important",
+              importance: 4,
             },
             q8: {
               answer: i % 3 === 0 ? "never" : "socially",
               preference: ["socially", "rarely"],
-              importance: "important",
+              importance: 4,
             },
             q10: {
               answer: exercise,
               preference: "similar",
-              importance: "somewhat-important",
+              importance: 3,
             },
             q11: {
               answer: "monogamous",
               preference: "same",
-              importance: "very-important",
+              importance: 5,
             },
           })
         );
@@ -281,7 +297,7 @@ describe("Integration Tests - Complete Pipeline", () => {
           q11: {
             answer: "monogamous",
             preference: "same",
-            importance: "important",
+            importance: 4,
           },
         }),
       ];
@@ -319,76 +335,77 @@ describe("Integration Tests - Complete Pipeline", () => {
         q3: {
           answer: "heterosexual",
           preference: "same",
-          importance: "important",
+          importance: 4,
         },
         q4: { answer: 25, preference: { min: 23, max: 28 } },
         q5: {
           answer: ["asian"],
           preference: ["asian", "white"],
-          importance: "not-important",
+          importance: 2,
         },
         q6: {
           answer: ["christian"],
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
-        q7: { answer: 3, preference: "similar", importance: "important" },
+        q7: { answer: 3, preference: "similar", importance: 4 },
         q8: {
           answer: "socially",
           preference: ["socially", "rarely"],
-          importance: "important",
+          importance: 4,
         },
         q9: {
           answer: { substances: ["none"], frequency: "never" },
           preference: { substances: ["none"], frequency: "similar" },
-          importance: "important",
+          importance: 4,
         },
         q10: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
         q11: {
           answer: "monogamous",
           preference: "same",
-          importance: "dealbreaker",
+          importance: 5,
+          dealbreaker: true,
         },
-        q12: { answer: 3, preference: "similar", importance: "important" },
+        q12: { answer: 3, preference: "similar", importance: 4 },
         q13: {
           answer: ["long-term"],
           preference: ["long-term"],
-          importance: "very-important",
+          importance: 5,
         },
         q14: {
           answer: "science",
           preference: ["science", "engineering"],
-          importance: "not-important",
+          importance: 2,
         },
         q15: {
           answer: "on-campus",
           preference: ["on-campus", "off-campus"],
-          importance: "not-important",
+          importance: 2,
         },
         q16: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
         q17: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
-        q18: { answer: 3, preference: "similar", importance: "important" },
+        q18: { answer: 3, preference: "similar", importance: 4 },
         q19: {
           answer: "like-pets",
           preference: ["like-pets", "have-pets"],
-          importance: "somewhat-important",
+          importance: 3,
         },
         q20: {
           answer: "few-relationships",
           preference: ["few-relationships", "one-serious"],
-          importance: "not-important",
+          importance: 2,
         },
         // Section 2
         q21: {
@@ -397,64 +414,64 @@ describe("Integration Tests - Complete Pipeline", () => {
             receive: ["words", "quality-time"],
           },
           preference: "similar",
-          importance: "important",
+          importance: 4,
         },
         q22: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
         q23: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
         q24: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
         q25: {
           answer: ["solution-focused"],
           preference: "compatible",
-          importance: "important",
+          importance: 4,
         },
-        q26: { answer: 3, preference: "similar", importance: "important" },
+        q26: { answer: 3, preference: "similar", importance: 4 },
         q27: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
-        q28: { answer: 3, preference: "similar", importance: "not-important" },
+        q28: { answer: 3, preference: "similar", importance: 2 },
         q29: {
           answer: "flexible",
           preference: "same",
-          importance: "somewhat-important",
+          importance: 3,
         },
         q30: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
-        q31: { answer: 3, preference: "similar", importance: "not-important" },
+        q31: { answer: 3, preference: "similar", importance: 2 },
         q32: {
           answer: ["physical", "emotional", "flirting"],
           preference: "similar",
-          importance: "important",
+          importance: 4,
         },
-        q33: { answer: 3, preference: "similar", importance: "not-important" },
-        q34: { answer: 3, preference: "similar", importance: "not-important" },
+        q33: { answer: 3, preference: "similar", importance: 2 },
+        q34: { answer: 3, preference: "similar", importance: 2 },
         q35: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
         q36: {
           answer: 3,
           preference: "similar",
-          importance: "somewhat-important",
+          importance: 3,
         },
-        q37: { answer: 3, preference: "similar", importance: "not-important" },
+        q37: { answer: 3, preference: "similar", importance: 2 },
       };
 
       const users = [
@@ -482,7 +499,12 @@ describe("Integration Tests - Complete Pipeline", () => {
           createUser(`user${i}`, {
             q1: { answer: "woman" },
             q2: { answer: ["men"], preference: ["men"] },
-            q7: { answer: i, preference: "same", importance: "dealbreaker" }, // Everyone wants exact match
+            q7: {
+              answer: i,
+              preference: "same",
+              importance: 5,
+              dealbreaker: true,
+            }, // Everyone wants exact match
           })
         );
       }
@@ -502,12 +524,12 @@ describe("Integration Tests - Complete Pipeline", () => {
         createUser("user1", {
           q1: { answer: "woman" },
           q2: { answer: ["men"], preference: ["men"] },
-          q7: { answer: 3, preference: "similar", importance: "important" },
+          q7: { answer: 3, preference: "similar", importance: 4 },
         }),
         createUser("user2", {
           q1: { answer: "man" },
           q2: { answer: ["women"], preference: ["women"] },
-          q7: { answer: 3, preference: "similar", importance: "important" },
+          q7: { answer: 3, preference: "similar", importance: 4 },
         }),
       ];
 
@@ -584,7 +606,7 @@ describe("Integration Tests - Complete Pipeline", () => {
         PREFER_NOT_ANSWER_SIMILARITY: 0.3,
       };
 
-      const result = runMatchingPipeline(users, customConfig);
+      const result = runMatchingPipeline(users);
 
       // Should complete without errors
       expect(result.diagnostics.totalUsers).toBe(2);

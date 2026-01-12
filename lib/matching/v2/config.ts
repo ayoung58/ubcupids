@@ -72,6 +72,11 @@ export const MATCHING_CONFIG = {
 export type MatchingConfig = typeof MATCHING_CONFIG;
 
 /**
+ * Default configuration (alias for MATCHING_CONFIG)
+ */
+export const DEFAULT_CONFIG = MATCHING_CONFIG;
+
+/**
  * Conflict Resolution Compatibility Matrix
  * Defines how compatible different conflict resolution styles are
  * Values range from 0 (incompatible) to 1 (perfectly compatible)

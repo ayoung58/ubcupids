@@ -13,6 +13,8 @@
 
 import { HardFilterResult, MatchingUser } from "./types";
 
+export type { HardFilterResult };
+
 /**
  * Questions that are hard filters by design (cannot have dealbreaker flag)
  * Q1: Gender Identity
