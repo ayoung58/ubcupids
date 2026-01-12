@@ -341,7 +341,7 @@ export function AdminDashboardClient({
               {actionMessages["generate-cupid-users"].message}
             </p>
           )}
-          
+
           {/* Scenario Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-blue-900">
@@ -352,17 +352,31 @@ export function AdminDashboardClient({
               onChange={(e) => setScenario(e.target.value)}
               className="w-full px-3 py-2 border border-blue-200 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="random">Random - Varied, realistic responses</option>
-              <option value="perfect">Perfect Match Pairs - Highly compatible (for testing high scores)</option>
-              <option value="dealbreaker">Dealbreaker Conflicts - Q8 alcohol conflicts (for testing rejections)</option>
-              <option value="asymmetric">Asymmetric Pairs - One picky, one easy-going (for one-sided matches)</option>
-              <option value="diverse">Diverse Pool - Maximum variety (for algorithm stress testing)</option>
+              <option value="random">
+                Random - Varied, realistic responses
+              </option>
+              <option value="perfect">
+                Perfect Match Pairs - Highly compatible (for testing high
+                scores)
+              </option>
+              <option value="dealbreaker">
+                Dealbreaker Conflicts - Q8 alcohol conflicts (for testing
+                rejections)
+              </option>
+              <option value="asymmetric">
+                Asymmetric Pairs - One picky, one easy-going (for one-sided
+                matches)
+              </option>
+              <option value="diverse">
+                Diverse Pool - Maximum variety (for algorithm stress testing)
+              </option>
             </select>
             <p className="text-xs text-blue-600">
-              💡 Perfect, Dealbreaker, and Asymmetric scenarios create pairs. Odd numbers get one random user.
+              💡 Perfect, Dealbreaker, and Asymmetric scenarios create pairs.
+              Odd numbers get one random user.
             </p>
           </div>
-          
+
           <div className="flex gap-3">
             <Button
               onClick={() => handleGenerateUsers("match")}

@@ -15,8 +15,8 @@ import {
  * POST /api/admin/generate-test-users
  *
  * Creates test users for development/testing
- * Body: { 
- *   count: number, 
+ * Body: {
+ *   count: number,
  *   userType: "match" | "cupid",
  *   scenario?: "random" | "perfect" | "dealbreaker" | "asymmetric" | "diverse"
  * }
@@ -127,7 +127,7 @@ export async function POST(request: Request) {
         const pairCount = Math.floor(createdUsers.length / 2);
         for (let i = 0; i < pairCount; i++) {
           const [user1Response, user2Response] = generatePerfectMatchPair();
-          
+
           questionnaireResponses.push({
             userId: createdUsers[i * 2].id,
             responses: user1Response.responses as any,
@@ -139,7 +139,7 @@ export async function POST(request: Request) {
             isSubmitted: true,
             submittedAt: new Date(),
           });
-          
+
           if (i * 2 + 1 < createdUsers.length) {
             questionnaireResponses.push({
               userId: createdUsers[i * 2 + 1].id,
@@ -158,8 +158,9 @@ export async function POST(request: Request) {
         // Generate dealbreaker conflict pairs
         const pairCount = Math.floor(createdUsers.length / 2);
         for (let i = 0; i < pairCount; i++) {
-          const [user1Response, user2Response] = generateDealbreakerConflictPair();
-          
+          const [user1Response, user2Response] =
+            generateDealbreakerConflictPair();
+
           questionnaireResponses.push({
             userId: createdUsers[i * 2].id,
             responses: user1Response.responses as any,
@@ -171,7 +172,7 @@ export async function POST(request: Request) {
             isSubmitted: true,
             submittedAt: new Date(),
           });
-          
+
           if (i * 2 + 1 < createdUsers.length) {
             questionnaireResponses.push({
               userId: createdUsers[i * 2 + 1].id,
@@ -191,7 +192,7 @@ export async function POST(request: Request) {
         const pairCount = Math.floor(createdUsers.length / 2);
         for (let i = 0; i < pairCount; i++) {
           const [user1Response, user2Response] = generateAsymmetricPair();
-          
+
           questionnaireResponses.push({
             userId: createdUsers[i * 2].id,
             responses: user1Response.responses as any,
@@ -203,7 +204,7 @@ export async function POST(request: Request) {
             isSubmitted: true,
             submittedAt: new Date(),
           });
-          
+
           if (i * 2 + 1 < createdUsers.length) {
             questionnaireResponses.push({
               userId: createdUsers[i * 2 + 1].id,
