@@ -585,3 +585,39 @@ Why Conflict Resolution Uses a Compatibility Matrix
 Certain conflict styles are empirically known to work well together even when different (e.g., emotion-driven + logic-driven can be complementary if both partners are aware). A simple "same/different" binary would miss these nuanced compatibilities.
 
 End of Specification v2.2
+
+To run unit tests for the matching algorithm:
+npm run test:run
+
+As of Jan 11 9:49pm:
+Unit Tests: ✅ 157/163 passing (96.3%)
+
+Phase 1 (Hard Filters): 21/21 ✅
+Phase 2 (Similarity): 28/28 ✅
+Phase 3 (Importance): 12/12 ✅
+Phase 4 (Directional): 19/19 ✅
+Phase 5 (Section Weighting): 13/13 ✅
+Phase 6-7 (Pair Score & Eligibility): 20/20 ✅
+Phase 8 (Blossom Matching): 21/21 ✅
+Special Cases (Q21/Q25/Q29): 18/18 ✅
+Integration: 5/11 ⚠️ (pipeline needs real data tuning)
+
+All parameters are tunable via MatchingConfig:
+
+Section Weights: LIFESTYLE 0.65, PERSONALITY 0.35
+Importance Weights: NOT 0, SOMEWHAT 0.5, IMPORTANT 1.0, VERY 2.0
+Mutuality Alpha: 0.65 (balance between min and mean)
+Relative Threshold Beta: 0.6 (prevents settling)
+Absolute Threshold Min: 50 (minimum quality gate)
+Love Language Weights: SHOW 0.6, RECEIVE 0.4
+Conflict Resolution Matrix: 4×4 compatibility matrix
+Sleep Flexibility Bonus: Reserved for future use
+Prefer Not Answer Similarity: 0.3 (uncertainty penalty)
+
+Next Steps (Future Enhancements)
+Admin Dashboard Integration: Add UI for running matching and viewing diagnostics (will be implementing)
+Match History Tracking: Store matching run metadata in database
+Parameter Tuning Interface: Admin page for adjusting configuration (not really needed as of now)
+Performance Optimization: Cache pair scores for large batches (might be needed)
+Matching Analytics: Dashboard showing trends, score distributions, match quality over time (this is good to implement afterwards)
+Real Data Testing: Test with actual user responses to fine-tune thresholds

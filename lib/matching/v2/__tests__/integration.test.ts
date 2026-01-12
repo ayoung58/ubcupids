@@ -1,0 +1,593 @@
+/**
+ * Integration Tests for Matching Algorithm V2.2
+ *
+ * These tests verify the complete pipeline end-to-end across all 8 phases.
+ */
+
+import { describe, it, expect } from "vitest";
+import { runMatchingPipeline, MatchingUser } from "../index";
+import { ResponseValue } from "../types";
+
+// Helper to create mock users
+function createUser(
+  id: string,
+  responses: Record<string, ResponseValue>
+): MatchingUser {
+  return { id, responses };
+}
+
+describe("Integration Tests - Complete Pipeline", () => {
+  describe("Small Batch (10 users)", () => {
+    it("should match compatible users in a batch of 10", () => {
+      const users: MatchingUser[] = [];
+
+      // Create 10 users with varying compatibility
+      for (let i = 1; i <= 10; i++) {
+        const isWoman = i % 2 === 0;
+        const political = i <= 5 ? 2 : 4; // Split progressive/conservative
+
+        users.push(
+          createUser(`user${i}`, {
+            q1: { answer: isWoman ? "woman" : "man" },
+            q2: {
+              answer: isWoman ? ["men"] : ["women"],
+              preference: isWoman ? ["men"] : ["women"],
+            },
+            q4: { answer: 20 + i, preference: { min: 18, max: 35 } },
+            q7: {
+              answer: political,
+              preference: "similar",
+              importance: "important",
+            },
+            q8: {
+              answer: "socially",
+              preference: ["socially", "rarely"],
+              importance: "somewhat-important",
+            },
+            q11: {
+              answer: "monogamous",
+              preference: "same",
+              importance: "very-important",
+            },
+          })
+        );
+      }
+
+      const result = runMatchingPipeline(users);
+
+      // Expectations
+      expect(result.matches.length).toBeGreaterThan(0);
+      expect(result.matches.length).toBeLessThanOrEqual(5); // Max 5 matches for 10 users
+      expect(result.diagnostics.totalUsers).toBe(10);
+      expect(result.diagnostics.phase2to6_pairScoresCalculated).toBe(45); // C(10,2) = 45 pairs
+
+      // Verify no duplicate matches
+      const matchedUsers = new Set<string>();
+      result.matches.forEach((m) => {
+        expect(matchedUsers.has(m.userAId)).toBe(false);
+        expect(matchedUsers.has(m.userBId)).toBe(false);
+        matchedUsers.add(m.userAId);
+        matchedUsers.add(m.userBId);
+      });
+    });
+
+    it("should handle scenario where all users fail hard filters", () => {
+      const users: MatchingUser[] = [
+        createUser("incompatible1", {
+          q1: { answer: "woman" },
+          q2: { answer: ["women"], preference: ["women"] }, // Only wants women
+          q8: {
+            answer: "never",
+            preference: ["never"],
+            importance: "dealbreaker",
+          },
+        }),
+        createUser("incompatible2", {
+          q1: { answer: "man" },
+          q2: { answer: ["men"], preference: ["men"] }, // Only wants men
+          q8: {
+            answer: "frequently",
+            preference: ["frequently"],
+            importance: "important",
+          },
+        }),
+      ];
+
+      const result = runMatchingPipeline(users);
+
+      expect(result.matches).toHaveLength(0);
+      expect(result.unmatched).toHaveLength(2);
+      expect(result.diagnostics.phase1_filteredPairs).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Medium Batch (50 users)", () => {
+    it("should efficiently match 50 users with varying compatibility", () => {
+      const users: MatchingUser[] = [];
+
+      for (let i = 1; i <= 50; i++) {
+        const isWoman = i % 2 === 0;
+        const political = 1 + (i % 5);
+        const exercise = 1 + (i % 5);
+
+        users.push(
+          createUser(`user${i}`, {
+            q1: { answer: isWoman ? "woman" : "man" },
+            q2: {
+              answer: isWoman ? ["men"] : ["women"],
+              preference: isWoman ? ["men"] : ["women"],
+            },
+            q4: { answer: 18 + (i % 23), preference: { min: 18, max: 40 } },
+            q7: {
+              answer: political,
+              preference: "similar",
+              importance: "important",
+            },
+            q8: {
+              answer: i % 4 === 0 ? "never" : "socially",
+              preference: ["socially", "rarely", "never"],
+              importance: "somewhat-important",
+            },
+            q10: {
+              answer: exercise,
+              preference: "similar",
+              importance: "somewhat-important",
+            },
+            q11: {
+              answer: "monogamous",
+              preference: "same",
+              importance: "very-important",
+            },
+          })
+        );
+      }
+
+      const startTime = Date.now();
+      const result = runMatchingPipeline(users);
+      const duration = Date.now() - startTime;
+
+      // Performance check
+      expect(duration).toBeLessThan(3000); // Should complete in under 3 seconds
+
+      // Match quality checks
+      expect(result.matches.length).toBeGreaterThan(10); // Should create many matches
+      expect(result.matches.length).toBeLessThanOrEqual(25); // Max 25 matches for 50 users
+      expect(result.diagnostics.totalUsers).toBe(50);
+
+      // Verify match scores are reasonable
+      if (result.matches.length > 0) {
+        const scores = result.matches.map((m) => m.pairScore);
+        const avgScore = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+        expect(avgScore).toBeGreaterThan(30); // Average score should be decent
+      }
+
+      // Verify diagnostics are populated
+      expect(result.diagnostics.phase2to6_pairScoresCalculated).toBeGreaterThan(
+        0
+      );
+      expect(result.diagnostics.executionTimeMs).toBeGreaterThan(0);
+    });
+
+    it("should produce consistent results on repeated runs", () => {
+      const users: MatchingUser[] = [];
+
+      for (let i = 1; i <= 20; i++) {
+        const isWoman = i % 2 === 0;
+
+        users.push(
+          createUser(`user${i}`, {
+            q1: { answer: isWoman ? "woman" : "man" },
+            q2: {
+              answer: isWoman ? ["men"] : ["women"],
+              preference: isWoman ? ["men"] : ["women"],
+            },
+            q7: { answer: 3, preference: "similar", importance: "important" },
+            q8: {
+              answer: "socially",
+              preference: ["socially"],
+              importance: "important",
+            },
+            q11: {
+              answer: "monogamous",
+              preference: "same",
+              importance: "very-important",
+            },
+          })
+        );
+      }
+
+      const result1 = runMatchingPipeline(users);
+      const result2 = runMatchingPipeline(users);
+
+      // Results should be deterministic
+      expect(result1.matches.length).toBe(result2.matches.length);
+      expect(result1.diagnostics.phase2to6_pairScoresCalculated).toBe(
+        result2.diagnostics.phase2to6_pairScoresCalculated
+      );
+    });
+  });
+
+  describe("Large Batch (100 users)", () => {
+    it("should handle 100 users with acceptable performance", () => {
+      const users: MatchingUser[] = [];
+
+      for (let i = 1; i <= 100; i++) {
+        const isWoman = i % 2 === 0;
+        const political = 1 + (i % 5);
+        const exercise = 1 + (i % 5);
+
+        users.push(
+          createUser(`user${i}`, {
+            q1: { answer: isWoman ? "woman" : "man" },
+            q2: {
+              answer: isWoman ? ["men"] : ["women"],
+              preference: isWoman ? ["men"] : ["women"],
+            },
+            q4: { answer: 18 + (i % 23), preference: { min: 18, max: 40 } },
+            q7: {
+              answer: political,
+              preference: "similar",
+              importance: "important",
+            },
+            q8: {
+              answer: i % 3 === 0 ? "never" : "socially",
+              preference: ["socially", "rarely"],
+              importance: "important",
+            },
+            q10: {
+              answer: exercise,
+              preference: "similar",
+              importance: "somewhat-important",
+            },
+            q11: {
+              answer: "monogamous",
+              preference: "same",
+              importance: "very-important",
+            },
+          })
+        );
+      }
+
+      const startTime = Date.now();
+      const result = runMatchingPipeline(users);
+      const duration = Date.now() - startTime;
+
+      // Performance check - should handle 100 users reasonably fast
+      expect(duration).toBeLessThan(10000); // Under 10 seconds
+
+      expect(result.diagnostics.totalUsers).toBe(100);
+      expect(result.matches.length).toBeGreaterThan(20);
+      expect(result.matches.length).toBeLessThanOrEqual(50); // Max 50 matches for 100 users
+
+      // Score distribution should be reasonable
+      expect(result.diagnostics.scoreDistribution.length).toBe(5); // 5 buckets
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("should handle empty user list", () => {
+      const result = runMatchingPipeline([]);
+
+      expect(result.matches).toHaveLength(0);
+      expect(result.unmatched).toHaveLength(0);
+      expect(result.diagnostics.totalUsers).toBe(0);
+    });
+
+    it("should handle single user", () => {
+      const users = [
+        createUser("alone", {
+          q1: { answer: "woman" },
+          q2: { answer: ["men"], preference: ["men"] },
+          q11: {
+            answer: "monogamous",
+            preference: "same",
+            importance: "important",
+          },
+        }),
+      ];
+
+      const result = runMatchingPipeline(users);
+
+      expect(result.matches).toHaveLength(0);
+      expect(result.unmatched).toHaveLength(1);
+      expect(result.unmatched[0].userId).toBe("alone");
+    });
+
+    it("should handle users with minimal responses", () => {
+      const users = [
+        createUser("user1", {
+          q1: { answer: "woman" },
+          q2: { answer: ["men"], preference: ["men"] },
+        }),
+        createUser("user2", {
+          q1: { answer: "man" },
+          q2: { answer: ["women"], preference: ["women"] },
+        }),
+      ];
+
+      const result = runMatchingPipeline(users);
+
+      // Should handle gracefully even with minimal data
+      expect(result.diagnostics.totalUsers).toBe(2);
+      // May or may not match depending on thresholds
+    });
+
+    it("should handle users with max responses (all 37 questions)", () => {
+      const fullResponses: Record<string, ResponseValue> = {
+        q1: { answer: "woman" },
+        q2: { answer: ["men"], preference: ["men"] },
+        q3: {
+          answer: "heterosexual",
+          preference: "same",
+          importance: "important",
+        },
+        q4: { answer: 25, preference: { min: 23, max: 28 } },
+        q5: {
+          answer: ["asian"],
+          preference: ["asian", "white"],
+          importance: "not-important",
+        },
+        q6: {
+          answer: ["christian"],
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q7: { answer: 3, preference: "similar", importance: "important" },
+        q8: {
+          answer: "socially",
+          preference: ["socially", "rarely"],
+          importance: "important",
+        },
+        q9: {
+          answer: { substances: ["none"], frequency: "never" },
+          preference: { substances: ["none"], frequency: "similar" },
+          importance: "important",
+        },
+        q10: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q11: {
+          answer: "monogamous",
+          preference: "same",
+          importance: "dealbreaker",
+        },
+        q12: { answer: 3, preference: "similar", importance: "important" },
+        q13: {
+          answer: ["long-term"],
+          preference: ["long-term"],
+          importance: "very-important",
+        },
+        q14: {
+          answer: "science",
+          preference: ["science", "engineering"],
+          importance: "not-important",
+        },
+        q15: {
+          answer: "on-campus",
+          preference: ["on-campus", "off-campus"],
+          importance: "not-important",
+        },
+        q16: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q17: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q18: { answer: 3, preference: "similar", importance: "important" },
+        q19: {
+          answer: "like-pets",
+          preference: ["like-pets", "have-pets"],
+          importance: "somewhat-important",
+        },
+        q20: {
+          answer: "few-relationships",
+          preference: ["few-relationships", "one-serious"],
+          importance: "not-important",
+        },
+        // Section 2
+        q21: {
+          answer: {
+            show: ["quality-time", "physical-touch"],
+            receive: ["words", "quality-time"],
+          },
+          preference: "similar",
+          importance: "important",
+        },
+        q22: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q23: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q24: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q25: {
+          answer: ["solution-focused"],
+          preference: "compatible",
+          importance: "important",
+        },
+        q26: { answer: 3, preference: "similar", importance: "important" },
+        q27: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q28: { answer: 3, preference: "similar", importance: "not-important" },
+        q29: {
+          answer: "flexible",
+          preference: "same",
+          importance: "somewhat-important",
+        },
+        q30: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q31: { answer: 3, preference: "similar", importance: "not-important" },
+        q32: {
+          answer: ["physical", "emotional", "flirting"],
+          preference: "similar",
+          importance: "important",
+        },
+        q33: { answer: 3, preference: "similar", importance: "not-important" },
+        q34: { answer: 3, preference: "similar", importance: "not-important" },
+        q35: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q36: {
+          answer: 3,
+          preference: "similar",
+          importance: "somewhat-important",
+        },
+        q37: { answer: 3, preference: "similar", importance: "not-important" },
+      };
+
+      const users = [
+        createUser("complete1", fullResponses),
+        createUser("complete2", fullResponses),
+      ];
+
+      const result = runMatchingPipeline(users);
+
+      // Should handle all questions gracefully
+      expect(result.diagnostics.totalUsers).toBe(2);
+      // With identical responses, should be a perfect match
+      expect(result.matches.length).toBe(1);
+      if (result.matches.length > 0) {
+        expect(result.matches[0].pairScore).toBeGreaterThan(90); // Near-perfect score
+      }
+    });
+
+    it("should handle all users being perfectionists (no eligible pairs)", () => {
+      const users: MatchingUser[] = [];
+
+      // Create users with incompatible preferences
+      for (let i = 1; i <= 10; i++) {
+        users.push(
+          createUser(`user${i}`, {
+            q1: { answer: "woman" },
+            q2: { answer: ["men"], preference: ["men"] },
+            q7: { answer: i, preference: "same", importance: "dealbreaker" }, // Everyone wants exact match
+          })
+        );
+      }
+
+      const result = runMatchingPipeline(users);
+
+      expect(result.matches.length).toBeLessThan(users.length / 2); // Few or no matches
+      expect(result.diagnostics.phase7_perfectionists.length).toBeGreaterThan(
+        0
+      );
+    });
+  });
+
+  describe("Configuration Overrides", () => {
+    it("should respect custom configuration", () => {
+      const users = [
+        createUser("user1", {
+          q1: { answer: "woman" },
+          q2: { answer: ["men"], preference: ["men"] },
+          q7: { answer: 3, preference: "similar", importance: "important" },
+        }),
+        createUser("user2", {
+          q1: { answer: "man" },
+          q2: { answer: ["women"], preference: ["women"] },
+          q7: { answer: 3, preference: "similar", importance: "important" },
+        }),
+      ];
+
+      const customConfig = {
+        SECTION_WEIGHTS: {
+          LIFESTYLE: 0.7,
+          PERSONALITY: 0.3,
+        },
+        IMPORTANCE_WEIGHTS: {
+          NOT_IMPORTANT: 0,
+          SOMEWHAT_IMPORTANT: 0.5,
+          IMPORTANT: 1.0,
+          VERY_IMPORTANT: 2.5, // Increased from 2.0
+        },
+        MUTUALITY_ALPHA: 0.7, // Increased from 0.65
+        RELATIVE_THRESHOLD_BETA: 0.5, // Decreased from 0.6
+        ABSOLUTE_THRESHOLD_MIN: 40, // Decreased from 50
+        LOVE_LANGUAGE_WEIGHTS: {
+          SHOW: 0.6,
+          RECEIVE: 0.4,
+        },
+        CONFLICT_COMPATIBILITY_MATRIX: {
+          compromise: {
+            compromise: 1.0,
+            solution: 0.9,
+            emotion: 0.6,
+            analysis: 0.7,
+            space: 0.5,
+            direct: 0.6,
+          },
+          solution: {
+            compromise: 0.9,
+            solution: 1.0,
+            emotion: 0.7,
+            analysis: 0.9,
+            space: 0.6,
+            direct: 0.8,
+          },
+          emotion: {
+            compromise: 0.6,
+            solution: 0.7,
+            emotion: 1.0,
+            analysis: 0.5,
+            space: 0.7,
+            direct: 0.5,
+          },
+          analysis: {
+            compromise: 0.7,
+            solution: 0.9,
+            emotion: 0.5,
+            analysis: 1.0,
+            space: 0.6,
+            direct: 0.7,
+          },
+          space: {
+            compromise: 0.5,
+            solution: 0.6,
+            emotion: 0.7,
+            analysis: 0.6,
+            space: 1.0,
+            direct: 0.3,
+          },
+          direct: {
+            compromise: 0.6,
+            solution: 0.8,
+            emotion: 0.5,
+            analysis: 0.7,
+            space: 0.3,
+            direct: 1.0,
+          },
+        },
+        CONFLICT_COMPATIBLE_THRESHOLD: 0.5,
+        SLEEP_FLEXIBILITY_BONUS: 0.2,
+        PREFER_NOT_ANSWER_SIMILARITY: 0.3,
+      };
+
+      const result = runMatchingPipeline(users, customConfig);
+
+      // Should complete without errors
+      expect(result.diagnostics.totalUsers).toBe(2);
+    });
+  });
+});

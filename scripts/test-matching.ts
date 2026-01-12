@@ -1,23 +1,20 @@
 /**
- * Matching System Test Script
+ * Matching Algorithm V2.2 Test Script
  *
- * This script tests the matching system components.
- * Run with: npx ts-node --compiler-options '{"module":"CommonJS"}' scripts/test-matching.ts
+ * Standalone script for testing matching scenarios with detailed diagnostics.
+ * Run with: npx tsx scripts/test-matching.ts
  *
- * Or use: npx tsx scripts/test-matching.ts
+ * This script tests various scenarios:
+ * 1. Perfect match pair (high mutual compatibility)
+ * 2. Dealbreaker conflict (Phase 1 filter)
+ * 3. Asymmetric pair (one-sided high score)
+ * 4. Below-threshold pair (fails Phase 7)
+ * 5. Triangle scenario (A→B→C→A preference chain)
+ * 6. Large batch (50+ users with varying compatibility)
  */
 
-import { prisma } from "../lib/prisma";
-import {
-  scoreSingleChoice,
-  scoreMultiChoice,
-  scoreRanking,
-  checkGenderFilter,
-  checkAllFilters,
-  SECTION_WEIGHTS,
-  IMPORTANCE_MULTIPLIERS,
-  cosineSimilarity,
-} from "../lib/matching";
+import { runMatchingPipeline, MatchingUser } from "../lib/matching/v2";
+import { ResponseValue } from "../lib/matching/v2/types";
 
 async function main() {
   console.log("\n==========================================");
