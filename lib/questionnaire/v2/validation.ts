@@ -137,7 +137,8 @@ function validateQuestion(
   }
 
   // Validate preference field (if question has preferences)
-  if (question.hasPreference && !response.doesntMatter) {
+  // Skip for Q4 (age) as it's a hard filter
+  if (question.hasPreference && questionId !== "q4" && !response.doesntMatter) {
     if (
       response.preference === null ||
       response.preference === undefined ||
@@ -153,8 +154,10 @@ function validateQuestion(
   }
 
   // Validate importance field (if question has preferences and not "doesn't matter")
+  // Skip for Q4 (age) as it's a hard filter
   if (
     question.hasPreference &&
+    questionId !== "q4" &&
     !response.doesntMatter &&
     !response.isDealer &&
     !response.dealbreaker
@@ -230,9 +233,8 @@ export function validateQuestionnaireV2(
           field: "freeResponse",
           message: `Response exceeds maximum length of ${question.maxLength || 300} characters`,
         });
-      } else {
-        completedCount++;
       }
+      // Note: Optional free responses don't increment completedCount
     }
   });
 

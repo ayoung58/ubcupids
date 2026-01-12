@@ -131,7 +131,7 @@ Testing Checkpoint:
 ✅ Free response section appears at end
 ⚠️ Note: Saving won't work yet - that's Phase 5
 PHASE 5: API Routes - Save/Load Logic
-Goal: Enable autosave and data persistence (restore critical feature!)
+Goal: Enable autosave, data persistence, and submission (restore critical feature!)
 
 Tasks:
 Create V2 API routes
@@ -139,16 +139,25 @@ Create V2 API routes
 POST /api/questionnaire/v2/save - Save partial/complete responses
 GET /api/questionnaire/v2/load - Load existing responses
 POST /api/questionnaire/v2/validate - Validate before submission
+POST /api/questionnaire/v2/submit - Submit and lock questionnaire
 Implement autosave logic
 
 Debounce 3 seconds (same as before)
 Save both answer + preference + importance for each question
 Handle partial saves (not all questions answered)
 Show save status indicator
-Implement manual save
+Implement submission logic
 
-Save button always available
-Show confirmation toast
+Submit button appears when 100% complete
+Validates all responses before submission
+Sets isSubmitted = true and submittedAt timestamp
+Updates user.needsQuestionnaireUpdate = false
+Implement read-only mode
+
+Display green banner when submitted
+Disable all inputs (opacity + pointer-events-none)
+Hide autosave indicator
+Allow navigation to view responses
 Validation logic
 
 Age ranges (18-40, min < max)
@@ -159,15 +168,21 @@ Files to create:
 app/api/questionnaire/v2/save/route.ts
 app/api/questionnaire/v2/load/route.ts
 app/api/questionnaire/v2/validate/route.ts
+app/api/questionnaire/v2/submit/route.ts
 lib/questionnaire/v2/validation.ts
 Files to modify:
-components/questionnaire/v2/QuestionnaireV2.tsx (add autosave hook)
+components/questionnaire/v2/QuestionnaireV2.tsx (add autosave hook + submission)
 Testing Checkpoint:
 ✅ Autosave triggers after 3 seconds
 ✅ Manual save works
 ✅ Progress persists on page refresh
 ✅ Validation catches errors before submission
 ✅ Error messages display correctly
+✅ Submit button appears at 100% completion
+✅ Submission locks questionnaire (read-only mode)
+✅ Banner displays for submitted questionnaires
+✅ Inputs are disabled after submission
+✅ Can still navigate to view all responses
 PHASE 6: Banner & Migration Path
 Goal: Notify existing users to retake questionnaire
 
@@ -354,7 +369,8 @@ New table strategy - No risk to existing data
 Testing checkpoints - Catch issues early
 Banner for users - Clear communication about changes
 
-In addition, at the end of each phase: 
+In addition, at the end of each phase:
+
 - provide a summary of changes
 - provide how to test with given changes for the changes of that phase
 - provide a commit message and description.

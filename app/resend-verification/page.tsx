@@ -11,6 +11,8 @@ import { ResendVerificationForm } from "@/components/auth/ResendVerificationForm
  * - Email was accidentally deleted
  */
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Resend Verification Email | UBCupids",
   description: "Request a new verification email",

@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { HomepageTimeline } from "@/components/homepage/HomepageTimeline";
 import { SIGNUP_DEADLINE } from "@/lib/matching/config";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Home Page
  *

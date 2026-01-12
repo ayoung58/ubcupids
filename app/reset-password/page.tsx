@@ -7,6 +7,8 @@ import { AlertCircle } from "lucide-react";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Reset Password | UBCupids",
   description: "Create a new password for your UBCupids account",

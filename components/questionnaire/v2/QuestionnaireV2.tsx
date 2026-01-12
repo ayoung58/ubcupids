@@ -54,6 +54,7 @@ function mapPreferenceFormat(format: string): PreferenceType {
 
 interface QuestionnaireV2Props {
   initialResponses?: Partial<QuestionnaireResponses>;
+  isSubmitted?: boolean;
 }
 
 /**
@@ -74,6 +75,7 @@ interface QuestionnaireV2Props {
  */
 export function QuestionnaireV2({
   initialResponses = {},
+  isSubmitted = false,
 }: QuestionnaireV2Props) {
   const [currentStep, setCurrentStep] = useState(0); // 0 = Q1+Q2, 1-35 = Q3-Q36 individually, 36 = free response
   const [responses, setResponses] =
@@ -83,6 +85,9 @@ export function QuestionnaireV2({
   >({});
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [submittedState, setIsSubmitted] = useState(isSubmitted);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Total steps: Q1+Q2 together (1), Q3-Q8 (6), Q9a (1), Q9b (1), Q10-Q36 (27), Free Response (1) = 37 steps (0-36)
   // Questions: Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9a, Q9b, Q10-Q36 = 37 questions
@@ -117,6 +122,7 @@ export function QuestionnaireV2({
             freeResponse4: data.freeResponses?.freeResponse4 || "",
             freeResponse5: data.freeResponses?.freeResponse5 || "",
           });
+          setIsSubmitted(data.isSubmitted || false);
         }
 
         setIsLoading(false);
@@ -696,10 +702,60 @@ export function QuestionnaireV2({
   // Update response helper
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateResponse = (questionId: string, value: any) => {
+    if (submittedState) return; // Prevent editing after submission
     setResponses((prev) => ({
       ...prev,
       [questionId]: value,
     }));
+  };
+
+  // Submit questionnaire
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await fetch("/api/questionnaire/v2/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // If validation failed, show detailed errors
+        if (data.errors && Array.isArray(data.errors)) {
+          const errorMessages = data.errors.map((error: any) => {
+            if (error.questionNumber > 0) {
+              return `Q${error.questionNumber}: ${error.message}`;
+            }
+            return error.message;
+          });
+          throw new Error(
+            `Questionnaire validation failed:\n\n${errorMessages.join("\n")}\n\nCompletion: ${data.completionPercentage || 0}%`
+          );
+        }
+        throw new Error(data.error || "Failed to submit questionnaire");
+      }
+
+      // Success!
+      setIsSubmitted(true);
+      alert(
+        "Questionnaire submitted successfully! You can now view your responses but cannot edit them."
+      );
+    } catch (error) {
+      console.error("Submit error:", error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit questionnaire"
+      );
+      alert(
+        `Submission failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Navigation
@@ -710,6 +766,13 @@ export function QuestionnaireV2({
     if (canGoNext) {
       setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (
+      currentStep === totalSteps &&
+      completedCount === totalQuestions &&
+      !submittedState
+    ) {
+      // At the end with 100% completion, submit
+      handleSubmit();
     }
   };
 
@@ -782,6 +845,36 @@ export function QuestionnaireV2({
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Read-Only Banner */}
+      {submittedState && (
+        <div className="bg-green-50 border-b border-green-200 py-3 px-6">
+          <div className="max-w-6xl mx-auto flex items-center gap-3">
+            <svg
+              className="h-5 w-5 text-green-600 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-green-900">
+                Questionnaire Submitted
+              </p>
+              <p className="text-xs text-green-700">
+                You are viewing your responses in read-only mode. To make
+                changes, please contact support.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Progress Bar with Back to Dashboard button and Save Status */}
       <div className="flex items-center gap-4 px-4 py-3 bg-white border-b border-slate-200">
         <a
@@ -797,12 +890,14 @@ export function QuestionnaireV2({
             completedQuestions={completedCount}
           />
         </div>
-        <SaveStatusIndicator
-          status={saveStatus}
-          lastSaved={lastSaved}
-          error={saveError}
-          onManualSave={manualSave}
-        />
+        {!submittedState && (
+          <SaveStatusIndicator
+            status={saveStatus}
+            lastSaved={lastSaved}
+            error={saveError}
+            onManualSave={manualSave}
+          />
+        )}
       </div>
 
       {/* Question Matrix */}
@@ -817,7 +912,14 @@ export function QuestionnaireV2({
       />
 
       {/* Main Content - takes remaining space */}
-      <div className="flex-1 py-8 px-4">{getCurrentContent()}</div>
+      <div
+        className={cn(
+          "flex-1 py-8 px-4",
+          submittedState && "opacity-70 pointer-events-none"
+        )}
+      >
+        {getCurrentContent()}
+      </div>
 
       {/* Navigation Buttons - sticks to bottom */}
       <div className="bg-white border-t border-slate-200 py-4 px-6">
@@ -842,16 +944,36 @@ export function QuestionnaireV2({
 
           <button
             onClick={handleNext}
-            disabled={!canGoNext}
+            disabled={
+              !canGoNext &&
+              !(
+                currentStep === totalSteps &&
+                completedCount === totalQuestions &&
+                !submittedState
+              )
+            }
             className={cn(
               "px-6 py-2 rounded-md font-medium transition-all",
               "focus:outline-none focus:ring-2 focus:ring-offset-2",
-              canGoNext
+              canGoNext ||
+                (currentStep === totalSteps &&
+                  completedCount === totalQuestions &&
+                  !submittedState)
                 ? "bg-pink-600 text-white hover:bg-pink-700 focus:ring-pink-500"
                 : "bg-pink-300 text-white cursor-not-allowed"
             )}
           >
-            {currentStep === totalSteps ? "Complete" : "Next →"}
+            {isSubmitting ? (
+              <>Submitting...</>
+            ) : currentStep === totalSteps &&
+              completedCount === totalQuestions &&
+              !submittedState ? (
+              "Submit Questionnaire"
+            ) : currentStep === totalSteps ? (
+              "Complete"
+            ) : (
+              "Next →"
+            )}
           </button>
         </div>
       </div>

@@ -17,6 +17,8 @@ import { AlertCircle, CheckCircle } from "lucide-react";
  * Public page (no authentication required)
  */
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Login | UBCupids",
   description: "Log in to your UBCupids account",

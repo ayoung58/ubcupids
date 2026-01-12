@@ -1,10 +1,12 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
+import { Metadata } from "next";
+import Link from "next/link";
+import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: 'Forgot Password | UBCupids',
-  description: 'Reset your UBCupids password',
+  title: "Forgot Password | UBCupids",
+  description: "Reset your UBCupids password",
 };
 
 export default function ForgotPasswordPage() {
@@ -17,9 +19,7 @@ export default function ForgotPasswordPage() {
               💘 UBCupids
             </h1>
           </Link>
-          <p className="mt-2 text-sm text-slate-600">
-            Reset your password
-          </p>
+          <p className="mt-2 text-sm text-slate-600">Reset your password</p>
         </div>
 
         <ForgotPasswordForm />

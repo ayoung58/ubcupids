@@ -56,12 +56,12 @@ async function QuestionnairePage() {
 
   const data = await getQuestionnaireV2Data(session.user.id);
 
-  // Redirect if already submitted
-  if (data.isSubmitted) {
-    redirect("/dashboard/questionnaire/success");
-  }
-
-  return <QuestionnaireV2 initialResponses={data.responses} />;
+  return (
+    <QuestionnaireV2
+      initialResponses={data.responses}
+      isSubmitted={data.isSubmitted}
+    />
+  );
 }
 
 export default function Page() {
