@@ -31,11 +31,12 @@ export const MATCHING_CONFIG = {
 
   /**
    * Section weights - Relative importance of each section
+   * Per V2.2 spec: Lifestyle 65%, Personality 35%
    * Must sum to 1.0
    */
   SECTION_WEIGHTS: {
-    LIFESTYLE: 0.5,
-    PERSONALITY: 0.5,
+    LIFESTYLE: 0.65,
+    PERSONALITY: 0.35,
   },
 
   /**
