@@ -8,6 +8,8 @@ import {
 } from "@/types/questionnaire-v2";
 import { SameSimilarDifferent } from "./SameSimilarDifferent";
 import { MultiSelectPreference } from "./MultiSelectPreference";
+import { DirectionalPreference } from "./DirectionalPreference";
+import { ConflictResolutionPreference } from "./ConflictResolutionPreference";
 import { AgeRangeInput } from "../answer-inputs/AgeRangeInput";
 
 interface Option {
@@ -41,13 +43,47 @@ export function PreferenceSelector({
   disabled = false,
 }: PreferenceSelectorProps) {
   // Q4 Age - handled by AgeInput component (includes preference range inputs)
+  if (questionType === QuestionType.SPECIAL_AGE) {
+    // Age range is handled within AgeInput, so no preference input needed here
+    return null;
+  }
+
+  // Q25 Conflict Resolution - special "same/compatible" preference
   if (
-    questionType === QuestionType.SPECIAL_AGE ||
+    questionType === QuestionType.SPECIAL_CONFLICT_RESOLUTION ||
     preferenceFormat === "special"
   ) {
-    // Age range is handled within AgeInput, so no preference input needed here
-    // Special cases like Q25 will have custom components
-    return null;
+    const stringValue =
+      typeof preferenceValue === "string"
+        ? (preferenceValue as "same" | "compatible")
+        : null;
+
+    return (
+      <ConflictResolutionPreference
+        value={stringValue}
+        onChange={onPreferenceChange}
+        disabled={disabled}
+      />
+    );
+  }
+
+  // Directional preference (Q10 Exercise - more/less/similar/same)
+  if (
+    questionType === QuestionType.LIKERT_DIRECTIONAL ||
+    preferenceFormat === "directional"
+  ) {
+    const stringValue =
+      typeof preferenceValue === "string"
+        ? (preferenceValue as "more" | "less" | "similar" | "same")
+        : null;
+
+    return (
+      <DirectionalPreference
+        value={stringValue}
+        onChange={onPreferenceChange}
+        disabled={disabled}
+      />
+    );
   }
 
   // Multi-select preference (Q3, Q5, Q8, Q9a, Q13, Q14, Q15, Q19, Q20, Q21)
