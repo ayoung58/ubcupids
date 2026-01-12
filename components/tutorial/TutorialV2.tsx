@@ -165,15 +165,18 @@ export function TutorialV2({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tutorialId }),
       });
-      
+
       const data = await response.json();
-      console.log("Tutorial completion response:", { status: response.status, data });
-      
+      console.log("Tutorial completion response:", {
+        status: response.status,
+        data,
+      });
+
       if (!response.ok) {
         console.error("Failed to mark tutorial complete:", data.error);
         return false;
       }
-      
+
       console.log("Tutorial marked complete successfully");
       return true;
     } catch (error) {

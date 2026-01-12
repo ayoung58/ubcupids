@@ -86,7 +86,9 @@ describe("TutorialV2 Component", () => {
       // @ts-ignore - jest-dom matchers are available at runtime
       expect(screen.getByText("First Step")).toBeInTheDocument();
       // @ts-ignore - jest-dom matchers are available at runtime
-      expect(screen.getByText("This is the first step content")).toBeInTheDocument();
+      expect(
+        screen.getByText("This is the first step content")
+      ).toBeInTheDocument();
       // @ts-ignore - jest-dom matchers are available at runtime
       expect(screen.getByText("Step 1 of 3")).toBeInTheDocument();
     });
@@ -192,7 +194,9 @@ describe("TutorialV2 Component", () => {
       fireEvent.click(nextButton);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /finish/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /finish/i })
+        ).toBeInTheDocument();
       });
     });
   });
@@ -403,7 +407,9 @@ describe("TutorialV2 Component", () => {
       // Mock API error
       (global.fetch as any).mockRejectedValueOnce(new Error("API Error"));
 
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       render(
         <TutorialV2

@@ -92,7 +92,8 @@ export function QuestionnaireV2({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(!tutorialCompleted);
-  const [tutorialCompletedState, setTutorialCompletedState] = useState(tutorialCompleted);
+  const [tutorialCompletedState, setTutorialCompletedState] =
+    useState(tutorialCompleted);
 
   // Handle tutorial completion
   const handleTutorialComplete = () => {
@@ -937,15 +938,18 @@ export function QuestionnaireV2({
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Tutorial Overlay */}
-      {!isLoading && showTutorial && !tutorialCompletedState && currentStep === 1 && (
-        <TutorialV2
-          tutorialId="questionnaire-v2"
-          steps={tutorialSteps}
-          initialCompleted={false}
-          onComplete={handleTutorialComplete}
-          onSkip={handleTutorialComplete}
-        />
-      )}
+      {!isLoading &&
+        showTutorial &&
+        !tutorialCompletedState &&
+        currentStep === 1 && (
+          <TutorialV2
+            tutorialId="questionnaire-v2"
+            steps={tutorialSteps}
+            initialCompleted={false}
+            onComplete={handleTutorialComplete}
+            onSkip={handleTutorialComplete}
+          />
+        )}
 
       {/* Read-Only Banner */}
       {submittedState && (

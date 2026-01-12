@@ -50,7 +50,9 @@ describe("QuestionnaireV2 Tutorial Integration", () => {
       // Wait for loading to finish and tutorial to appear
       await waitFor(
         () => {
-          expect(screen.getByText("Welcome to the Questionnaire!")).toBeInTheDocument();
+          expect(
+            screen.getByText("Welcome to the Questionnaire!")
+          ).toBeInTheDocument();
         },
         { timeout: 5000 }
       );
@@ -66,15 +68,20 @@ describe("QuestionnaireV2 Tutorial Integration", () => {
       );
 
       // Wait for loading to finish
-      await waitFor(() => {
-        const loadingText = screen.queryByText("Loading questionnaire...");
-        return !loadingText;
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          const loadingText = screen.queryByText("Loading questionnaire...");
+          return !loadingText;
+        },
+        { timeout: 3000 }
+      );
 
       // Wait a bit to ensure tutorial doesn't appear
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      expect(screen.queryByText("Welcome to the Questionnaire!")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("Welcome to the Questionnaire!")
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -88,15 +95,22 @@ describe("QuestionnaireV2 Tutorial Integration", () => {
         />
       );
 
-      await waitFor(() => {
-        expect(screen.getByText("Welcome to the Questionnaire!")).toBeInTheDocument();
-      }, { timeout: 5000 });
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText("Welcome to the Questionnaire!")
+          ).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
 
       const skipButton = screen.getByRole("button", { name: /skip tutorial/i });
       fireEvent.click(skipButton);
 
       await waitFor(() => {
-        expect(screen.queryByText("Welcome to the Questionnaire!")).not.toBeInTheDocument();
+        expect(
+          screen.queryByText("Welcome to the Questionnaire!")
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -109,9 +123,14 @@ describe("QuestionnaireV2 Tutorial Integration", () => {
         />
       );
 
-      await waitFor(() => {
-        expect(screen.getByText("Welcome to the Questionnaire!")).toBeInTheDocument();
-      }, { timeout: 5000 });
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText("Welcome to the Questionnaire!")
+          ).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
 
       const skipButton = screen.getByRole("button", { name: /skip tutorial/i });
       fireEvent.click(skipButton);
@@ -139,13 +158,18 @@ describe("QuestionnaireV2 Tutorial Integration", () => {
         />
       );
 
-      await waitFor(() => {
-        const loadingText = screen.queryByText("Loading questionnaire...");
-        return !loadingText;
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          const loadingText = screen.queryByText("Loading questionnaire...");
+          return !loadingText;
+        },
+        { timeout: 3000 }
+      );
 
       // Tutorial should not appear for submitted questionnaires
-      expect(screen.queryByText("Welcome to the Questionnaire!")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("Welcome to the Questionnaire!")
+      ).not.toBeInTheDocument();
 
       // Should see read-only banner instead
       expect(screen.getByText("Questionnaire Submitted")).toBeInTheDocument();
