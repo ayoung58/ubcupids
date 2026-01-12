@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { ProfileButton } from "./dashboard/_components/ProfileButton";
+import { QuestionnaireUpdateBanner } from "@/components/dashboard/QuestionnaireUpdateBanner";
 
 interface DashboardLayoutClientProps {
   firstName: string;
@@ -11,6 +12,7 @@ interface DashboardLayoutClientProps {
   profilePicture: string;
   isCupid?: boolean;
   isBeingMatched?: boolean;
+  needsQuestionnaireUpdate?: boolean;
   children: React.ReactNode;
 }
 
@@ -20,6 +22,7 @@ export function DashboardLayoutClient({
   profilePicture,
   isCupid,
   isBeingMatched,
+  needsQuestionnaireUpdate,
   children,
 }: DashboardLayoutClientProps) {
   const pathname = usePathname();
@@ -75,6 +78,11 @@ export function DashboardLayoutClient({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Questionnaire Update Banner - Shows when user needs to complete V2 */}
+      {!isQuestionnairePage && needsQuestionnaireUpdate && (
+        <QuestionnaireUpdateBanner show={needsQuestionnaireUpdate} />
       )}
 
       {/* Main Content */}

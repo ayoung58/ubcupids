@@ -21,6 +21,7 @@ export default async function DashboardLayout({
       isCupid: true,
       isBeingMatched: true,
       profilePicture: true,
+      needsQuestionnaireUpdate: true,
     },
   });
 
@@ -31,6 +32,7 @@ export default async function DashboardLayout({
       profilePicture={profile?.profilePicture || ""}
       isCupid={profile?.isCupid}
       isBeingMatched={profile?.isBeingMatched}
+      needsQuestionnaireUpdate={profile?.needsQuestionnaireUpdate ?? false}
     >
       {children}
     </DashboardLayoutClient>
