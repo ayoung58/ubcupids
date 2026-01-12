@@ -11,7 +11,12 @@ describe("Phase 6: Pair Scores", () => {
         q2: { a: 0.6, b: 0.6, section: "LIFESTYLE" },
       };
 
-      const result = calculatePairScore(70, 70, questionScores, MATCHING_CONFIG);
+      const result = calculatePairScore(
+        70,
+        70,
+        questionScores,
+        MATCHING_CONFIG
+      );
 
       expect(result.userAToB).toBe(70);
       expect(result.userBToA).toBe(70);
@@ -25,7 +30,12 @@ describe("Phase 6: Pair Scores", () => {
         q1: { a: 0.8, b: 0.6, section: "LIFESTYLE" },
       };
 
-      const result = calculatePairScore(80, 60, questionScores, MATCHING_CONFIG);
+      const result = calculatePairScore(
+        80,
+        60,
+        questionScores,
+        MATCHING_CONFIG
+      );
 
       // α=0.65, min=60, mean=70
       // pair_score = 0.65×60 + 0.35×70 = 39 + 24.5 = 63.5
@@ -39,7 +49,12 @@ describe("Phase 6: Pair Scores", () => {
         q22: { a: 1.0, b: 1.0, section: "PERSONALITY" },
       };
 
-      const result = calculatePairScore(100, 100, questionScores, MATCHING_CONFIG);
+      const result = calculatePairScore(
+        100,
+        100,
+        questionScores,
+        MATCHING_CONFIG
+      );
 
       expect(result.pairScore).toBe(100);
       expect(result.mutualityPenalty).toBe(0);
@@ -66,7 +81,12 @@ describe("Phase 6: Pair Scores", () => {
         q22: { a: 0.5, b: 0.5, section: "PERSONALITY" }, // OK
       };
 
-      const result = calculatePairScore(50, 50, questionScores, MATCHING_CONFIG);
+      const result = calculatePairScore(
+        50,
+        50,
+        questionScores,
+        MATCHING_CONFIG
+      );
 
       expect(result.lowScoreQuestions).toHaveLength(2);
       // Both q1 (0.2) and q3 (0.2) are equally low, order may vary
@@ -81,7 +101,12 @@ describe("Phase 6: Pair Scores", () => {
         q3: { a: 0.3, b: 0.8, section: "LIFESTYLE" }, // Diff = 0.5
       };
 
-      const result = calculatePairScore(70, 60, questionScores, MATCHING_CONFIG);
+      const result = calculatePairScore(
+        70,
+        60,
+        questionScores,
+        MATCHING_CONFIG
+      );
 
       expect(result.asymmetricPreferences).toHaveLength(2);
       expect(result.asymmetricPreferences[0].difference).toBeCloseTo(0.5, 1);
@@ -93,7 +118,12 @@ describe("Phase 6: Pair Scores", () => {
         q1: { a: 0.9, b: 0.4, section: "LIFESTYLE" },
       };
 
-      const result = calculatePairScore(90, 40, questionScores, MATCHING_CONFIG);
+      const result = calculatePairScore(
+        90,
+        40,
+        questionScores,
+        MATCHING_CONFIG
+      );
 
       // α=0.65, min=40, mean=65
       // pair_score = 0.65×40 + 0.35×65 = 26 + 22.75 = 48.75
@@ -110,7 +140,12 @@ describe("Phase 6: Pair Scores", () => {
         q5: { a: 0.1, b: 0.6, section: "LIFESTYLE" }, // Very asymmetric
       };
 
-      const result = calculatePairScore(50, 50, questionScores, MATCHING_CONFIG);
+      const result = calculatePairScore(
+        50,
+        50,
+        questionScores,
+        MATCHING_CONFIG
+      );
 
       // Low scores sorted ascending
       expect(result.lowScoreQuestions[0].questionId).toBe("q2"); // 0.1
@@ -155,7 +190,9 @@ describe("Phase 7: Eligibility Thresholding", () => {
 
       expect(result.isEligible).toBe(false);
       expect(result.passedUserARelativeThreshold).toBe(false); // 55 < 60
-      expect(result.failureReasons.some(r => r.includes("User A score"))).toBe(true);
+      expect(
+        result.failureReasons.some((r) => r.includes("User A score"))
+      ).toBe(true);
     });
 
     test("should fail user B relative threshold", () => {
@@ -165,7 +202,9 @@ describe("Phase 7: Eligibility Thresholding", () => {
 
       expect(result.isEligible).toBe(false);
       expect(result.passedUserBRelativeThreshold).toBe(false); // 55 < 60
-      expect(result.failureReasons.some(r => r.includes("User B score"))).toBe(true);
+      expect(
+        result.failureReasons.some((r) => r.includes("User B score"))
+      ).toBe(true);
     });
 
     test("should fail multiple thresholds", () => {
@@ -194,7 +233,15 @@ describe("Phase 7: Eligibility Thresholding", () => {
       // Beta: 0.8 (stricter)
       // A best: 100 → threshold: 80
       // A→B: 75 (below 80)
-      const result = checkEligibility(75, 75, 75, 100, 100, MATCHING_CONFIG, 0.8);
+      const result = checkEligibility(
+        75,
+        75,
+        75,
+        100,
+        100,
+        MATCHING_CONFIG,
+        0.8
+      );
 
       expect(result.isEligible).toBe(false);
       expect(result.relativeThreshold).toBe(0.8);
@@ -215,9 +262,9 @@ describe("Phase 7: Eligibility Thresholding", () => {
   describe("findBestScores", () => {
     test("should find best scores for all users", () => {
       const pairScores = {
-        "alice_bob": { score: 75, partnerUserId: "bob" },
-        "alice_charlie": { score: 85, partnerUserId: "charlie" },
-        "bob_charlie": { score: 60, partnerUserId: "charlie" },
+        alice_bob: { score: 75, partnerUserId: "bob" },
+        alice_charlie: { score: 85, partnerUserId: "charlie" },
+        bob_charlie: { score: 60, partnerUserId: "charlie" },
       };
 
       const bestScores = findBestScores(pairScores);
@@ -232,7 +279,7 @@ describe("Phase 7: Eligibility Thresholding", () => {
 
     test("should handle single pair", () => {
       const pairScores = {
-        "alice_bob": { score: 70, partnerUserId: "bob" },
+        alice_bob: { score: 70, partnerUserId: "bob" },
       };
 
       const bestScores = findBestScores(pairScores);
@@ -243,9 +290,9 @@ describe("Phase 7: Eligibility Thresholding", () => {
 
     test("should update when better score found", () => {
       const pairScores = {
-        "alice_bob": { score: 60, partnerUserId: "bob" },
-        "alice_charlie": { score: 80, partnerUserId: "charlie" },
-        "alice_dave": { score: 70, partnerUserId: "dave" },
+        alice_bob: { score: 60, partnerUserId: "bob" },
+        alice_charlie: { score: 80, partnerUserId: "charlie" },
+        alice_dave: { score: 70, partnerUserId: "dave" },
       };
 
       const bestScores = findBestScores(pairScores);

@@ -86,9 +86,10 @@ export function calculatePairScore(
 
   // Calculate mutuality penalty (how much was lost due to asymmetry)
   const maxPossibleScore = Math.max(userAToB, userBToA);
-  const mutualityPenalty = maxPossibleScore > 0
-    ? (maxPossibleScore - pairScore) / maxPossibleScore
-    : 0;
+  const mutualityPenalty =
+    maxPossibleScore > 0
+      ? (maxPossibleScore - pairScore) / maxPossibleScore
+      : 0;
 
   // Identify low-scoring questions (threshold: 0.3 on 0-1 scale = 30 on 0-100)
   const lowScoreQuestions: LowScoreQuestion[] = [];
