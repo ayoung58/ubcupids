@@ -31,7 +31,10 @@ export function QuestionCard({
   showSplitScreen = true,
 }: QuestionCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-6">
+    <div
+      className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-6"
+      data-tutorial="question-card"
+    >
       {/* Question Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
@@ -49,7 +52,7 @@ export function QuestionCard({
       {showSplitScreen ? (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6">
           {/* Left Side - User's Answer */}
-          <div className="space-y-4">
+          <div className="space-y-4" data-tutorial="left-side">
             <div className="flex items-center gap-2 mb-3">
               <div className="h-0.5 w-8 bg-blue-500"></div>
               <span className="text-sm font-medium text-slate-700">
@@ -60,7 +63,10 @@ export function QuestionCard({
           </div>
 
           {/* Right Side - Preferences */}
-          <div className="space-y-4 lg:border-l lg:pl-6 pt-6 lg:pt-0 border-t lg:border-t-0 border-slate-200">
+          <div
+            className="space-y-4 lg:border-l lg:pl-6 pt-6 lg:pt-0 border-t lg:border-t-0 border-slate-200"
+            data-tutorial="right-side"
+          >
             <div className="flex items-center gap-2 mb-3">
               <div className="h-0.5 w-8 bg-purple-500"></div>
               <span className="text-sm font-medium text-slate-700">

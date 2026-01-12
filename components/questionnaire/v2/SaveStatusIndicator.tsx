@@ -40,7 +40,10 @@ export function SaveStatusIndicator({
   };
 
   return (
-    <div className="flex flex-col items-center gap-1 text-sm">
+    <div
+      className="flex flex-col items-center gap-1 text-sm"
+      data-tutorial="save-indicator"
+    >
       {/* Status Icon and Text for non-idle */}
       {status === "saving" && (
         <div className="flex items-center gap-2">

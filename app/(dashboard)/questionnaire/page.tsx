@@ -54,12 +54,20 @@ async function QuestionnairePage() {
     redirect("/login");
   }
 
+  // Fetch questionnaire data
   const data = await getQuestionnaireV2Data(session.user.id);
+
+  // Fetch tutorial completion status
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { questionnaireTutorialCompleted: true },
+  });
 
   return (
     <QuestionnaireV2
       initialResponses={data.responses}
       isSubmitted={data.isSubmitted}
+      tutorialCompleted={user?.questionnaireTutorialCompleted ?? false}
     />
   );
 }

@@ -56,7 +56,7 @@ export function ImportanceScale({
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-tutorial="importance-scale">
       <label className="text-sm font-medium text-slate-700">
         How important is it for your match to be as you specified?
       </label>
@@ -93,7 +93,7 @@ export function ImportanceScale({
       </div>
 
       {/* Dealbreaker Button */}
-      <div className="pt-2">
+      <div className="pt-2" data-tutorial="dealbreaker-button">
         <button
           type="button"
           disabled={disabled}

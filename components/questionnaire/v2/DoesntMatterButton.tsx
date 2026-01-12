@@ -23,7 +23,10 @@ export function DoesntMatterButton({
   onToggle,
 }: DoesntMatterButtonProps) {
   return (
-    <div className="pt-4 border-t border-slate-200">
+    <div
+      className="pt-4 border-t border-slate-200"
+      data-tutorial="doesnt-matter"
+    >
       <button
         type="button"
         onClick={() => onToggle(!active)}

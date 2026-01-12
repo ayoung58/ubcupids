@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       updateData.dashboardTutorialCompleted = true;
     } else if (tutorialId === "match-profile") {
       updateData.profileTutorialCompleted = true;
-    } else if (tutorialId === "questionnaire") {
+    } else if (tutorialId === "questionnaire" || tutorialId === "questionnaire-v2") {
       updateData.questionnaireTutorialCompleted = true;
     } else if (tutorialId === "cupid-portal") {
       updateData.cupidPortalTutorialCompleted = true;
@@ -37,10 +37,14 @@ export async function POST(request: Request) {
       );
     }
 
-    await prisma.user.update({
+    console.log("Updating tutorial for user:", session.user.id, "with data:", updateData);
+    
+    const result = await prisma.user.update({
       where: { id: session.user.id },
       data: updateData,
     });
+    
+    console.log("Tutorial updated successfully:", result.questionnaireTutorialCompleted);
 
     return NextResponse.json({ success: true });
   } catch (error) {

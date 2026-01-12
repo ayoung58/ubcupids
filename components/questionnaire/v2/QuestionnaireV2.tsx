@@ -29,6 +29,7 @@ import {
 } from "@/types/questionnaire-v2";
 import { cn } from "@/lib/utils";
 import { useAutosave } from "@/hooks/useAutosave";
+import { TutorialV2, TutorialStep } from "@/components/tutorial/TutorialV2";
 
 /**
  * Map preferenceFormat from config to PreferenceType enum
@@ -55,6 +56,7 @@ function mapPreferenceFormat(format: string): PreferenceType {
 interface QuestionnaireV2Props {
   initialResponses?: Partial<QuestionnaireResponses>;
   isSubmitted?: boolean;
+  tutorialCompleted?: boolean;
 }
 
 /**
@@ -76,6 +78,7 @@ interface QuestionnaireV2Props {
 export function QuestionnaireV2({
   initialResponses = {},
   isSubmitted = false,
+  tutorialCompleted = false,
 }: QuestionnaireV2Props) {
   const [currentStep, setCurrentStep] = useState(0); // 0 = Q1+Q2, 1-35 = Q3-Q36 individually, 36 = free response
   const [responses, setResponses] =
@@ -88,12 +91,89 @@ export function QuestionnaireV2({
   const [submittedState, setIsSubmitted] = useState(isSubmitted);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showTutorial, setShowTutorial] = useState(!tutorialCompleted);
+  const [tutorialCompletedState, setTutorialCompletedState] = useState(tutorialCompleted);
+
+  // Handle tutorial completion
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    setTutorialCompletedState(true);
+    setCurrentStep(0); // Navigate back to Q1/Q2
+  };
 
   // Total steps: Q1+Q2 together (1), Q3-Q8 (6), Q9a (1), Q9b (1), Q10-Q36 (27), Free Response (1) = 37 steps (0-36)
   // Questions: Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9a, Q9b, Q10-Q36 = 37 questions
   // Step 0 = Q1+Q2, Steps 1-35 = Q3-Q36+Q9a+Q9b (35 questions), Step 36 = Free Response
   const totalSteps = 36;
   const totalQuestions = 39; // Q1+Q2 (2) + Q3-Q8 (6) + Q9a+Q9b (2) + Q10-Q36 (27) + 2 mandatory free response = 39
+
+  // Tutorial steps for V2 questionnaire
+  const tutorialSteps: TutorialStep[] = [
+    {
+      id: "welcome",
+      title: "Welcome to the Questionnaire!",
+      content:
+        "This questionnaire uses a split-screen format. On each question, you'll answer about yourself on the left, and specify your preferences for your match on the right. Let's walk through how it works!",
+      target: "[data-tutorial='question-card']",
+      position: "bottom",
+    },
+    {
+      id: "left-side",
+      title: "About You (Left Side)",
+      content:
+        "This side is where you answer the question about yourself. Select the option(s) that best describe you.",
+      target: "[data-tutorial='left-side']",
+      position: "right",
+    },
+    {
+      id: "right-side",
+      title: "Your Preferences (Right Side)",
+      content:
+        "This side is where you specify what you prefer in your match. You can choose specific options, or indicate that something is similar/different/the same.",
+      target: "[data-tutorial='right-side']",
+      position: "left",
+    },
+    {
+      id: "importance",
+      title: "Importance Scale",
+      content:
+        "Rate how important this preference is to you. Higher importance means this factor will have more weight in your match compatibility. You can choose from 'Not Important' to 'Very Important'.",
+      target: "[data-tutorial='importance-scale']",
+      position: "top",
+    },
+    {
+      id: "dealbreaker",
+      title: "Dealbreaker Button (Use Sparingly!)",
+      content:
+        "If something is an absolute must-have or must-not-have, you can mark it as a dealbreaker. This will immediately exclude incompatible matches. Only use this for things you truly cannot compromise on!",
+      target: "[data-tutorial='dealbreaker-button']",
+      position: "top",
+    },
+    {
+      id: "doesnt-matter",
+      title: "Doesn't Matter Option",
+      content:
+        "If a question doesn't matter to you at all, you can select \"This doesn't matter to me\". This will exclude the question from your matching calculation and disable the importance scale.",
+      target: "[data-tutorial='doesnt-matter']",
+      position: "top",
+    },
+    {
+      id: "autosave",
+      title: "Auto-Save Feature",
+      content:
+        "Your progress is automatically saved as you answer questions. You can leave and come back anytime without losing your work!",
+      target: "[data-tutorial='save-indicator']",
+      position: "bottom",
+    },
+    {
+      id: "navigation",
+      title: "Navigate Your Way",
+      content:
+        "Use the Next and Previous buttons to move through questions at your own pace. You can also use the progress bar at the top to jump to any question. Good luck!",
+      target: "[data-tutorial='navigation']",
+      position: "top",
+    },
+  ];
 
   // Load existing responses on mount
   useEffect(() => {
@@ -139,6 +219,17 @@ export function QuestionnaireV2({
 
     loadResponses();
   }, []);
+
+  // Auto-navigate to step 1 if tutorial should be shown (step 1 has split-screen)
+  useEffect(() => {
+    if (!isLoading && showTutorial && currentStep === 0) {
+      // Small delay to ensure page is rendered
+      const timer = setTimeout(() => {
+        setCurrentStep(1);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, showTutorial, currentStep]);
 
   // Calculate completed questions with proper completion logic
   // A question is complete when: answer + (preference OR doesn't matter) + (importance OR doesn't matter OR dealbreaker)
@@ -845,6 +936,17 @@ export function QuestionnaireV2({
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Tutorial Overlay */}
+      {!isLoading && showTutorial && !tutorialCompletedState && currentStep === 1 && (
+        <TutorialV2
+          tutorialId="questionnaire-v2"
+          steps={tutorialSteps}
+          initialCompleted={false}
+          onComplete={handleTutorialComplete}
+          onSkip={handleTutorialComplete}
+        />
+      )}
+
       {/* Read-Only Banner */}
       {submittedState && (
         <div className="bg-green-50 border-b border-green-200 py-3 px-6">
@@ -922,7 +1024,10 @@ export function QuestionnaireV2({
       </div>
 
       {/* Navigation Buttons - sticks to bottom */}
-      <div className="bg-white border-t border-slate-200 py-4 px-6">
+      <div
+        className="bg-white border-t border-slate-200 py-4 px-6"
+        data-tutorial="navigation"
+      >
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <button
             onClick={handlePrev}
