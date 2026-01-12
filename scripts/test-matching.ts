@@ -164,7 +164,7 @@ async function main() {
   );
   const genderTest3 = checkGenderFilter(
     { Q1: "man", Q3: ["anyone"] },
-    { Q1: "woman", Q3: "women" },
+    { Q1: "woman", Q3: ["women"] },
     "user1",
     "user2"
   );

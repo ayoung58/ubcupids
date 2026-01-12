@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Verification Pending Page
  *
@@ -30,13 +32,13 @@ export default function VerificationPendingPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-center">
             <p className="text-slate-600">
-              We&apos;ve sent a verification link to your UBC email address. Click
-              the link in the email to activate your account.
+              We&apos;ve sent a verification link to your UBC email address.
+              Click the link in the email to activate your account.
             </p>
 
             <p className="text-sm text-slate-500">
-              Didn&apos;t receive the email? Check your spam folder or request a new
-              one.
+              Didn&apos;t receive the email? Check your spam folder or request a
+              new one.
             </p>
 
             <div className="pt-4 space-y-2">

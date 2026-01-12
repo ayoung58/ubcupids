@@ -5,6 +5,8 @@ import { Heart, Target, XCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SIGNUP_DEADLINE } from "@/lib/matching/config";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Sign Up | UBCupids",
   description: "Choose your account type",

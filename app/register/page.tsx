@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Registration Page
  *
