@@ -9,9 +9,21 @@ import { QuestionnaireResponses } from "@/types/questionnaire-v2";
 /**
  * Check if questionnaire is open
  */
-function isQuestionnaireOpen(): boolean {
+async function isQuestionnaireOpen(userId: string): Promise<boolean> {
   const now = new Date();
   const openingDate = new Date('2026-01-16T00:00:00.000Z'); // January 16, 2026, 00:00 UTC
+
+  // Check if user is a test user
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isTestUser: true },
+  });
+
+  // Allow test users to access before the opening date
+  if (user?.isTestUser) {
+    return true;
+  }
+
   return now >= openingDate;
 }
 
@@ -64,7 +76,7 @@ async function QuestionnairePage() {
   }
 
   // Check if questionnaire is open
-  if (!isQuestionnaireOpen()) {
+  if (!(await isQuestionnaireOpen(session.user.id))) {
     redirect("/dashboard");
   }
 
