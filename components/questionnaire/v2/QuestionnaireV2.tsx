@@ -154,7 +154,7 @@ export function QuestionnaireV2({
       id: "doesnt-matter",
       title: "Doesn't Matter Option",
       content:
-        "If a question doesn't matter to you at all, you can select \"This doesn't matter to me\". This will exclude the question from your matching calculation and disable the importance scale.",
+        'If a question doesn\'t influence who you want to match with, you can select "No Preference". This will exclude the question from your matching calculation and disable the importance scale.',
       target: "[data-tutorial='doesnt-matter']",
       position: "top",
     },
@@ -245,7 +245,13 @@ export function QuestionnaireV2({
 
       // Hard filters (Q1, Q2) only need answer
       if (!question.hasPreference) {
-        if (response.answer) count++;
+        // Check if answer exists and is not empty (for multi-select questions)
+        if (
+          response.answer &&
+          (!Array.isArray(response.answer) || response.answer.length > 0)
+        ) {
+          count++;
+        }
         return;
       }
 
@@ -285,6 +291,10 @@ export function QuestionnaireV2({
       // 1. Must have answer
       if (!response.answer) return;
 
+      // 1b. For multi-select questions, check if answer is an empty array
+      if (Array.isArray(response.answer) && response.answer.length === 0)
+        return;
+
       // Q21 Love Languages - special check for array answer and preference
       if (question.id === "q21") {
         const answerArray = Array.isArray(response.answer)
@@ -317,6 +327,13 @@ export function QuestionnaireV2({
         response.preference !== null && response.preference !== undefined;
       const doesntMatter = response.doesntMatter === true;
       if (!hasPreference && !doesntMatter) return;
+
+      // 2b. For multi-select preferences, check if preference is an empty array
+      if (
+        Array.isArray(response.preference) &&
+        response.preference.length === 0
+      )
+        return;
 
       // 3. Must have (importance OR doesn't matter OR dealbreaker)
       const hasImportance =
@@ -570,10 +587,6 @@ export function QuestionnaireV2({
             updateResponse(question.id, { ...response, answer: value })
           }
           maxSelections={question.validation?.maxSelections}
-          includeOther={
-            question.options?.some((o: QuestionOption) => o.allowCustomInput) ??
-            false
-          }
         />
       );
     }
@@ -661,10 +674,7 @@ export function QuestionnaireV2({
                     updateResponse(question.id, {
                       ...response,
                       isDealer,
-                      importance: isDealer
-                        ? ImportanceLevel.VERY_IMPORTANT
-                        : (response?.importance ??
-                          ImportanceLevel.NOT_IMPORTANT),
+                      importance: isDealer ? response?.importance : null,
                     })
                   }
                   isDealer={response?.isDealer ?? false}
@@ -743,6 +753,7 @@ export function QuestionnaireV2({
               }
               answerOptions={preferenceOptions}
               preferenceFormat={question.preferenceFormat}
+              questionId={question.id}
               disabled={doesntMatter}
             />
             {/* Doesn't Matter Button - below preference selector */}
@@ -777,9 +788,7 @@ export function QuestionnaireV2({
                   updateResponse(question.id, {
                     ...response,
                     isDealer,
-                    importance: isDealer
-                      ? ImportanceLevel.VERY_IMPORTANT
-                      : (response?.importance ?? ImportanceLevel.NOT_IMPORTANT),
+                    importance: isDealer ? response?.importance : null,
                   })
                 }
                 isDealer={response?.isDealer ?? false}
@@ -803,6 +812,17 @@ export function QuestionnaireV2({
 
   // Submit questionnaire
   const handleSubmit = async () => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      "Are you sure you want to submit your questionnaire?\n\n" +
+        "Once submitted, you will NOT be able to edit your responses.\n\n" +
+        "Click OK to submit, or Cancel to review your answers."
+    );
+
+    if (!confirmed) {
+      return; // User cancelled
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -830,11 +850,9 @@ export function QuestionnaireV2({
         throw new Error(data.error || "Failed to submit questionnaire");
       }
 
-      // Success!
+      // Success! Redirect to success page
       setIsSubmitted(true);
-      alert(
-        "Questionnaire submitted successfully! You can now view your responses but cannot edit them."
-      );
+      window.location.href = "/questionnaire/success";
     } catch (error) {
       console.error("Submit error:", error);
       setSubmitError(
@@ -1027,9 +1045,9 @@ export function QuestionnaireV2({
         {getCurrentContent()}
       </div>
 
-      {/* Navigation Buttons - sticks to bottom */}
+      {/* Navigation Buttons - sticky at bottom */}
       <div
-        className="bg-white border-t border-slate-200 py-4 px-6"
+        className="sticky bottom-0 bg-white border-t border-slate-200 py-4 px-6 shadow-lg z-10"
         data-tutorial="navigation"
       >
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">

@@ -143,14 +143,14 @@ const LIVING_SITUATION_OPTIONS: QuestionOption[] = [
   { value: "on_campus", label: "On-campus residence" },
   { value: "off_campus_alone", label: "Off-campus (living alone)" },
   { value: "off_campus_roommates", label: "Off-campus (with roommates)" },
-  { value: "with_family", label: "Living with family" },
+  { value: "with_family", label: "With family" },
   { value: "other", label: "Other" },
 ];
 
 const PET_ATTITUDE_OPTIONS: QuestionOption[] = [
   {
     value: "have_pets_important",
-    label: "Have pets and they are very important to me",
+    label: "Have pets and they are very important",
   },
   { value: "have_pets", label: "Have pets" },
   { value: "no_pets_like_them", label: "Don't have pets but really like them" },
@@ -284,7 +284,9 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
     hasPreference: true,
     preferenceText: "I prefer my match to have",
     preferenceFormat: "multi-select",
-    preferenceOptions: SEXUAL_ORIENTATION_OPTIONS,
+    preferenceOptions: SEXUAL_ORIENTATION_OPTIONS.filter(
+      (opt) => opt.value !== "prefer_not_to_answer"
+    ),
     validation: {
       required: true,
     },
@@ -737,7 +739,7 @@ export const QUESTIONS_SECTION_2: QuestionConfig[] = [
     id: "q28",
     section: Section.SECTION_2,
     type: QuestionType.LIKERT_DIFFERENT,
-    questionText: "How do you usually approach plans?",
+    questionText: "How spontaneous are you?",
     answerFormat: "likert",
     likertConfig: {
       min: 1,

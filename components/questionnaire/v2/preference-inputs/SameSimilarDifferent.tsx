@@ -10,6 +10,7 @@ interface SameSimilarDifferentProps {
   onChange: (value: PreferenceOption) => void;
   options?: PreferenceOption[]; // Allow customizing which options to show
   disabled?: boolean;
+  label?: string; // Custom label for the preference
 }
 
 /**
@@ -24,6 +25,7 @@ export function SameSimilarDifferent({
   onChange,
   options = ["same", "similar", "different"],
   disabled = false,
+  label = "I prefer my match to be:",
 }: SameSimilarDifferentProps) {
   const optionLabels: Record<PreferenceOption, string> = {
     same: "Same",
@@ -39,9 +41,7 @@ export function SameSimilarDifferent({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-slate-700">
-        I prefer my match to be:
-      </label>
+      <label className="text-sm font-medium text-slate-700">{label}</label>
 
       {options.map((option) => (
         <label

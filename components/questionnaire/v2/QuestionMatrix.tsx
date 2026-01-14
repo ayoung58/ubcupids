@@ -52,7 +52,11 @@ export function QuestionMatrix({
     // Must have answer
     if (!response.answer) return false;
 
-    // Hard filters (Q1, Q2) only need answer
+    // For multi-select questions, check if answer is an empty array
+    if (Array.isArray(response.answer) && response.answer.length === 0)
+      return false;
+
+    // Hard filters (Q1, Q2) only need answer (but not empty for multi-select)
     if (questionId === "q1" || questionId === "q2") {
       return true;
     }
@@ -117,6 +121,10 @@ export function QuestionMatrix({
       response.preference !== null && response.preference !== undefined;
     const doesntMatter = response.doesntMatter === true;
     if (!hasPreference && !doesntMatter) return false;
+
+    // For multi-select preferences, check if preference is an empty array
+    if (Array.isArray(response.preference) && response.preference.length === 0)
+      return false;
 
     // Must have (importance OR doesn't matter OR dealbreaker)
     const hasImportance =

@@ -13,6 +13,7 @@ interface DirectionalPreferenceProps {
     similar?: string;
     same?: string;
   };
+  preferenceLabel?: string; // Custom label for the preference section
 }
 
 /**
@@ -34,6 +35,7 @@ export function DirectionalPreference({
     more: "More",
     same: "The same",
   },
+  preferenceLabel,
 }: DirectionalPreferenceProps) {
   const options: Array<{
     value: "less" | "similar" | "more" | "same";
@@ -47,6 +49,11 @@ export function DirectionalPreference({
 
   return (
     <div className="space-y-2">
+      {preferenceLabel && (
+        <label className="text-sm font-medium text-slate-700 block">
+          {preferenceLabel}
+        </label>
+      )}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <button

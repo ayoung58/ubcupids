@@ -80,8 +80,8 @@ export function AgeInput({
   // Show only user age (left side)
   if (!showPreference) {
     return (
-      <div className="min-h-[120px] flex flex-col justify-center">
-        <label className="text-sm font-medium text-slate-700 mb-2 block">
+      <div className="min-h-[120px]">
+        <label className="text-sm font-medium text-slate-700 mb-3 block">
           Your age
         </label>
         <Input
@@ -92,7 +92,7 @@ export function AgeInput({
           onChange={handleUserAgeChange}
           placeholder="Enter your age"
           className={cn(
-            "w-32",
+            "w-40",
             hasUserAgeError &&
               "border-red-500 ring-2 ring-red-200 focus:ring-red-500"
           )}

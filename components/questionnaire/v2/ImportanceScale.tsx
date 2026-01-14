@@ -65,11 +65,12 @@ export function ImportanceScale({
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
           const isSelected = value === option.value && !isDealer;
+          const isDisabledByDealer = isDealer || disabled;
           return (
             <button
               key={option.value}
               type="button"
-              disabled={disabled}
+              disabled={isDisabledByDealer}
               onClick={() => {
                 onChange(option.value);
                 if (isDealer) {
@@ -79,7 +80,7 @@ export function ImportanceScale({
               className={cn(
                 "px-4 py-2 rounded-md text-sm font-medium transition-all",
                 "border-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2",
-                disabled && "opacity-50 cursor-not-allowed",
+                isDisabledByDealer && "opacity-50 cursor-not-allowed",
                 isSelected
                   ? "bg-pink-500 text-white border-pink-500"
                   : "bg-white text-slate-700 border-slate-300 hover:border-pink-400"

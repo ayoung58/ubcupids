@@ -11,6 +11,7 @@ import { MultiSelectPreference } from "./MultiSelectPreference";
 import { DirectionalPreference } from "./DirectionalPreference";
 import { ConflictResolutionPreference } from "./ConflictResolutionPreference";
 import { AgeRangeInput } from "../answer-inputs/AgeRangeInput";
+import { getPreferenceText } from "@/lib/questionnaire/v2/preference-text";
 
 interface Option {
   value: string;
@@ -24,6 +25,7 @@ interface PreferenceSelectorProps {
   onPreferenceChange: (value: QuestionPreference) => void;
   answerOptions?: Option[]; // For multi-select preference (mirror left side options)
   preferenceFormat?: string; // The raw preference format from config
+  questionId?: string; // For preference text lookup
   disabled?: boolean;
 }
 
@@ -40,6 +42,7 @@ export function PreferenceSelector({
   onPreferenceChange,
   answerOptions,
   preferenceFormat,
+  questionId,
   disabled = false,
 }: PreferenceSelectorProps) {
   // Q4 Age - handled by AgeInput component (includes preference range inputs)
@@ -58,11 +61,16 @@ export function PreferenceSelector({
         ? (preferenceValue as "same" | "compatible")
         : null;
 
+    const preferenceLabel = questionId
+      ? getPreferenceText(questionId)
+      : "I prefer my match to be:";
+
     return (
       <ConflictResolutionPreference
         value={stringValue}
         onChange={onPreferenceChange}
         disabled={disabled}
+        label={`${preferenceLabel}`}
       />
     );
   }
@@ -77,22 +85,32 @@ export function PreferenceSelector({
         ? (preferenceValue as "more" | "less" | "similar" | "same")
         : null;
 
+    const preferenceLabel = questionId
+      ? getPreferenceText(questionId)
+      : "I prefer my match to be:";
+
     return (
       <DirectionalPreference
         value={stringValue}
         onChange={onPreferenceChange}
         disabled={disabled}
+        preferenceLabel={`${preferenceLabel}`}
       />
     );
   }
 
   // Multi-select preference (Q3, Q5, Q8, Q9a, Q13, Q14, Q15, Q19, Q20, Q21)
   if (preferenceFormat === "multi-select" && answerOptions) {
+    const preferenceLabel = questionId
+      ? getPreferenceText(questionId)
+      : "I prefer my match to be:";
+
     return (
       <MultiSelectPreference
         options={answerOptions}
         values={Array.isArray(preferenceValue) ? preferenceValue : []}
         onChange={onPreferenceChange}
+        label={`${preferenceLabel}`}
         disabled={disabled}
       />
     );
@@ -118,12 +136,17 @@ export function PreferenceSelector({
     const stringValue =
       typeof preferenceValue === "string" ? preferenceValue : null;
 
+    const preferenceLabel = questionId
+      ? getPreferenceText(questionId)
+      : "I prefer my match to be:";
+
     return (
       <SameSimilarDifferent
         value={stringValue as "same" | "similar" | "different" | null}
         onChange={onPreferenceChange}
         options={allowedOptions}
         disabled={disabled}
+        label={`${preferenceLabel}`}
       />
     );
   }

@@ -38,7 +38,7 @@ export function DoesntMatterButton({
             : "bg-white text-slate-600 border-slate-300 hover:border-slate-400 hover:bg-slate-50"
         )}
       >
-        {active ? "✓ This doesn't matter to me" : "This doesn't matter to me"}
+        {active ? "✓ No Preference" : "No Preference"}
       </button>
       {active && (
         <p className="text-xs text-slate-500 mt-2 text-center">

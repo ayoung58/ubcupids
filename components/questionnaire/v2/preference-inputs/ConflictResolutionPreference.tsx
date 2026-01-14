@@ -7,6 +7,7 @@ interface ConflictResolutionPreferenceProps {
   value: "same" | "compatible" | null;
   onChange: (value: "same" | "compatible" | null) => void;
   disabled?: boolean;
+  label?: string; // Custom label for the preference
 }
 
 /**
@@ -23,6 +24,7 @@ export function ConflictResolutionPreference({
   value,
   onChange,
   disabled = false,
+  label,
 }: ConflictResolutionPreferenceProps) {
   const options: Array<{
     value: "same" | "compatible" | null;
@@ -43,6 +45,11 @@ export function ConflictResolutionPreference({
 
   return (
     <div className="space-y-3">
+      {label && (
+        <label className="text-sm font-medium text-slate-700 block">
+          {label}
+        </label>
+      )}
       <div className="space-y-2">
         {options.map((option) => (
           <button
@@ -73,8 +80,8 @@ export function ConflictResolutionPreference({
       </div>
 
       <p className="text-xs text-slate-500 italic">
-        💡 Tip: &quot;Compatible&quot; allows for complementary styles based on research
-        (e.g., Solution-focused + Analysis-focused work well together)
+        💡 Tip: &quot;Compatible&quot; allows for complementary styles based on
+        research (e.g., Solution-focused + Analysis-focused work well together)
       </p>
     </div>
   );

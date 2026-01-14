@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
-import { QuestionnaireV2 } from "@/components/questionnaire/v2/QuestionnaireV2";
+import { QuestionnaireWithConsent } from "@/components/questionnaire/v2/QuestionnaireWithConsent";
 import { QuestionnaireResponses } from "@/types/questionnaire-v2";
 
 /**
@@ -49,6 +49,7 @@ async function getQuestionnaireV2Data(userId: string) {
     return {
       responses: {},
       isSubmitted: false,
+      hasStarted: false,
     };
   }
 
@@ -65,6 +66,7 @@ async function getQuestionnaireV2Data(userId: string) {
   return {
     responses: parsedResponses,
     isSubmitted: response.isSubmitted,
+    hasStarted: Object.keys(parsedResponses).length > 0 || response.isSubmitted,
   };
 }
 
@@ -90,10 +92,11 @@ async function QuestionnairePage() {
   });
 
   return (
-    <QuestionnaireV2
+    <QuestionnaireWithConsent
       initialResponses={data.responses}
       isSubmitted={data.isSubmitted}
       tutorialCompleted={user?.questionnaireTutorialCompleted ?? false}
+      hasStarted={data.hasStarted}
     />
   );
 }

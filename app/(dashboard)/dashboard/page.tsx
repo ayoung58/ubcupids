@@ -9,6 +9,22 @@ import { DashboardTutorial } from "./_components/DashboardTutorial";
 
 async function getQuestionnaireStatus(userId: string) {
   try {
+    // Check V2 questionnaire first
+    const questionnaireV2 = await prisma.questionnaireResponseV2.findUnique({
+      where: { userId },
+      select: { isSubmitted: true, responses: true },
+    });
+
+    if (questionnaireV2) {
+      if (questionnaireV2.isSubmitted) return "completed";
+      if (
+        questionnaireV2.responses &&
+        Object.keys(questionnaireV2.responses).length > 0
+      )
+        return "in-progress";
+    }
+
+    // Fallback to V1 for backwards compatibility
     const questionnaire = await prisma.questionnaireResponse.findUnique({
       where: { userId },
       select: { isSubmitted: true, responses: true },
@@ -20,7 +36,7 @@ async function getQuestionnaireStatus(userId: string) {
       questionnaire.responses &&
       Object.keys(questionnaire.responses).length > 0
     )
-      return "draft";
+      return "in-progress";
     return "not-started";
   } catch (error) {
     console.error("Error checking questionnaire status:", error);
@@ -131,19 +147,19 @@ export default async function DashboardPage() {
             {questionnaireOpen ? (
               <Link href="/questionnaire">
                 <Button className="w-full">
-                  {questionnaireStatus === "draft"
+                  {questionnaireStatus === "in-progress"
                     ? "Continue"
                     : questionnaireStatus === "completed"
-                      ? "View Responses"
+                      ? "View Response"
                       : "Start"}
                 </Button>
               </Link>
             ) : (
               <Button className="w-full" disabled>
-                {questionnaireStatus === "draft"
+                {questionnaireStatus === "in-progress"
                   ? "Continue"
                   : questionnaireStatus === "completed"
-                    ? "View Responses"
+                    ? "View Response"
                     : "Start"}
               </Button>
             )}

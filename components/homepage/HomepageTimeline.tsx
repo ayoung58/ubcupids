@@ -254,7 +254,15 @@ export function HomepageTimeline() {
       observer.observe(sectionRef.current);
     }
 
-    return () => observer.disconnect();
+    // Also make the section visible after a delay in case user doesn't scroll
+    const timeout = setTimeout(() => {
+      setSectionVisible(true);
+    }, 1000); // 1 second delay
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeout);
+    };
   }, []);
 
   return (

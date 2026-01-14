@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 interface Option {
   value: string;
   label: string;
+  allowCustomInput?: boolean;
 }
 
 interface MultiSelectInputProps {
@@ -13,9 +14,6 @@ interface MultiSelectInputProps {
   values: string[];
   onChange: (values: string[]) => void;
   maxSelections?: number;
-  includeOther?: boolean;
-  otherValue?: string;
-  onOtherChange?: (value: string) => void;
   disabled?: boolean;
 }
 
@@ -31,12 +29,8 @@ export function MultiSelectInput({
   values,
   onChange,
   maxSelections,
-  includeOther = false,
-  otherValue = "",
-  onOtherChange,
   disabled = false,
 }: MultiSelectInputProps) {
-  const isOtherSelected = values.includes("other");
   const isMaxReached =
     maxSelections !== undefined && values.length >= maxSelections;
 
@@ -47,9 +41,20 @@ export function MultiSelectInput({
       // Remove
       onChange(values.filter((v) => v !== optionValue));
     } else {
-      // Add (if not at max)
-      if (!isMaxReached) {
-        onChange([...values, optionValue]);
+      // Handle "prefer_not_to_answer" mutual exclusivity
+      if (optionValue === "prefer_not_to_answer") {
+        // If selecting "prefer_not_to_answer", deselect all other options
+        onChange(["prefer_not_to_answer"]);
+      } else {
+        // If selecting any other option, deselect "prefer_not_to_answer"
+        let newValues = values.filter((v) => v !== "prefer_not_to_answer");
+
+        // Add (if not at max)
+        if (maxSelections === undefined || newValues.length < maxSelections) {
+          newValues = [...newValues, optionValue];
+        }
+
+        onChange(newValues);
       }
     }
   };
@@ -60,7 +65,7 @@ export function MultiSelectInput({
         <p className="text-xs text-slate-600 mb-3">
           {maxSelections === values.length
             ? `✓ Selected ${values.length}/${maxSelections}`
-            : `Select up to ${maxSelections} option${maxSelections > 1 ? "s" : ""} (${values.length}/${maxSelections} selected)`}
+            : `(${values.length}/${maxSelections} selected)`}
         </p>
       )}
 
@@ -94,41 +99,8 @@ export function MultiSelectInput({
         );
       })}
 
-      {/* Other option */}
-      {includeOther && (
-        <div className="space-y-2">
-          <label
-            className={cn(
-              "flex items-center gap-3 p-3 rounded-md border-2 transition-all",
-              !isOtherSelected && isMaxReached
-                ? "opacity-50 cursor-not-allowed border-slate-200"
-                : "cursor-pointer hover:bg-slate-50",
-              isOtherSelected
-                ? "border-blue-500 bg-blue-50"
-                : "border-slate-200"
-            )}
-          >
-            <input
-              type="checkbox"
-              checked={isOtherSelected}
-              disabled={!isOtherSelected && isMaxReached}
-              onChange={() => handleToggle("other")}
-              className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
-            />
-            <span className="text-sm text-slate-700">Other</span>
-          </label>
-
-          {isOtherSelected && (
-            <input
-              type="text"
-              value={otherValue}
-              onChange={(e) => onOtherChange?.(e.target.value)}
-              placeholder="Please specify..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          )}
-        </div>
-      )}
+      {/* Custom input handling for options with allowCustomInput would go here */}
+      {/* For now, options with allowCustomInput are treated as regular options */}
     </div>
   );
 }
