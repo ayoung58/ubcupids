@@ -56,7 +56,7 @@ export function ResendVerificationForm() {
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                <p>Verification email sent! Check your inbox.</p>
+                <p>Verification email sent! Check your inbox and spam folder. In order to receive emails more easily, please whitelist support@ubcupids.org</p>
                 {remaining !== null && (
                   <p className="text-xs mt-1">
                     {remaining} attempt{remaining !== 1 ? "s" : ""} remaining in

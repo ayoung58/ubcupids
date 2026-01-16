@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
+import { MAX_MATCH_USERS, MAX_CUPID_USERS } from "@/lib/matching/config";
 
 /**
  * Link Account API Endpoint
@@ -74,6 +75,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "There is already a Match account with that email" },
         { status: 400 }
+      );
+    }
+
+    // Check user cap before allowing linking (excluding test users)
+    const currentUserCount = await prisma.user.count({
+      where: {
+        isTestUser: false,
+        ...(isCupid ? { isCupid: true } : { isBeingMatched: true }),
+      },
+    });
+
+    const maxUsers = isCupid ? MAX_CUPID_USERS : MAX_MATCH_USERS;
+    const accountTypeName = isCupid ? "Cupids" : "Match candidates";
+
+    if (currentUserCount >= maxUsers) {
+      return NextResponse.json(
+        {
+          error: `Maximum number of ${accountTypeName.toLowerCase()} reached`,
+          hint: `We've reached the maximum capacity of ${maxUsers} ${accountTypeName.toLowerCase()} for 2026. Account linking is currently closed for this account type.`,
+        },
+        { status: 403 }
       );
     }
 

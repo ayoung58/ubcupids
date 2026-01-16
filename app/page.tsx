@@ -112,6 +112,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <div className="text-xs text-slate-500">
                 Participating in matching
               </div>
+              <div className="text-xs text-slate-500">
+                * Limit of 500 match users for 2026 *
+              </div>
             </div>
           </div>
         </div>
@@ -258,6 +261,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
               <div className="text-xs text-slate-500">
                 Helping create matches
+              </div>
+              <div className="text-xs text-slate-500">
+                * Limit of 500 cupids for 2026 *
               </div>
             </div>
           </div>

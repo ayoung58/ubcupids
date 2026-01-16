@@ -8,7 +8,11 @@ import {
 } from "@/lib/auth";
 import crypto from "crypto";
 import { sendVerificationEmail } from "@/lib/email";
-import { SIGNUP_DEADLINE } from "@/lib/matching/config";
+import {
+  SIGNUP_DEADLINE,
+  MAX_MATCH_USERS,
+  MAX_CUPID_USERS,
+} from "@/lib/matching/config";
 
 /**
  * Registration API Endpoint
@@ -116,6 +120,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Please accept the Terms and Conditions" },
         { status: 400 }
+      );
+    }
+
+    // ============================================
+    // 4.5. CHECK USER CAP (excluding test users)
+    // ============================================
+    const currentUserCount = await prisma.user.count({
+      where: {
+        isTestUser: false,
+        ...(isCupid ? { isCupid: true } : { isBeingMatched: true }),
+      },
+    });
+
+    const maxUsers = isCupid ? MAX_CUPID_USERS : MAX_MATCH_USERS;
+    const accountTypeName = isCupid ? "Cupids" : "Match candidates";
+
+    if (currentUserCount >= maxUsers) {
+      return NextResponse.json(
+        {
+          error: `Maximum number of ${accountTypeName.toLowerCase()} reached`,
+          hint: `We've reached the maximum capacity of ${maxUsers} ${accountTypeName.toLowerCase()} for 2026. Registration is currently closed for this account type.`,
+        },
+        { status: 403 }
       );
     }
 
@@ -379,7 +406,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "Account created! Check your email to verify your account.",
+        message:
+          "Account created! Check your email inbox and spam folder to verify your account. In order to receive emails more easily, please whitelist support@ubcupids.org",
         userId: user.id,
         emailSent: true,
       },

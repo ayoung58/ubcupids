@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         {
           success: true,
           message:
-            "If an account exists with this email, a password reset link has been sent.",
+            "If an account exists with this email, a password reset link has been sent. Please check your inbox and spam folder! In order to receive emails more easily, please whitelist support@ubcupids.org",
         },
         { status: 200 }
       );
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message:
-          "If an account exists with this email, a password reset link has been sent.",
+          "If an account exists with this email, a password reset link has been sent. Please check your inbox and spam folder! In order to receive emails more easily, please whitelist support@ubcupids.org",
       },
       { status: 200 }
     );
