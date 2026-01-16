@@ -61,6 +61,9 @@ export function checkHardFilters(
  * - userB's gender must be in userA's interestedInGenders
  * - userA's gender must be in userB's interestedInGenders
  *
+ * Special case: If either user selected "Prefer not to say" for gender identity,
+ * they can only match with users who selected "anyone" for gender preference.
+ *
  * @param userA - First user
  * @param userB - Second user
  * @returns True if both users are interested in each other's genders
@@ -69,6 +72,33 @@ function checkGenderCompatibility(
   userA: MatchingUser,
   userB: MatchingUser
 ): boolean {
+  // Handle "Prefer not to say" special case
+  const aPreferNotToSay = userA.gender === "prefer_not_to_answer";
+  const bPreferNotToSay = userB.gender === "prefer_not_to_answer";
+
+  // If userA chose "Prefer not to say", userB must have "anyone" in their preferences
+  if (aPreferNotToSay) {
+    const bInterestedInAnyone = userB.interestedInGenders.includes("anyone");
+    if (!bInterestedInAnyone) return false;
+  }
+
+  // If userB chose "Prefer not to say", userA must have "anyone" in their preferences
+  if (bPreferNotToSay) {
+    const aInterestedInAnyone = userA.interestedInGenders.includes("anyone");
+    if (!aInterestedInAnyone) return false;
+  }
+
+  // If both chose "Prefer not to say", both must have "anyone" (already checked above)
+  if (aPreferNotToSay && bPreferNotToSay) {
+    return true;
+  }
+
+  // If only one chose "Prefer not to say", the "anyone" check is sufficient
+  if (aPreferNotToSay || bPreferNotToSay) {
+    return true;
+  }
+
+  // Normal case: both specified their gender
   const aInterestedInB = userA.interestedInGenders.includes(userB.gender);
   const bInterestedInA = userB.interestedInGenders.includes(userA.gender);
 

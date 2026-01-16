@@ -1,6 +1,6 @@
 # UBCupids User Guide
 
-Welcome to UBCupids! This guide will help you navigate the platform and understand how our matching process works.
+Welcome to UBCupids! We hope you enjoy this fun little application. This guide will help you navigate the platform and understand how our matching process works.
 
 ## Table of Contents
 
@@ -17,20 +17,23 @@ Welcome to UBCupids! This guide will help you navigate the platform and understa
 
 ## Getting Started
 
-UBCupids is an anonymous matching service designed for UBC students to find compatible matches for Valentine's Day 2026. The platform combines:
+UBCupids is an anonymous matching service designed for UBC students to find compatible matches for Valentine's Day!
 
-- **Algorithm-based matching** using compatibility scores
-- **Human cupid review** for more personalized matches
-- **Privacy-first approach** - your information is only revealed after mutual interest
+As a user, you can be...
+
+- A match candidate (someone who will be matched with others)
+- A cupid (someone who will match others)
+- Or both!
 
 ### Key Dates
 
+- **January 17, 2026**: Questionnaire opens, match candidates begin filling out questionnaires.
 - **January 31, 2026**: Questionnaire closes, cupids begin reviewing matches
 - **February 14, 2026**: Match reveal day! 💘
 
 ---
 
-## Creating Your Account
+## Creating Your Account and Profile
 
 ### Registration Process
 
@@ -42,13 +45,20 @@ UBCupids is an anonymous matching service designed for UBC students to find comp
    - Major (optional)
    - Bio (optional)
    - Interests (optional)
+   - Other point of contact information (optional)
    - Profile picture (optional)
+
+Next to the Major, Bio, Interests, Point of Contact, and profile picture fields, as a match candidate you'll see that you can select whether or not to show to matches (or to cupids to aid with matching) when matches are revealed. If you do not fill out an addition way to contact you, then those that are matched with you will see your ubc email instead.
+
+If you'd like to be both a match candidate AND a cupid, you will need to sign up for **one** of the accounts, navigate to your profile, and then LINK another account. Then, after filling in necessary info, you'll be able to switch between both accounts via the profile icon!
+
+As a cupid, you can be a cupid for someone of your choosing! Make sure that they have registered as a match candidate too, and then add their student email in your profile OR add their email when signing up.
 
 ### Important Notes
 
-- Only **UBC email addresses** (@ubc.ca, @alumni.ubc.ca, @student.ubc.ca) are accepted
+- Only **UBC student or alumni email addresses** (@alumni.ubc.ca, @student.ubc.ca) are accepted.
 - Your email must be verified before you can fill out the questionnaire
-- All information is kept confidential until matches are revealed
+- All of your information is kept confidential, and revealed to matches only if you want to reveal them (other than your name and student email).
 
 ---
 
@@ -58,36 +68,23 @@ The questionnaire is the heart of our matching algorithm. It helps us understand
 
 ### Questionnaire Structure
 
-The questionnaire consists of several sections:
+The questionnaire consists of two main sections:
 
-- **Demographics & Preferences**
-- **Values & Lifestyle**
-- **Interests & Hobbies**
-- **Personality & Compatibility**
-- **Deal-breakers & Must-haves**
+- Section 1 focuses on Lifestyle & Surface Compatibility
+- Section 2 focuses on Personality & Interaction Style
 
 ### Tips for Filling Out Your Questionnaire
 
 1. **Be honest** - The algorithm works best when you're genuine
-2. **Rate importance** - Use the importance ratings to highlight what matters most to you
+2. **Note your preferences and how important they are** - Use these to narrow your search for the one you're looking for. You can mark certain questions as dealbreakers (meanly if they don't match based on this question -- they're out). Or, perhaps a certain question doesn't matter much to you and you're ok with anyone; you can click "No preference" in that case. If a question is more important to you, the algorithm will put more weight on it when scoring that question.
 3. **Take your time** - There's no rush, you can save and return later
-4. **Be specific** - Open-ended responses help cupids understand you better
-
-### Importance Ratings
-
-For many questions, you'll rate how important that factor is to you (1-5 scale):
-
-- **1-2**: Nice to have, but not a deal-breaker
-- **3**: Moderately important
-- **4-5**: Very important, this matters a lot to me
-
-The algorithm weighs your responses based on these importance ratings.
+4. **Be specific** - Open-ended responses help cupids understand you better, and can help your match get to know you better if you discuss during your first meeting!
 
 ### Saving Your Progress
 
-- Your responses are auto-saved as you go
+- Your responses are auto-saved as you go (though if you need to leave immediately, you can also autosave)
 - You can exit and return anytime before the deadline
-- Make sure to click **"Submit Questionnaire"** when you're done!
+- Make sure to click submit the questionnaire when you're done! The submit button is on the last question. You can use the question matrix to get there quickly.
 
 ⚠️ **Important**: If you don't submit your questionnaire by January 31st, you won't be included in the matching process.
 
@@ -95,40 +92,34 @@ The algorithm weighs your responses based on these importance ratings.
 
 ## Understanding the Matching Process
 
-UBCupids uses a unique **hybrid matching system** that combines algorithm scores with human cupid review.
+UBCupids uses a unique **hybrid matching system** that combines algorithm scores with human cupid review to offer more matches and variety.
 
-### Phase 1: Algorithm Scoring (Automated)
+### Algorithm Scoring (Automated)
 
 The algorithm calculates compatibility scores between all participants based on:
 
-- **Response alignment** - How similar are your answers?
+- **Response alignment to preferences** - How well-matched are you?
 - **Importance weighting** - Prioritizing factors you both care about
 - **Deal-breaker filtering** - Ensuring must-haves are met
 - **Bidirectional scores** - Both directions of compatibility matter
 
+The algorithm will match all match candidates together and pair them up. This means that if your algorithm match is Person A, then their algorithm match is you!
+
 ### Phase 2: Cupid Review (Human Touch)
 
-Human cupids review the top algorithm matches and:
+One or more human cupids will represent you (the match candidate). They will receive the your top five compatible matches. Then, they will choose one of them (or generate more matches if none of them seem to be compatible) to match with you. In doing so, when matches are revealed, the person that the cupid wants to match with you will receive a match request (sort of like sending a friend request on your behalf).
+
+As a cupid, they'll be able to...
 
 - Read profile summaries generated by AI
+- Read your profile
+- Read your questionnaire responses
 - Consider personality compatibility
-- Look for genuine connection potential
-- Select the best 1-3 matches for each person
+- Look for genuine connection potential (make sure that the person you want to match with your candidate would like to interact with your candidate as well!)
 
-### Why This Hybrid Approach?
+...that can help you pick out your best match!
 
-- **Algorithm strength**: Fast, unbiased, data-driven matching
-- **Human insight**: Nuanced understanding of personality and chemistry
-- **Better outcomes**: Combines the best of both worlds
-
-### What Cupids See
-
-Cupids have access to:
-
-- Your AI-generated profile summary (highlights key traits)
-- Your questionnaire responses
-- Potential matches with compatibility scores
-- Basic profile information (bio, interests, major)
+Cupids will not have access to
 
 They do NOT see:
 
@@ -140,18 +131,17 @@ They do NOT see:
 
 ## For Cupids: The Matching Portal
 
-Are you a cupid? Thank you for volunteering! Here's how to use the matching portal effectively.
+Are you a cupid? Thank you for volunteering and signing up! Here's how to use the matching portal effectively.
 
-### What Is a Cupid?
+As a cupid, you will
 
-Cupids are trusted community members who:
-
-- Review algorithm-generated matches
-- Select the best potential matches for each match candidate
+- Select the best potential matches for your match candidate(s)
 - Provide brief rationale for their selections
 - Help ensure quality, thoughtful matches
 
 ### Using the Matching Portal
+
+The matching portal will not be open until after January 31st (when all match candidates have finished filling out their questionnaires). We will then assign match candidates to cupids, so please do sign up before the 31st!
 
 #### Your Dashboard
 
@@ -162,12 +152,12 @@ Cupids are trusted community members who:
 #### Match Candidate vs. Potential Matches
 
 - **Match Candidate**: The person you're representing (finding matches for them)
-- **Potential Matches**: The top 25 algorithm-generated matches for your candidate
+- **Potential Matches**: The top 5 algorithm-generated matches for your candidate (you can generate up to 25)
 
 #### Reviewing Matches
 
 1. **View Match Candidate Profile**
-   - Read their AI-generated summary
+   - Read their AI-generated summary and profile
    - Review their questionnaire responses
    - Understand what they're looking for
 
@@ -211,17 +201,20 @@ Cupids are trusted community members who:
 - **Reveal More**: Load additional potential matches (up to 25 total)
 - **Confirm Selection**: Finalize your match choice
 
+We hope you can create some romance this Valentine's Day!
+
 ---
 
 ## Match Reveal
 
 ### When Are Matches Revealed?
 
-Matches are revealed on **February 14, 2026** (Valentine's Day)! 💘
+Matches are revealed on **February 7, 2026**!
+This is so that matches can have time to plan their meet up (or date!) for Valentine's Day! 💘
 
 ### How Many Matches Will I Get?
 
-You'll receive **1-3 matches** depending on:
+You'll receive **1+ matches** depending on:
 
 - Availability of highly compatible matches
 - Cupid selections
@@ -229,17 +222,19 @@ You'll receive **1-3 matches** depending on:
 
 ### What Happens at Match Reveal?
 
-1. **Notification**: You'll be notified when matches are available
-2. **View Profiles**: See your match(es)' basic information
-3. **Read Rationale**: See why the cupid thought you'd be compatible
-4. **Decide Interest**: Indicate if you're interested in connecting
-5. **Mutual Match**: If both interested, contact info is exchanged!
+There are a few different categories:
+
+1. **Algorithm matches**: This match is a pairing, meaning your match will see your name as well! Thus, you'll see each other's profile blurbs and contact info!
+2. **Your cupid's pick**: This is who your cupid chose to send a match request to. You'll be able to see if the person has responded, either accepting your match or declining. If accepted, you'll see their contact information! You'll also be able to see why the cupid thought you'd be compatible
+3. **Match requests**: If you have cards in this category, that means other cupids are matching you with their match candidates! You'll want to accept or decline their requests. You'll be able to see the match requests' contact info and profile blurbs, as well as why their cupids thought you would be a great fit with their candidate.
 
 ### After the Reveal
 
-- **Mutual interest**: Email addresses are shared automatically
-- **No pressure**: You're never obligated to reach out
-- **Be respectful**: Remember there's a real person on the other side
+If there is mutual interest, email addresses (or other preferred ways of connecting) are shared automatically. It's then up to each of you to connect with your match and make something happen! You're never obligated to reach out or to meet up with your matches; that being said it could be nice to let the other person know what your intention is. If you're declined, we're sorry, it happens to the best of us.
+
+Either way, please be respectful. Remember there's a real person on the other side!
+
+There are cases (ex. based on hard filters and dealbreakers) where you may not have an algorithm match. If that's the case, don't worry. This doesn't mean you aren't compatible with anyone; love comes and goes, and we're sure that you'll click with someone sooner or later!
 
 ---
 
@@ -261,10 +256,10 @@ You'll receive **1-3 matches** depending on:
 
 ### What We Don't Do
 
-- ❌ Share your information with third parties
-- ❌ Sell your data
-- ❌ Post your information publicly
-- ❌ Force unwanted contact
+- Share your information with third parties
+- Sell your data
+- Post your information publicly
+- Force unwanted contact
 
 ---
 
@@ -276,10 +271,10 @@ You'll receive **1-3 matches** depending on:
 A: Yes! UBCupids is completely free for all UBC students.
 
 **Q: Who can participate?**  
-A: Any UBC student with a valid UBC email address (@ubc.ca, @alumni.ubc.ca, @student.ubc.ca).
+A: Any UBC student with the following valid UBC email addresses (@alumni.ubc.ca, @student.ubc.ca).
 
 **Q: Is this just for finding romantic partners?**  
-A: UBCupids focuses on compatibility for potential romantic connections, but how you use your matches is up to you!
+A: UBCupids focuses on compatibility for potential romantic connections, but how you use your matches is up to you! There is a question where you can specify what sort of relationship you're looking for.
 
 **Q: What if I don't get any matches?**  
 A: While we strive to find matches for everyone, compatibility requires mutual alignment. If you don't receive matches this year, consider participating again next year!
@@ -293,29 +288,29 @@ A: Once matches are revealed, questionnaires are locked. Before then, you can ed
 A: Try to answer all questions for best results. Skipped questions mean less data for matching.
 
 **Q: How long does the questionnaire take?**  
-A: Most people complete it in 20-30 minutes. Take your time!
+A: Most people complete it in around 30 minutes. Take your time!
 
 ### Matching Questions
 
 **Q: How does the algorithm work?**  
-A: Our algorithm uses compatibility scoring based on response alignment, importance weighting, and deal-breaker filtering.
+A: The algorithm uses compatibility scoring based on response alignment, importance weighting, and deal-breaker filtering.
 
 **Q: What if I'm matched with someone I know?**  
 A: That's actually a good sign - you have shared circles and compatibility! Whether to pursue it is your choice.
 
 **Q: Can I opt out after submitting?**  
-A: Contact us at ubcupids@example.com if you need to withdraw.
+A: You can delete your account in the profile page. This means that all data will be wiped.
 
 ### Cupid Questions
 
 **Q: How do I become a cupid?**  
-A: Cupids are selected based on community involvement and trustworthiness. Look for applications in early January.
+A: You can just sign up to be a cupid! Though if there are more cupids than match candidates, you may not receive a match candidate.
 
 **Q: Do cupids get matched too?**  
 A: Yes! Cupids can also fill out questionnaires and receive matches.
 
 **Q: How many candidates do cupids review?**  
-A: Typically 1-2 match candidates per cupid, depending on volunteer availability.
+A: Typically 1-2 match candidates per cupid, depending on cupid sign up numbers.
 
 ### Technical Questions
 
@@ -326,7 +321,7 @@ A: Yes. We use industry-standard encryption and security practices.
 A: Chrome, Firefox, Safari, and Edge (latest versions).
 
 **Q: I'm having technical issues, what should I do?**  
-A: Contact support at ubcupids@example.com with details about the issue.
+A: Contact support at support@ubcupids.org with details about the issue.
 
 ---
 
@@ -334,13 +329,13 @@ A: Contact support at ubcupids@example.com with details about the issue.
 
 If you have questions not covered in this guide:
 
-- **Email**: ubcupids@example.com
+- **Email**: support@ubcupids.org
 - **Instagram**: @ubcupids
-- **Response time**: Usually within 24-48 hours
+- **Response time**: Usually within 24 hours
 
 **Found a bug?** Please report it so we can fix it quickly!
 
 ---
 
-_Last updated: January 3, 2026_  
+_Last updated: January 15, 2026_  
 _UBCupids Team 💘_

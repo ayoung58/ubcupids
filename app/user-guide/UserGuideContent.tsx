@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
@@ -73,7 +74,17 @@ export function UserGuideContent() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 relative min-h-[72px]">
+        <div className="max-w-7xl mx-auto px-4 py-4 relative min-h-[72px] flex items-center justify-center">
+          {/* Back Button - Left Side */}
+          <div className="absolute left-4">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="hover:bg-slate-100">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+
           {/* Logo - Centered */}
           <div className="flex justify-center">
             <Link
@@ -84,19 +95,8 @@ export function UserGuideContent() {
             </Link>
           </div>
 
-          {/* Back Button - Left Side */}
-          <div className="absolute top-4 left-4">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-slate-700 hover:text-slate-900"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span>Back to Home</span>
-            </Link>
-          </div>
-
           {/* Page Title - Right Side */}
-          <div className="absolute top-4 right-4 flex items-center gap-2">
+          <div className="absolute right-4 flex items-center gap-2">
             <BookOpen className="h-6 w-6 text-pink-500" />
             <h1 className="text-2xl font-bold text-slate-900">User Guide</h1>
           </div>
