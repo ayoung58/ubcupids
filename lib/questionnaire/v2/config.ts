@@ -28,7 +28,7 @@ const GENDER_IDENTITY_OPTIONS: QuestionOption[] = [
   { value: "man", label: "Man" },
   { value: "non-binary", label: "Non-binary" },
   { value: "genderqueer", label: "Genderqueer" },
-  { value: "prefer_not_to_say", label: "Prefer not to say" },
+  { value: "prefer_not_to_answer", label: "Prefer not to say" },
   { value: "self_describe", label: "Self-describe", allowCustomInput: true },
 ];
 
@@ -36,13 +36,12 @@ const GENDER_PREFERENCE_OPTIONS: QuestionOption[] = [
   { value: "women", label: "Women" },
   { value: "men", label: "Men" },
   { value: "non_binary", label: "Non-binary people" },
+  { value: "genderqueer", label: "Genderqueer" },
   { value: "anyone", label: "Anyone", exclusive: true },
 ];
 
 const SEXUAL_ORIENTATION_OPTIONS: QuestionOption[] = [
-  { value: "heterosexual", label: "Heterosexual (sexual & romantic)" },
-  { value: "homosexual", label: "Homosexual (sexual & romantic)" },
-  { value: "bisexual", label: "Bisexual" },
+  { value: "sexual_romantic", label: "Sexual & Romantic" },
   { value: "pansexual", label: "Pansexual" },
   { value: "asexual", label: "Asexual (sexual attraction)" },
   { value: "aromantic", label: "Aromantic (romantic attraction)" },
@@ -66,7 +65,8 @@ const CULTURAL_BACKGROUND_OPTIONS: QuestionOption[] = [
 ];
 
 const RELIGION_OPTIONS: QuestionOption[] = [
-  { value: "not_religious", label: "Not religious" },
+  { value: "atheist", label: "Atheist" },
+  { value: "agnostic", label: "Agnostic" },
   { value: "spiritual_not_religious", label: "Spiritual but not religious" },
   { value: "christian", label: "Christian" },
   { value: "muslim", label: "Muslim" },
@@ -108,25 +108,22 @@ const RELATIONSHIP_STYLE_OPTIONS: QuestionOption[] = [
   { value: "prefer_not_to_answer", label: "Prefer not to answer" },
 ];
 
-const SEXUAL_ACTIVITY_OPTIONS: QuestionOption[] = [
-  { value: "wait_until_marriage", label: "Want to wait until marriage" },
-  {
-    value: "wait_until_commitment",
-    label: "Want to wait until serious commitment",
-  },
-  {
-    value: "after_connection",
-    label: "Comfortable after establishing a connection",
-  },
-  { value: "comfortable_early", label: "Comfortable early on" },
-  { value: "prefer_not_to_answer", label: "Prefer not to answer" },
-];
-
 const RELATIONSHIP_INTENT_OPTIONS: QuestionOption[] = [
   { value: "casual_dating", label: "Casual dating" },
   { value: "open_to_serious", label: "Open to something serious" },
-  { value: "friendship_like", label: "Friendship-like relationship" },
-  { value: "seeking_long_term", label: "Actively seeking a long-term partner" },
+  { value: "friendship_like", label: "Friendship" },
+  { value: "seeking_long_term", label: "Looking for a long-term partner" },
+];
+
+const SEXUAL_ACTIVITY_EXPECTATIONS_OPTIONS: QuestionOption[] = [
+  { value: "marriage", label: "Want to wait until marriage" },
+  {
+    value: "serious_commitment",
+    label: "Want to wait until serious commitment",
+  },
+  { value: "connection", label: "Comfortable after establishing a connection" },
+  { value: "early_on", label: "Comfortable early on" },
+  { value: "prefer_not_to_answer", label: "Prefer not to answer" },
 ];
 
 const FIELD_OF_STUDY_OPTIONS: QuestionOption[] = [
@@ -160,7 +157,11 @@ const PET_ATTITUDE_OPTIONS: QuestionOption[] = [
 ];
 
 const RELATIONSHIP_EXPERIENCE_OPTIONS: QuestionOption[] = [
-  { value: "no_prior", label: "No prior relationships" },
+  { value: "no_prior", label: "No prior relationships or dating experience" },
+  {
+    value: "dated_not_serious",
+    label: "I've dated but have not had a serious relationship",
+  },
   { value: "one_serious", label: "One serious relationship" },
   { value: "few_relationships", label: "A few relationships" },
   { value: "many_relationships", label: "Many relationships" },
@@ -448,7 +449,7 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
     options: RELATIONSHIP_STYLE_OPTIONS,
     hasPreference: true,
     preferenceText: "I prefer my match to have the same relationship style",
-    preferenceFormat: "same",
+    preferenceFormat: "same-or-similar",
     validation: {},
     warningText: "High dealbreaker usage expected for this question",
   },
@@ -457,15 +458,21 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
   {
     id: "q12",
     section: Section.SECTION_1,
-    type: QuestionType.LIKERT_SAME_SIMILAR,
+    type: QuestionType.SINGLE_SELECT_MULTI_PREFERENCE,
     questionText:
       "Which best describes your expectations around sexual activity in a relationship?",
     answerFormat: "single-select",
-    options: SEXUAL_ACTIVITY_OPTIONS,
+    options: SEXUAL_ACTIVITY_EXPECTATIONS_OPTIONS,
     hasPreference: true,
-    preferenceText: "I prefer my match to have",
+    preferenceText:
+      "I prefer my match to have expectations around sexual activity that are",
     preferenceFormat: "same-or-similar",
-    validation: {},
+    preferenceOptions: SEXUAL_ACTIVITY_EXPECTATIONS_OPTIONS.filter(
+      (opt) => opt.value !== "prefer_not_to_answer"
+    ),
+    validation: {
+      required: true,
+    },
   },
 
   // Q13: Relationship Intent
@@ -489,15 +496,17 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
   {
     id: "q14",
     section: Section.SECTION_1,
-    type: QuestionType.SINGLE_SELECT_MULTI_PREFERENCE,
+    type: QuestionType.MULTI_SELECT_WITH_PREFERENCE,
     questionText: "Which faculty best describes your field of study?",
-    answerFormat: "single-select",
+    answerFormat: "multi-select",
     options: FIELD_OF_STUDY_OPTIONS,
     hasPreference: true,
     preferenceText: "I prefer my match to be in",
     preferenceFormat: "multi-select",
     preferenceOptions: FIELD_OF_STUDY_OPTIONS,
-    validation: {},
+    validation: {
+      minSelections: 1,
+    },
   },
 
   // Q15: Living Situation
@@ -530,7 +539,7 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
     },
     hasPreference: true,
     preferenceText: "I prefer my match to have a",
-    preferenceFormat: "same-similar-different",
+    preferenceFormat: "same-or-similar",
     validation: {},
   },
 

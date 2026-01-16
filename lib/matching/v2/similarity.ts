@@ -59,6 +59,7 @@ function determineQuestionType(
   questionId: string
 ):
   | "numeric"
+  | "ordinal"
   | "categorical-same"
   | "categorical-multi"
   | "multi-select"
@@ -74,7 +75,8 @@ function determineQuestionType(
     q8: "categorical-multi",
     q10: "directional",
     q11: "numeric",
-    q14: "numeric",
+    q12: "ordinal",
+    q14: "multi-select",
     q15: "multi-select",
     q16: "binary",
     q17: "binary",
@@ -101,6 +103,7 @@ export function calculateQuestionSimilarity(
   userB: MatchingUser,
   questionType:
     | "numeric"
+    | "ordinal"
     | "categorical-same"
     | "categorical-multi"
     | "multi-select"
@@ -118,6 +121,8 @@ export function calculateQuestionSimilarity(
   switch (questionType) {
     case "numeric":
       return calculateTypeA_Numeric(aResponse, bResponse);
+    case "ordinal":
+      return calculateTypeF_Ordinal(questionId, aResponse, bResponse);
     case "categorical-same":
       return calculateTypeB_CategoricalSame(aResponse, bResponse);
     case "categorical-multi":
@@ -136,6 +141,24 @@ export function calculateQuestionSimilarity(
       console.warn(`Unknown question type: ${questionType} for ${questionId}`);
       return 0.5;
   }
+}
+
+/**
+ * Helper: Map ordinal string values to numeric for Q12 (sexual activity expectations)
+ */
+function mapOrdinalToNumeric(questionId: string, value: string): number | null {
+  if (questionId === "q12") {
+    // SEXUAL_ACTIVITY_EXPECTATIONS_OPTIONS in order
+    const ordinalMap: Record<string, number> = {
+      marriage: 1,
+      serious_commitment: 2,
+      connection: 3,
+      early_on: 4,
+      prefer_not_to_answer: -1, // Handle separately
+    };
+    return ordinalMap[value] ?? null;
+  }
+  return null;
 }
 
 /**
@@ -271,7 +294,76 @@ function calculateTypeE_Age(aResponse: any, bResponse: any): number {
 }
 
 /**
- * Type F: Same/Similar/Different preference
+ * Type F1: Ordinal with "Same/Similar" preference
+ * For questions like Q12 (sexual activity expectations) with ordered categorical values
+ *
+ * Structure:
+ * - answer: string (ordinal value)
+ * - preference: "same" | "similar"
+ *
+ * Similarity calculation:
+ * - Convert ordinal strings to numeric values
+ * - "same": 1.0 if exact match, 0.0 otherwise
+ * - "similar": Linear distance-based (like Type A numeric)
+ */
+function calculateTypeF_Ordinal(
+  questionId: string,
+  aResponse: any,
+  bResponse: any
+): number {
+  const aAnswer = aResponse.answer;
+  const bAnswer = bResponse.answer;
+  const aPreference = aResponse.preference;
+  const bPreference = bResponse.preference;
+
+  // Map ordinal values to numeric
+  const aNumeric =
+    typeof aAnswer === "string"
+      ? mapOrdinalToNumeric(questionId, aAnswer)
+      : null;
+  const bNumeric =
+    typeof bAnswer === "string"
+      ? mapOrdinalToNumeric(questionId, bAnswer)
+      : null;
+
+  // Handle prefer_not_to_answer or invalid values
+  // Note: The spec suggests using 0.3 for "Very Important" questions when partner
+  // prefers not to answer, but at this phase we don't have access to importance weights.
+  // Using 0.5 as a neutral penalty is a reasonable compromise.
+  if (
+    aNumeric === null ||
+    bNumeric === null ||
+    aNumeric === -1 ||
+    bNumeric === -1
+  ) {
+    return 0.5;
+  }
+
+  // Calculate raw numeric similarity
+  const maxRange = 3; // For Q12: range is 1-4, so max distance is 3
+  const distance = Math.abs(aNumeric - bNumeric);
+  const rawSimilarity = 1 - distance / maxRange;
+
+  // Check preferences
+  let aSatisfied = 1.0;
+  if (aPreference === "same") {
+    aSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
+  } else if (aPreference === "similar") {
+    aSatisfied = Math.max(0, rawSimilarity);
+  }
+
+  let bSatisfied = 1.0;
+  if (bPreference === "same") {
+    bSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
+  } else if (bPreference === "similar") {
+    bSatisfied = Math.max(0, rawSimilarity);
+  }
+
+  return (aSatisfied + bSatisfied) / 2;
+}
+
+/**
+ * Type F2: Same/Similar/Different preference
  * 3-tier preference system
  *
  * Structure:

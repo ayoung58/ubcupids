@@ -66,18 +66,18 @@ export const PREFERENCE_TEXT: Record<string, string> = {
   q19: "I prefer my match's attitude toward pets to be...",
 
   // Q20: Relationship Experience
-  q20: "I prefer my match's relationship experience to be...",
+  q20: "I prefer my match to have...",
 
   // SECTION 2 - Personality / Interaction Style
 
   // Q21: Love Languages
-  q21: "show love in ways I like to receive it",
+  q21: "I prefer my match to show love in ways I like to receive it",
 
   // Q22: Social Energy Level
-  q22: "have a similar social energy level",
+  q22: "I prefer my match's social energy level to be...",
 
   // Q23: Battery Recharge Style
-  q23: "I prefer my match's social energy level to be...",
+  q23: "I prefer my match to recharge their energy in a way that is...",
 
   // Q24: Party / Nightlife Interest
   q24: "I prefer my match's interest in partying and nightlife to be...",

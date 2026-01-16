@@ -300,11 +300,17 @@ function generateQuestionResponse(
         max
       );
     } else if (question.preferenceFormat === "special") {
-      // Age range already handled above
-      response.preference = {
-        min: 18 + Math.floor(Math.random() * 5),
-        max: 30 + Math.floor(Math.random() * 11),
-      };
+      // Special handling for different question types
+      if (question.id === "q25") {
+        // Q25 Conflict Resolution: "same" / "compatible" preference
+        response.preference = pickRandom(["same", "compatible"]);
+      } else {
+        // Default to age range for other special cases
+        response.preference = {
+          min: 18 + Math.floor(Math.random() * 5),
+          max: 30 + Math.floor(Math.random() * 11),
+        };
+      }
     }
 
     response.importance = randomImportance(config.highImportanceRate);

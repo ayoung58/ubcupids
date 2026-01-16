@@ -250,7 +250,8 @@ Expected high dealbreaker usage.
     Response Format:
     Single-select (ordinal)
     Options (ordered):
-    Want to wait until marriage
+
+Want to wait until marriage
 
 Want to wait until serious commitment
 

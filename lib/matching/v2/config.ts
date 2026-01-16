@@ -81,38 +81,66 @@ export const DEFAULT_CONFIG = MATCHING_CONFIG;
  * Defines how compatible different conflict resolution styles are
  * Values range from 0 (incompatible) to 1 (perfectly compatible)
  *
+ * Based on Matching Algorithm V2.2 Type I3 specification.
+ *
  * Styles:
- * - direct: Address issues head-on immediately
- * - space: Need time alone before discussing
- * - humor: Use lightheartedness to ease tension
- * - compromise: Meet in the middle on decisions
+ * - compromise: Find middle ground where both people give a little
+ * - solution: Take action together to solve the root problem
+ * - emotion: Express and process feelings before problem-solving
+ * - analysis: Understand what caused the conflict and why
+ * - space: Take time to cool down before discussing
+ * - direct: Talk through the issue immediately and openly
  */
 export const CONFLICT_COMPATIBILITY_MATRIX: Record<
   string,
   Record<string, number>
 > = {
-  direct: {
-    direct: 1.0, // Perfect match
-    space: 0.3, // Low compatibility (conflicting needs)
-    humor: 0.7, // Moderate-high (can work together)
-    compromise: 0.8, // High (both solution-oriented)
+  compromise: {
+    compromise: 1.0,
+    solution: 0.9,
+    emotion: 0.6,
+    analysis: 0.7,
+    space: 0.5,
+    direct: 0.6,
+  },
+  solution: {
+    compromise: 0.9,
+    solution: 1.0,
+    emotion: 0.7,
+    analysis: 0.9,
+    space: 0.6,
+    direct: 0.8,
+  },
+  emotion: {
+    compromise: 0.6,
+    solution: 0.7,
+    emotion: 1.0,
+    analysis: 0.5,
+    space: 0.7,
+    direct: 0.5,
+  },
+  analysis: {
+    compromise: 0.7,
+    solution: 0.9,
+    emotion: 0.5,
+    analysis: 1.0,
+    space: 0.6,
+    direct: 0.7,
   },
   space: {
-    direct: 0.3,
+    compromise: 0.5,
+    solution: 0.6,
+    emotion: 0.7,
+    analysis: 0.6,
     space: 1.0,
-    humor: 0.6, // Moderate (both avoid confrontation)
-    compromise: 0.5, // Moderate (different approaches)
+    direct: 0.3,
   },
-  humor: {
-    direct: 0.7,
-    space: 0.6,
-    humor: 1.0,
-    compromise: 0.8,
-  },
-  compromise: {
-    direct: 0.8,
-    space: 0.5,
-    humor: 0.8,
-    compromise: 1.0,
+  direct: {
+    compromise: 0.6,
+    solution: 0.8,
+    emotion: 0.5,
+    analysis: 0.7,
+    space: 0.3,
+    direct: 1.0,
   },
 } as const;

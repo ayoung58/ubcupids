@@ -64,7 +64,7 @@ export const SECTION_BOUNDARIES = {
  */
 export const AGE_LIMITS = {
   MIN: 18,
-  MAX: 40,
+  MAX: 100,
 } as const;
 
 /**

@@ -443,9 +443,6 @@ export function QuestionnaireV2({
                 ((responses.q1 as QuestionResponse)?.answer as string) ?? null
               }
               onChange={(value) => updateResponse("q1", { answer: value })}
-              includeOther={
-                q1.options?.some((o) => o.allowCustomInput) ?? false
-              }
             />
           </div>
 
@@ -577,12 +574,19 @@ export function QuestionnaireV2({
       );
     }
 
-    // Multi-select questions
-    if (question.type === QuestionType.MULTI_SELECT_WITH_PREFERENCE) {
+    // Multi-select questions (including special conflict resolution Q25)
+    if (
+      question.type === QuestionType.MULTI_SELECT_WITH_PREFERENCE ||
+      question.type === QuestionType.SPECIAL_CONFLICT_RESOLUTION
+    ) {
+      // Ensure answer is always an array (handle legacy single-select data)
+      const answerValue = response?.answer;
+      const values = Array.isArray(answerValue) ? answerValue : [];
+
       return (
         <MultiSelectInput
           options={question.options ?? []}
-          values={response?.answer ?? []}
+          values={values}
           onChange={(value) =>
             updateResponse(question.id, { ...response, answer: value })
           }

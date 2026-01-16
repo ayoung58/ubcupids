@@ -47,7 +47,7 @@ function testPerfectMatch() {
       q1: { answer: "woman" },
       q2: { answer: ["men"], preference: ["men"] },
       q3: {
-        answer: "heterosexual",
+        answer: "sexual_romantic",
         preference: "same",
         importance: 4,
       },
@@ -74,7 +74,7 @@ function testPerfectMatch() {
       q1: { answer: "man" },
       q2: { answer: ["women"], preference: ["women"] },
       q3: {
-        answer: "heterosexual",
+        answer: "sexual_romantic",
         preference: "same",
         importance: 4,
       },

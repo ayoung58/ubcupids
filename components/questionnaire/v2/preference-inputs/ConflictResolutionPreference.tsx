@@ -44,40 +44,44 @@ export function ConflictResolutionPreference({
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {label && (
-        <label className="text-sm font-medium text-slate-700 block">
-          {label}
-        </label>
+        <label className="text-sm font-medium text-slate-700">{label}</label>
       )}
-      <div className="space-y-2">
-        {options.map((option) => (
-          <button
-            key={option.value || "null"}
-            type="button"
-            onClick={() => !disabled && onChange(option.value)}
-            disabled={disabled}
-            className={cn(
-              "w-full text-left px-4 py-3 rounded-md transition-all",
-              "border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500",
-              value === option.value
-                ? "bg-pink-600 text-white border-pink-600"
-                : "bg-white text-slate-700 border-slate-300 hover:border-pink-400 hover:bg-pink-50",
-              disabled && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            <div className="font-medium text-sm">{option.label}</div>
-            <div
-              className={cn(
-                "text-xs mt-1",
-                value === option.value ? "text-pink-100" : "text-slate-500"
-              )}
-            >
-              {option.description}
+
+      {options.map((option) => (
+        <label
+          key={option.value || "null"}
+          className={cn(
+            "flex items-center justify-between gap-3 p-3 rounded-md border-2 cursor-pointer transition-all",
+            disabled && "opacity-50 cursor-not-allowed",
+            !disabled && "hover:bg-purple-50",
+            value === option.value
+              ? "border-purple-500 bg-purple-50"
+              : "border-slate-200"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <input
+              type="radio"
+              name="conflict-preference"
+              value={option.value || ""}
+              checked={value === option.value}
+              onChange={(e) =>
+                onChange((e.target.value as "same" | "compatible") || null)
+              }
+              disabled={disabled}
+              className="h-4 w-4 text-purple-600 focus:ring-purple-500 cursor-pointer"
+            />
+            <div>
+              <span className="text-sm font-medium text-slate-700">
+                {option.label}
+              </span>
+              <p className="text-xs text-slate-500">{option.description}</p>
             </div>
-          </button>
-        ))}
-      </div>
+          </div>
+        </label>
+      ))}
 
       <p className="text-xs text-slate-500 italic">
         💡 Tip: &quot;Compatible&quot; allows for complementary styles based on

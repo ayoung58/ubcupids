@@ -50,14 +50,20 @@ describe("Preference Text Dictionary", () => {
 
   it("should have preference text for Q10 (Exercise)", () => {
     expect(PREFERENCE_TEXT.q10).toBeDefined();
-    expect(PREFERENCE_TEXT.q10).toBe("exercise at a similar level");
+    expect(PREFERENCE_TEXT.q10).toBe(
+      "Compared to me, I prefer my match's physically activity level to be..."
+    );
   });
 
   it("should return the correct preference text for known questions", () => {
-    expect(getPreferenceText("q3")).toBe("have one of these orientations");
-    expect(getPreferenceText("q11")).toBe("have the same relationship style");
+    expect(getPreferenceText("q3")).toBe(
+      "I prefer my match to have one of these orientations"
+    );
+    expect(getPreferenceText("q11")).toBe(
+      "I prefer my match's relationship style to be"
+    );
     expect(getPreferenceText("q21")).toBe(
-      "show love in ways I like to receive it"
+      "I prefer my match to show love in ways I like to receive it"
     );
   });
 
@@ -68,12 +74,18 @@ describe("Preference Text Dictionary", () => {
 
   it("should have meaningful, user-friendly text for all entries", () => {
     Object.entries(PREFERENCE_TEXT).forEach(([questionId, text]) => {
-      // Text should be lowercase and not end with punctuation
-      expect(text[0]).toBe(text[0].toLowerCase());
-      expect(text).not.toMatch(/[.!?]$/);
+      // Text should start with "I prefer my match" (except Q10 which has special format)
+      if (questionId === "q10") {
+        expect(text).toMatch(/^Compared to me, I prefer my match/);
+      } else {
+        expect(text).toMatch(/^I prefer my match/);
+      }
 
-      // Text should be at least 5 characters
-      expect(text.length).toBeGreaterThan(5);
+      // Text should end with "..." or no punctuation
+      expect(text).toMatch(/\.\.\.$|^[^.!?]*$/);
+
+      // Text should be at least 10 characters
+      expect(text.length).toBeGreaterThan(10);
     });
   });
 });

@@ -291,7 +291,7 @@ describe("Integration Tests - Complete Pipeline", () => {
         q1: { answer: "woman" },
         q2: { answer: ["men"], preference: ["men"] },
         q3: {
-          answer: "heterosexual",
+          answer: "sexual_romantic",
           preference: "same",
           importance: 4,
         },
@@ -328,14 +328,14 @@ describe("Integration Tests - Complete Pipeline", () => {
           importance: 5,
           dealbreaker: true,
         },
-        q12: { answer: 3, preference: "similar", importance: 4 },
+        q12: { answer: "connection", preference: "similar", importance: 4 },
         q13: {
           answer: ["long-term"],
           preference: ["long-term"],
           importance: 5,
         },
         q14: {
-          answer: "science",
+          answer: ["science"],
           preference: ["science", "engineering"],
           importance: 2,
         },

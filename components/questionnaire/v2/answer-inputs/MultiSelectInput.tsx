@@ -7,6 +7,7 @@ interface Option {
   value: string;
   label: string;
   allowCustomInput?: boolean;
+  exclusive?: boolean;
 }
 
 interface MultiSelectInputProps {
@@ -31,23 +32,33 @@ export function MultiSelectInput({
   maxSelections,
   disabled = false,
 }: MultiSelectInputProps) {
+  // Ensure values is always an array (defensive programming)
+  const safeValues = Array.isArray(values) ? values : [];
+
   const isMaxReached =
-    maxSelections !== undefined && values.length >= maxSelections;
+    maxSelections !== undefined && safeValues.length >= maxSelections;
 
   const handleToggle = (optionValue: string) => {
     if (disabled) return;
 
-    if (values.includes(optionValue)) {
+    const selectedOption = options.find((o) => o.value === optionValue);
+    const isExclusive =
+      selectedOption?.exclusive || optionValue === "prefer_not_to_answer";
+
+    if (safeValues.includes(optionValue)) {
       // Remove
-      onChange(values.filter((v) => v !== optionValue));
+      onChange(safeValues.filter((v) => v !== optionValue));
     } else {
-      // Handle "prefer_not_to_answer" mutual exclusivity
-      if (optionValue === "prefer_not_to_answer") {
-        // If selecting "prefer_not_to_answer", deselect all other options
-        onChange(["prefer_not_to_answer"]);
+      // Handle mutually exclusive options ("prefer_not_to_answer" or options marked as exclusive)
+      if (isExclusive) {
+        // If selecting an exclusive option, deselect all other options
+        onChange([optionValue]);
       } else {
-        // If selecting any other option, deselect "prefer_not_to_answer"
-        let newValues = values.filter((v) => v !== "prefer_not_to_answer");
+        // If selecting any other option, deselect all exclusive options
+        let newValues = safeValues.filter((v) => {
+          const opt = options.find((o) => o.value === v);
+          return v !== "prefer_not_to_answer" && !opt?.exclusive;
+        });
 
         // Add (if not at max)
         if (maxSelections === undefined || newValues.length < maxSelections) {
@@ -63,14 +74,14 @@ export function MultiSelectInput({
     <div className="space-y-2">
       {maxSelections && (
         <p className="text-xs text-slate-600 mb-3">
-          {maxSelections === values.length
-            ? `✓ Selected ${values.length}/${maxSelections}`
-            : `(${values.length}/${maxSelections} selected)`}
+          {maxSelections === safeValues.length
+            ? `✓ Selected ${safeValues.length}/${maxSelections}`
+            : `(${safeValues.length}/${maxSelections} selected)`}
         </p>
       )}
 
       {options.map((option) => {
-        const isChecked = values.includes(option.value);
+        const isChecked = safeValues.includes(option.value);
         const isDisabledOption = !isChecked && (isMaxReached || disabled);
 
         return (

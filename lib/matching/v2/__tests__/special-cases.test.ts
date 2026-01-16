@@ -226,13 +226,13 @@ describe("Special Cases", () => {
   });
 
   describe("Q25: Conflict Resolution", () => {
-    test("should return 1.0 for same style with 'same' preference", () => {
+    test("should return 1.0 for exact match with 'same' preference", () => {
       const userA: ConflictResolutionResponse = {
-        answer: "direct",
+        answer: ["solution", "direct"],
         preference: "same",
       };
       const userB: ConflictResolutionResponse = {
-        answer: "direct",
+        answer: ["solution", "direct"],
         preference: "same",
       };
 
@@ -242,64 +242,18 @@ describe("Special Cases", () => {
         MATCHING_CONFIG
       );
 
-      expect(result.baseCompatibility).toBe(1.0);
-      expect(result.userAPreferenceMet).toBe(true);
-      expect(result.userBPreferenceMet).toBe(true);
       expect(result.finalScore).toBe(1.0);
+      expect(result.overlapScore).toBe(1.0); // 2/2
       expect(result.bothWantSame).toBe(true);
     });
 
-    test("should apply penalty when 'same' preference not met", () => {
+    test("should return 0.0 when 'same' preference not met", () => {
       const userA: ConflictResolutionResponse = {
-        answer: "direct",
+        answer: ["direct"],
         preference: "same",
       };
       const userB: ConflictResolutionResponse = {
-        answer: "space",
-        preference: "compatible",
-      };
-
-      const result = calculateConflictResolutionCompatibility(
-        userA,
-        userB,
-        MATCHING_CONFIG
-      );
-
-      expect(result.baseCompatibility).toBe(0.3); // direct+space from matrix
-      expect(result.userAPreferenceMet).toBe(false); // A wants same, got space
-      expect(result.userBPreferenceMet).toBe(false); // B wants compatible (≥0.5), got 0.3
-      expect(result.finalScore).toBeCloseTo(0.12, 2); // 0.3 × 0.4
-    });
-
-    test("should work with 'compatible' preference and high matrix value", () => {
-      const userA: ConflictResolutionResponse = {
-        answer: "direct",
-        preference: "compatible",
-      };
-      const userB: ConflictResolutionResponse = {
-        answer: "compromise",
-        preference: "compatible",
-      };
-
-      const result = calculateConflictResolutionCompatibility(
-        userA,
-        userB,
-        MATCHING_CONFIG
-      );
-
-      expect(result.baseCompatibility).toBe(0.8); // direct+compromise from matrix
-      expect(result.userAPreferenceMet).toBe(true); // 0.8 ≥ 0.5
-      expect(result.userBPreferenceMet).toBe(true); // 0.8 ≥ 0.5
-      expect(result.finalScore).toBe(0.8);
-    });
-
-    test("should apply moderate penalty when one preference met", () => {
-      const userA: ConflictResolutionResponse = {
-        answer: "humor",
-        preference: "compatible",
-      };
-      const userB: ConflictResolutionResponse = {
-        answer: "space",
+        answer: ["space"],
         preference: "same",
       };
 
@@ -309,19 +263,19 @@ describe("Special Cases", () => {
         MATCHING_CONFIG
       );
 
-      expect(result.baseCompatibility).toBe(0.6); // humor+space from matrix
-      expect(result.userAPreferenceMet).toBe(true); // 0.6 ≥ 0.5
-      expect(result.userBPreferenceMet).toBe(false); // B wants same, got humor
-      expect(result.finalScore).toBeCloseTo(0.42, 2); // 0.6 × 0.7
+      expect(result.finalScore).toBe(0.0); // Neither preference met
+      expect(result.overlapScore).toBe(0.0); // No overlap
+      expect(result.bothWantSame).toBe(true);
     });
 
-    test("should handle all matching with compatible preference", () => {
+    test("should calculate compatible preference with partial overlap", () => {
+      // Example from matching algo doc
       const userA: ConflictResolutionResponse = {
-        answer: "compromise",
+        answer: ["solution", "direct"],
         preference: "compatible",
       };
       const userB: ConflictResolutionResponse = {
-        answer: "compromise",
+        answer: ["solution", "space"],
         preference: "compatible",
       };
 
@@ -331,19 +285,120 @@ describe("Special Cases", () => {
         MATCHING_CONFIG
       );
 
-      expect(result.baseCompatibility).toBe(1.0);
-      expect(result.userAPreferenceMet).toBe(true);
-      expect(result.userBPreferenceMet).toBe(true);
+      // Overlap: 1/2 = 0.5
+      // Compatibility scores: [solution×solution=1.0, solution×space=0.6, direct×solution=0.8, direct×space=0.3]
+      // Avg compatibility: (1.0 + 0.6 + 0.8 + 0.3) / 4 = 0.675
+      // Final: 0.6 × 0.5 + 0.4 × 0.675 = 0.30 + 0.27 = 0.57
+      expect(result.overlapScore).toBe(0.5);
+      expect(result.avgCompatibility).toBeCloseTo(0.675, 2);
+      expect(result.finalScore).toBeCloseTo(0.57, 2);
+    });
+
+    test("should handle compatible preference with no overlap but high compatibility", () => {
+      const userA: ConflictResolutionResponse = {
+        answer: ["compromise"],
+        preference: "compatible",
+      };
+      const userB: ConflictResolutionResponse = {
+        answer: ["solution"],
+        preference: "compatible",
+      };
+
+      const result = calculateConflictResolutionCompatibility(
+        userA,
+        userB,
+        MATCHING_CONFIG
+      );
+
+      // Overlap: 0/1 = 0.0
+      // Avg compatibility: compromise×solution = 0.9
+      // Final: 0.6 × 0.0 + 0.4 × 0.9 = 0.36
+      expect(result.overlapScore).toBe(0.0);
+      expect(result.avgCompatibility).toBe(0.9);
+      expect(result.finalScore).toBeCloseTo(0.36, 2);
+    });
+
+    test("should handle compatible preference with no overlap and low compatibility", () => {
+      const userA: ConflictResolutionResponse = {
+        answer: ["direct"],
+        preference: "compatible",
+      };
+      const userB: ConflictResolutionResponse = {
+        answer: ["space"],
+        preference: "compatible",
+      };
+
+      const result = calculateConflictResolutionCompatibility(
+        userA,
+        userB,
+        MATCHING_CONFIG
+      );
+
+      // Overlap: 0/1 = 0.0
+      // Avg compatibility: direct×space = 0.3
+      // Final: 0.6 × 0.0 + 0.4 × 0.3 = 0.12
+      expect(result.overlapScore).toBe(0.0);
+      expect(result.avgCompatibility).toBe(0.3);
+      expect(result.finalScore).toBeCloseTo(0.12, 2);
+    });
+
+    test("should handle mixed preferences (one same, one compatible)", () => {
+      const userA: ConflictResolutionResponse = {
+        answer: ["solution", "direct"],
+        preference: "same",
+      };
+      const userB: ConflictResolutionResponse = {
+        answer: ["solution", "analysis"],
+        preference: "compatible",
+      };
+
+      const result = calculateConflictResolutionCompatibility(
+        userA,
+        userB,
+        MATCHING_CONFIG
+      );
+
+      // A wants same but doesn't have exact match → A score = 0.0
+      // B wants compatible:
+      //   Overlap: 1/2 = 0.5
+      //   Compatibility: [solution×solution=1.0, solution×direct=0.8, analysis×solution=0.9, analysis×direct=0.7]
+      //   Avg: (1.0 + 0.8 + 0.9 + 0.7) / 4 = 0.85
+      //   B score = 0.6 × 0.5 + 0.4 × 0.85 = 0.64
+      // Final: (0.0 + 0.64) / 2 = 0.32
+      expect(result.finalScore).toBeCloseTo(0.32, 2);
+    });
+
+    test("should handle single selection matching single selection", () => {
+      const userA: ConflictResolutionResponse = {
+        answer: ["compromise"],
+        preference: "compatible",
+      };
+      const userB: ConflictResolutionResponse = {
+        answer: ["compromise"],
+        preference: "compatible",
+      };
+
+      const result = calculateConflictResolutionCompatibility(
+        userA,
+        userB,
+        MATCHING_CONFIG
+      );
+
+      // Overlap: 1/1 = 1.0
+      // Avg compatibility: compromise×compromise = 1.0
+      // Final: 0.6 × 1.0 + 0.4 × 1.0 = 1.0
+      expect(result.overlapScore).toBe(1.0);
+      expect(result.avgCompatibility).toBe(1.0);
       expect(result.finalScore).toBe(1.0);
     });
 
-    test("should use matrix for direct+humor compatibility", () => {
+    test("should handle empty arrays gracefully", () => {
       const userA: ConflictResolutionResponse = {
-        answer: "direct",
+        answer: [],
         preference: "compatible",
       };
       const userB: ConflictResolutionResponse = {
-        answer: "humor",
+        answer: ["solution"],
         preference: "compatible",
       };
 
@@ -353,32 +408,7 @@ describe("Special Cases", () => {
         MATCHING_CONFIG
       );
 
-      expect(result.baseCompatibility).toBe(0.7); // direct+humor from matrix
-      expect(result.userAPreferenceMet).toBe(true); // 0.7 ≥ 0.5
-      expect(result.userBPreferenceMet).toBe(true); // 0.7 ≥ 0.5
-      expect(result.finalScore).toBe(0.7);
-    });
-
-    test("should handle space+compromise below threshold", () => {
-      const userA: ConflictResolutionResponse = {
-        answer: "space",
-        preference: "compatible",
-      };
-      const userB: ConflictResolutionResponse = {
-        answer: "compromise",
-        preference: "compatible",
-      };
-
-      const result = calculateConflictResolutionCompatibility(
-        userA,
-        userB,
-        MATCHING_CONFIG
-      );
-
-      expect(result.baseCompatibility).toBe(0.5); // space+compromise from matrix
-      expect(result.userAPreferenceMet).toBe(true); // 0.5 ≥ 0.5 (edge case)
-      expect(result.userBPreferenceMet).toBe(true); // 0.5 ≥ 0.5 (edge case)
-      expect(result.finalScore).toBe(0.5);
+      expect(result.finalScore).toBe(0.5); // Neutral score for missing data
     });
   });
 });

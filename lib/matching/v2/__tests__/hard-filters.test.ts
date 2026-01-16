@@ -74,13 +74,13 @@ describe("Phase 1: Hard Filters", () => {
     test("should pass when both have same orientation with dealbreaker", () => {
       const userA = createMockUser("a", "man", ["woman"], {
         q3: {
-          answer: "heterosexual",
+          answer: "sexual_romantic",
           preference: "same",
           isDealbreaker: true,
         },
       });
       const userB = createMockUser("b", "woman", ["man"], {
-        q3: { answer: "heterosexual", preference: "same" },
+        q3: { answer: "sexual_romantic", preference: "same" },
       });
 
       const result = checkHardFilters(userA, userB);
@@ -90,13 +90,13 @@ describe("Phase 1: Hard Filters", () => {
     test("should fail when userA has dealbreaker and orientations differ", () => {
       const userA = createMockUser("a", "man", ["woman"], {
         q3: {
-          answer: "heterosexual",
+          answer: "sexual_romantic",
           preference: "same",
           isDealbreaker: true,
         },
       });
       const userB = createMockUser("b", "woman", ["man"], {
-        q3: { answer: "bisexual" },
+        q3: { answer: "pansexual" },
       });
 
       const result = checkHardFilters(userA, userB);
@@ -106,10 +106,10 @@ describe("Phase 1: Hard Filters", () => {
 
     test("should pass when orientations differ but no dealbreaker", () => {
       const userA = createMockUser("a", "man", ["woman"], {
-        q3: { answer: "heterosexual", preference: "same", importance: 3 },
+        q3: { answer: "sexual_romantic", preference: "same", importance: 3 },
       });
       const userB = createMockUser("b", "woman", ["man"], {
-        q3: { answer: "bisexual" },
+        q3: { answer: "pansexual" },
       });
 
       const result = checkHardFilters(userA, userB);
@@ -311,7 +311,7 @@ describe("Phase 1: Hard Filters", () => {
     test("should report all failed dealbreakers", () => {
       const userA = createMockUser("a", "man", ["woman"], {
         q3: {
-          answer: "heterosexual",
+          answer: "sexual_romantic",
           preference: "same",
           isDealbreaker: true,
         },
@@ -327,7 +327,7 @@ describe("Phase 1: Hard Filters", () => {
         },
       });
       const userB = createMockUser("b", "woman", ["man"], {
-        q3: { answer: "bisexual" },
+        q3: { answer: "pansexual" },
         q12: { answer: "open" },
         q8: { answer: "frequently" },
       });
@@ -345,7 +345,7 @@ describe("Phase 1: Hard Filters", () => {
     test("should fail when user has dealbreaker and match selected 'prefer not to answer'", () => {
       const userA = createMockUser("a", "man", ["woman"], {
         q3: {
-          answer: "heterosexual",
+          answer: "sexual_romantic",
           preference: "same",
           isDealbreaker: true,
         },
