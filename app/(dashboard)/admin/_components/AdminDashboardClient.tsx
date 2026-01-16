@@ -216,11 +216,11 @@ export function AdminDashboardClient({
             </div>
             <div className="flex-1 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="font-semibold text-blue-900">💘 Cupid Evaluation</p>
-              <p className="text-sm text-blue-700">Feb 1-6, 2026</p>
+              <p className="text-sm text-blue-700">Feb 1-7, 2026</p>
             </div>
             <div className="flex-1 p-4 bg-pink-50 rounded-lg border border-pink-200">
               <p className="font-semibold text-pink-900">💌 Match Reveal</p>
-              <p className="text-sm text-pink-700">February 7th, 2026</p>
+              <p className="text-sm text-pink-700">February 8th, 2026</p>
             </div>
           </div>
         </CardContent>

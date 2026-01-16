@@ -51,6 +51,22 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     }
   }
 
+  // Fetch user statistics (excluding test users)
+  const [matchUsersCount, cupidUsersCount] = await Promise.all([
+    prisma.user.count({
+      where: {
+        isBeingMatched: true,
+        isTestUser: false,
+      },
+    }),
+    prisma.user.count({
+      where: {
+        isCupid: true,
+        isTestUser: false,
+      },
+    }),
+  ]);
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header with Navigation Links */}
@@ -82,7 +98,25 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </div>
 
       {/* Hero Section */}
-      <div className="flex items-center justify-center px-4 py-12 sm:py-16">
+      <div className="flex items-start justify-center px-4 py-12 sm:py-16 gap-6 max-w-7xl mx-auto">
+        {/* Left Statistics Box */}
+        <div className="hidden lg:block">
+          <div className="sticky top-24 w-48 p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
+            <div className="text-center space-y-2">
+              <div className="text-4xl font-bold text-pink-600">
+                {matchUsersCount}
+              </div>
+              <div className="text-sm font-medium text-slate-700">
+                Match Users
+              </div>
+              <div className="text-xs text-slate-500">
+                Participating in matching
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
         <div className="max-w-2xl w-full space-y-8 text-center">
           {/* Sign Out Success Message - Show regardless of session state */}
           {showSignOutMessage && (
@@ -109,12 +143,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <div className="space-y-4">
             <h1 className="text-5xl font-bold text-slate-900">💘 UBCupids</h1>
             <p className="text-xl text-slate-600">
-              Find your Valentine&apos;s Day match at UBC
+              Find or create your Valentine&apos;s Day match at UBC
             </p>
             <p className="text-slate-500 max-w-lg mx-auto">
               Anonymous matching service for UBC students. Complete a
-              compatibility questionnaire to receive 1-3 matches for
-              Valentine&apos;s Day 2026.
+              compatibility questionnaire to match with someone for
+              Valentine&apos;s Day 2026, or help create romance as a Cupid!
             </p>
 
             <p className="text-slate-500 max-w-lg mx-auto">
@@ -178,7 +212,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
             <div className="p-4 bg-white rounded-lg border border-slate-200">
               <p className="font-semibold text-slate-900">💌 Match Reveal</p>
-              <p className="text-sm text-slate-600 mt-2">February 7th, 2026</p>
+              <p className="text-sm text-slate-600 mt-2">February 8th, 2026</p>
             </div>
           </div>
 
@@ -186,6 +220,47 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <p className="text-xs text-slate-500 pt-4">
             Only @student.ubc.ca and @alumni.ubc.ca emails accepted
           </p>
+
+          {/* Mobile Statistics - Side by Side */}
+          <div className="grid grid-cols-2 gap-4 pt-4 lg:hidden">
+            <div className="p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
+              <div className="text-center space-y-2">
+                <div className="text-3xl font-bold text-pink-600">
+                  {matchUsersCount}
+                </div>
+                <div className="text-sm font-medium text-slate-700">
+                  Match Users
+                </div>
+              </div>
+            </div>
+            <div className="p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
+              <div className="text-center space-y-2">
+                <div className="text-3xl font-bold text-purple-600">
+                  {cupidUsersCount}
+                </div>
+                <div className="text-sm font-medium text-slate-700">
+                  Cupid Users
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Statistics Box */}
+        <div className="hidden lg:block">
+          <div className="sticky top-24 w-48 p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
+            <div className="text-center space-y-2">
+              <div className="text-4xl font-bold text-purple-600">
+                {cupidUsersCount}
+              </div>
+              <div className="text-sm font-medium text-slate-700">
+                Cupid Users
+              </div>
+              <div className="text-xs text-slate-500">
+                Helping create matches
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

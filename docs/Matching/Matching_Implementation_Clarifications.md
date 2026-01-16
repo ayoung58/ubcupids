@@ -417,7 +417,7 @@ export const MATCHING_CONFIG = {
   BATCH_2_RUN_MATCHING: false, // Set to true to trigger Batch 2 matching
   TEST_MODE_REVEAL: true, // Set to true to bypass date-based reveal
   BATCH_1_REVEAL_DATE: new Date("2026-02-01T00:00:00Z"),
-  BATCH_2_REVEAL_DATE: new Date("2026-02-07T00:00:00Z"),
+  BATCH_2_REVEAL_DATE: new Date("2026-02-08T00:00:00Z"),
 };
 ```
 

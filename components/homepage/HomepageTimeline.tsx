@@ -35,19 +35,19 @@ const matchCandidateJourney: TimelineStep[] = [
     icon: <ClipboardList className="w-6 h-6" />,
     title: "Complete Questionnaire",
     description:
-      "Fill out our compatibility questionnaire to help us find your perfect match.",
+      "Fill out our compatibility questionnaire by Jan. 31 to help us find your perfect match.",
   },
   {
     icon: <Clock className="w-6 h-6" />,
     title: "Wait for Matching",
     description:
-      "Our algorithm and human cupids work together to find you the best matches.",
+      "The algorithm and human cupids work together to find you the best matches.",
   },
   {
     icon: <Heart className="w-6 h-6" />,
     title: "Get Matched",
     description:
-      "Receive your Valentine's Day matches with personalized rationale from your cupid!",
+      "Receive your Valentine's Day matches on Feb. 8 with personalized rationale from your cupid!",
   },
   {
     icon: <CheckCircle className="w-6 h-6" />,
@@ -64,7 +64,8 @@ const matchCandidateJourney: TimelineStep[] = [
   {
     icon: <Users className="w-6 h-6" />,
     title: "Meet Up!",
-    description: "Take the next step and meet your match in person. Have fun!",
+    description:
+      "Take the next step and meet your match in person, in time for Valentine's Day. Have fun!",
   },
   {
     icon: <Star className="w-6 h-6" />,
@@ -77,7 +78,8 @@ const cupidJourney: TimelineStep[] = [
   {
     icon: <UserPlus className="w-6 h-6" />,
     title: "Sign Up as Cupid",
-    description: "Create a cupid account to help match others at UBC.",
+    description:
+      "Create a cupid account by Jan. 31 to help match others at UBC. You can choose to represent a specifc person if you'd like!",
   },
   {
     icon: <Target className="w-6 h-6" />,
@@ -101,7 +103,7 @@ const cupidJourney: TimelineStep[] = [
     icon: <Send className="w-6 h-6" />,
     title: "Submit Your Picks",
     description:
-      "Send your match selections to help create Valentine's Day connections!",
+      "Send your match selections by Feb. 7 to help create Valentine's Day connections!",
   },
   {
     icon: <ThumbsUp className="w-6 h-6" />,
@@ -279,7 +281,7 @@ export function HomepageTimeline() {
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-4">
           How It Works
         </h2>
-        <p className="text-slate-600 max-w-2xl mx-auto px-4 text-sm sm:text-base">
+        <p className="text-slate-600 max-w-3xl mx-auto px-4 text-sm sm:text-base">
           Whether you&apos;re looking for love or helping others find it,
           here&apos;s what your journey looks like
         </p>

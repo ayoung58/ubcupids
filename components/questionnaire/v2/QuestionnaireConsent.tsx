@@ -76,7 +76,7 @@ export function QuestionnaireConsent({ onConsent }: QuestionnaireConsentProps) {
                   after submission
                 </li>
                 <li>
-                  Matches will be revealed on <strong>February 7, 2026</strong>
+                  Matches will be revealed on <strong>February 8, 2026</strong>
                 </li>
                 <li>
                   Use dealbreakers sparingly - they immediately exclude

@@ -6,8 +6,8 @@
  *
  * 2026 TIMELINE:
  * - Questionnaire responses due: January 31st, 2026
- * - Cupid evaluation period: Feb 1-6, 2026
- * - Match reveal: February 7th, 2026
+ * - Cupid evaluation period: Feb 1-7, 2026
+ * - Match reveal: February 8th, 2026
  */
 
 // ===========================================
@@ -24,7 +24,7 @@ export const RUN_MATCHING = true;
  * Match reveal date
  * Matches will be visible to users on this date
  */
-export const MATCH_REVEAL_DATE = new Date("2026-02-07T00:00:00-08:00");
+export const MATCH_REVEAL_DATE = new Date("2026-02-08T00:00:00-08:00");
 
 /**
  * Questionnaire deadline

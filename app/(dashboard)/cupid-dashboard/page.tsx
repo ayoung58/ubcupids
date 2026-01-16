@@ -106,7 +106,7 @@ export default async function CupidDashboardPage() {
               <p className="text-purple-600 text-sm">
                 {matchesRevealed
                   ? "Help us improve the experience by providing feedback! You'll have a chance to win 1 of 2 $20 Amazon gift cards!"
-                  : "Feedback forms open when matches are revealed on Feb 7th"}
+                  : "Feedback forms open when matches are revealed on Feb 8th"}
               </p>
             </div>
             {matchesRevealed ? (
@@ -165,7 +165,7 @@ export default async function CupidDashboardPage() {
             </div>
             <p>
               <strong>Make Magic:</strong> Your matches will be combined with
-              algorithm results and revealed on February 7, 2026
+              algorithm results and revealed on February 8, 2026
             </p>
           </div>
         </CardContent>

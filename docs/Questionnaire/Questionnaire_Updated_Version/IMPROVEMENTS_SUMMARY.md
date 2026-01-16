@@ -302,7 +302,7 @@ After: className =
 
 #### Part A: Status Detection
 
-- Updated [dashboard/page.tsx](c:\Users\yalvi\Projects\ubcupids\app(dashboard)\dashboard\page.tsx#L9-L42) `getQuestionnaireStatus()` function
+- Updated [dashboard/page.tsx](<c:\Users\yalvi\Projects\ubcupids\app(dashboard)\dashboard\page.tsx#L9-L42>) `getQuestionnaireStatus()` function
 - Now checks **V2 table first** (`questionnaireResponseV2`)
 - Falls back to V1 table for backward compatibility
 - Returns `"in-progress"` instead of `"draft"`
@@ -368,7 +368,7 @@ Completed → "View Response" (singular)
 
 #### Part C: Integration
 
-- Updated [questionnaire/page.tsx](c:\Users\yalvi\Projects\ubcupids\app(dashboard)\questionnaire\page.tsx)
+- Updated [questionnaire/page.tsx](<c:\Users\yalvi\Projects\ubcupids\app(dashboard)\questionnaire\page.tsx>)
 - Modified `getQuestionnaireV2Data()` to return `hasStarted` boolean
 - `hasStarted = true` if user has any saved responses OR if submitted
 - Replaced `QuestionnaireV2` with `QuestionnaireWithConsent` wrapper
@@ -527,7 +527,7 @@ npm run test
 12. **Success Page**
     - [ ] Verify success page displays with checkmark icon
     - [ ] Verify "What Happens Next" section
-    - [ ] Verify match reveal date (Feb 7, 2026)
+    - [ ] Verify match reveal date (Feb 8, 2026)
     - [ ] Click "Return to Dashboard"
 
 13. **Dashboard Button Text (Feature #11)**

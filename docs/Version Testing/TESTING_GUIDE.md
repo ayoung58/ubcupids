@@ -1,4 +1,5 @@
 # UBCupids End-to-End Testing Guide
+
 **Estimated Duration:** 90 minutes  
 **Date:** January 2, 2026  
 **Version:** 1.0
@@ -8,21 +9,27 @@
 ## Pre-Testing Setup (5 minutes)
 
 ### Environment Check
+
 1. **Start Development Server**
+
    ```bash
    npm run dev
    ```
+
    - Verify it starts on `http://localhost:3000`
    - Check terminal for any errors
 
 2. **Database Status**
+
    ```bash
    npx prisma studio
    ```
+
    - Open Prisma Studio to monitor database changes
    - Keep it open in a separate browser tab
 
 3. **Clear Existing Test Data** (Optional - if fresh start needed)
+
    ```bash
    npx tsx scripts/reset-questionnaire-data.ts
    ```
@@ -37,6 +44,7 @@
 ## Test Phase 1: Authentication & Registration (15 minutes)
 
 ### Test Case 1.1: New User Registration - Success Path
+
 **Time:** 5 minutes
 
 1. Navigate to `http://localhost:3000`
@@ -59,6 +67,7 @@
    - `verificationToken` exists
 
 ### Test Case 1.2: Email Verification
+
 **Time:** 3 minutes
 
 1. Check console output for verification URL (or check Resend dashboard if configured)
@@ -71,6 +80,7 @@
    - ✅ In database: `emailVerified` timestamp set
 
 ### Test Case 1.3: Login - Success Path
+
 **Time:** 2 minutes
 
 1. Navigate to `/login`
@@ -85,19 +95,23 @@
    - ✅ Tutorial modal appears (if first login)
 
 ### Test Case 1.4: Registration Edge Cases
+
 **Time:** 5 minutes
 
 **Test invalid emails:**
+
 - alice@gmail.com → ❌ "Must use UBC email"
 - alice@student.ubc.ca → ✅ Should work
 - alice@alumni.ubc.ca → ✅ Should work
 
 **Test weak passwords:**
+
 - "password" → ❌ Too simple
 - "Pass123" → ❌ Too short
 - "Pass123!@#" → ✅ Should work
 
 **Test duplicate registration:**
+
 - Try registering alice.test@ubc.ca again → ❌ "Email already registered"
 
 ---
@@ -105,6 +119,7 @@
 ## Test Phase 2: Profile Setup (10 minutes)
 
 ### Test Case 2.1: Initial Profile Completion
+
 **Time:** 5 minutes
 
 1. From dashboard, click **"Complete Profile"** or navigate to `/profile`
@@ -133,6 +148,7 @@
    - ✅ In database: all fields saved correctly
 
 ### Test Case 2.2: Profile Picture Upload
+
 **Time:** 3 minutes
 
 1. Test uploading different file types:
@@ -146,6 +162,7 @@
    - Avatar in header
 
 ### Test Case 2.3: Tutorial Completion
+
 **Time:** 2 minutes
 
 1. Click through dashboard tutorial modal
@@ -157,11 +174,13 @@
 ## Test Phase 3: Questionnaire (15 minutes)
 
 ### Test Case 3.1: Complete Questionnaire - Success Path
+
 **Time:** 10 minutes
 
 **Setup:** Create 3 test users (Alice, Bob, Charlie) and have them complete questionnaires
 
 **For Alice (already logged in):**
+
 1. Navigate to `/questionnaire`
 2. Read agreement section - check "I agree" and save
 3. **Section 1: About You** (Basic Info)
@@ -198,6 +217,7 @@
    - ✅ Responses encrypted in database
 
 ### Test Case 3.2: Questionnaire Validation
+
 **Time:** 5 minutes
 
 **Test with second user (Bob):**
@@ -214,9 +234,11 @@
 ## Test Phase 4: Admin Dashboard Operations (15 minutes)
 
 ### Test Case 4.1: Admin Access & Setup
+
 **Time:** 3 minutes
 
 1. **Make Alice an admin:**
+
    ```sql
    -- In Prisma Studio
    UPDATE User SET isAdmin = true WHERE email = 'alice.test@ubc.ca'
@@ -226,51 +248,36 @@
 3. Verify admin dashboard displays with 4 workflow steps
 
 ### Test Case 4.2: Admin Dashboard - Status Display
+
 **Time:** 2 minutes
 
 **Verify Current Status Display:**
+
 - Timeline card shows correct dates:
   - Questionnaire deadline: January 31st
   - Cupid evaluation: Feb 1-6
-  - Match reveal: February 7th
+  - Match reveal: February 8th
 - Matching status shows current state (likely "pending")
 - User counts display correctly
 
 ### Test Case 4.3: Questionnaire Editor (Admin)
+
 **Time:** 10 minutes
 
 1. Navigate to `/admin/questionnaire-config`
 
-**Test Question Editing:**
-2. Select a question to edit
-3. Change question text
-4. Modify options (for radio/checkbox questions)
-5. Toggle "hasImportance" setting
-6. Click **"Save Changes"**
-7. **Verify:** Changes appear in questionnaire preview
+**Test Question Editing:** 2. Select a question to edit 3. Change question text 4. Modify options (for radio/checkbox questions) 5. Toggle "hasImportance" setting 6. Click **"Save Changes"** 7. **Verify:** Changes appear in questionnaire preview
 
-**Test Question Reordering:**
-8. Drag a question to new position
-9. Verify order persists after page refresh
+**Test Question Reordering:** 8. Drag a question to new position 9. Verify order persists after page refresh
 
-**Test Adding New Question:**
-10. Click **"Add Question"**
-11. Fill details:
-    - Question text
-    - Type (radio, checkbox, slider, text, etc.)
-    - Section assignment
-    - Options (if applicable)
-12. Save and verify appears in questionnaire
+**Test Adding New Question:** 10. Click **"Add Question"** 11. Fill details: - Question text - Type (radio, checkbox, slider, text, etc.) - Section assignment - Options (if applicable) 12. Save and verify appears in questionnaire
 
-**Test Deleting Question:**
-13. Delete a test question
-14. Verify removal from questionnaire
+**Test Deleting Question:** 13. Delete a test question 14. Verify removal from questionnaire
 
-**Test Read-Only Question ID:**
-15. Try to edit a question ID → Should be disabled
-16. Verify IDs remain stable
+**Test Read-Only Question ID:** 15. Try to edit a question ID → Should be disabled 16. Verify IDs remain stable
 
 **Edge Cases:**
+
 - Try saving invalid configuration → Should show validation errors
 - Test all question types work correctly
 - Verify changes don't break existing user responses
@@ -280,6 +287,7 @@
 ## Test Phase 5: Multi-User Setup (10 minutes)
 
 ### Test Case 5.1: Create Test User Pool
+
 **Time:** 10 minutes
 
 **Create 6 users minimum (use incognito windows or different browsers):**
@@ -318,9 +326,10 @@
    - Make cupid (same process as Eve)
 
 **Mark users ready for matching:**
+
 ```sql
 -- In Prisma Studio
-UPDATE User SET isBeingMatched = true 
+UPDATE User SET isBeingMatched = true
 WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', 'diana.test@ubc.ca')
 ```
 
@@ -329,9 +338,11 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
 ## Test Phase 6: Matching Algorithm (10 minutes)
 
 ### Test Case 6.1: Run Algorithm Matching
+
 **Time:** 5 minutes
 
 **As Admin (Alice):**
+
 1. Navigate to `/admin`
 2. **Step 1: Run Matching**
    - Click **"Run Matching Algorithm"**
@@ -354,9 +365,11 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - Check compatibility scores
 
 ### Test Case 6.2: Algorithm Edge Cases
+
 **Time:** 5 minutes
 
 **Test scenarios:**
+
 - With 0 users → Should show error
 - With 1 user → Should show "not enough users"
 - With incompatible gender preferences → Should show 0 matches
@@ -367,9 +380,11 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
 ## Test Phase 7: Cupid Assignment & Matching (15 minutes)
 
 ### Test Case 7.1: Assign Candidates to Cupids
+
 **Time:** 3 minutes
 
 **As Admin:**
+
 1. **Step 2: Assign Cupids to Candidates**
 2. Click **"Pair Cupids with Candidates"**
 3. **Expected Results:**
@@ -379,9 +394,11 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - ✅ `potentialMatches` contains top 5 compatible matches
 
 ### Test Case 7.2: Cupid Dashboard Access
+
 **Time:** 3 minutes
 
 **As Eve (Cupid):**
+
 1. Login as eve.cupid@ubc.ca
 2. Navigate to `/cupid-dashboard`
 3. **Verify displays:**
@@ -390,9 +407,11 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - ✅ Profiles show key information (bio, interests, etc.)
 
 ### Test Case 7.3: Cupid Makes Selection
+
 **Time:** 5 minutes
 
 **As Eve (Cupid):**
+
 1. Review candidate (e.g., Alice) and her 5 potential matches
 2. Read each potential match's profile
 3. Select best match (e.g., Charlie)
@@ -404,14 +423,14 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - ✅ Cannot change selection after submission
    - ✅ Database: Selection saved in `CupidAssignment`
 
-**As Frank (Cupid):**
-7. Repeat process for his assigned candidate
-8. Make different selection
+**As Frank (Cupid):** 7. Repeat process for his assigned candidate 8. Make different selection
 
 ### Test Case 7.4: Reveal Top 5 to Cupids
+
 **Time:** 4 minutes
 
 **As Admin:**
+
 1. **Step 3: Reveal Matches to Cupids**
 2. Click **"Reveal Top 5 to Cupids"**
 3. **Expected Results:**
@@ -427,20 +446,24 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
 ## Test Phase 8: Match Reveal Process (15 minutes)
 
 ### Test Case 8.1: Before Reveal - User View
+
 **Time:** 2 minutes
 
 **As Bob (regular user):**
+
 1. Navigate to `/matches`
 2. **Expected Results:**
    - ✅ Shows "Matching in Progress" message
-   - ✅ "Matches will be revealed on February 7th"
+   - ✅ "Matches will be revealed on February 8th"
    - ✅ No matches visible yet
    - ✅ Cannot see any match details
 
 ### Test Case 8.2: Admin Reveals Matches to All Users
+
 **Time:** 3 minutes
 
 **As Admin:**
+
 1. **Step 4: Reveal Matches to Candidates**
 2. Click **"Reveal Matches to All Users"**
 3. Confirm action
@@ -451,9 +474,11 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - ✅ `MatchingBatch.revealedAt` updated
 
 ### Test Case 8.3: User Views Algorithm Matches
+
 **Time:** 3 minutes
 
 **As Alice:**
+
 1. Navigate to `/matches`
 2. **Verify Algorithm Matches Section:**
    - ✅ Purple-themed card
@@ -463,15 +488,14 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - ✅ Bio, interests, profile picture displayed
    - ✅ No accept/decline buttons (auto-accepted)
 
-**As Bob:**
-3. Check his matches page
-4. Verify sees Alice in algorithm matches
-5. Confirm mutual visibility (both see each other)
+**As Bob:** 3. Check his matches page 4. Verify sees Alice in algorithm matches 5. Confirm mutual visibility (both see each other)
 
 ### Test Case 8.4: User Views Match Requests (Cupid Received)
+
 **Time:** 4 minutes
 
 **As Alice:**
+
 1. **Verify Match Requests Section:**
    - ✅ Green-themed card
    - ✅ Shows "Match Requests" heading
@@ -486,9 +510,11 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - ✅ Message: "Contact info will be revealed if you accept"
 
 ### Test Case 8.5: Accept Match Request
+
 **Time:** 3 minutes
 
 **As Alice:**
+
 1. Click **"Accept Match"** on a pending request
 2. **Expected Results:**
    - ✅ Success toast: "Match Accepted! 💘"
@@ -502,18 +528,18 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - Alice's cupid_received match: `status: "accepted"`, `respondedAt` timestamp
    - Other user's cupid_sent match: also `status: "accepted"`
 
-**As the matched user (check their cupid_sent section):**
-4. Login as the user who sent the request
-5. Navigate to their matches page
-6. **Verify "Your Cupid's Requests" section:**
-   - ✅ Status changed from "⏳ Pending" to "✓ Accepted"
-   - ✅ Contact info now visible
-   - ✅ Green theme/background
+**As the matched user (check their cupid_sent section):** 4. Login as the user who sent the request 5. Navigate to their matches page 6. **Verify "Your Cupid's Requests" section:**
+
+- ✅ Status changed from "⏳ Pending" to "✓ Accepted"
+- ✅ Contact info now visible
+- ✅ Green theme/background
 
 ### Test Case 8.6: Decline Match Request
-**Time:** 2 minutes  
+
+**Time:** 2 minutes
 
 **As Charlie:**
+
 1. View his match requests
 2. Click **"Pass"** on a request
 3. **Expected Results:**
@@ -532,6 +558,7 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
 ## Test Phase 9: Edge Cases & Error Handling (10 minutes)
 
 ### Test Case 9.1: Authentication Edge Cases
+
 **Time:** 3 minutes
 
 1. **Session Management:**
@@ -547,6 +574,7 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - Verify can login with new password
 
 ### Test Case 9.2: Questionnaire Edge Cases
+
 **Time:** 3 minutes
 
 1. **Already Submitted:**
@@ -564,6 +592,7 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - Verify importance ratings work correctly
 
 ### Test Case 9.3: Matching Edge Cases
+
 **Time:** 2 minutes
 
 1. **No Matches Found:**
@@ -576,6 +605,7 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - Verify no duplicate matches created
 
 ### Test Case 9.4: Match Request Edge Cases
+
 **Time:** 2 minutes
 
 1. **Already Responded:**
@@ -592,6 +622,7 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
 ## Test Phase 10: UI/UX Validation (5 minutes)
 
 ### Test Case 10.1: Responsive Design
+
 **Time:** 2 minutes
 
 1. Test on different screen sizes:
@@ -606,6 +637,7 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - Admin dashboard is readable
 
 ### Test Case 10.2: Visual Consistency
+
 **Time:** 2 minutes
 
 1. Check across all pages:
@@ -616,6 +648,7 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
    - Loading states display correctly
 
 ### Test Case 10.3: Accessibility Quick Check
+
 **Time:** 1 minute
 
 1. Tab through forms - verify keyboard navigation
@@ -631,6 +664,7 @@ WHERE email IN ('alice.test@ubc.ca', 'bob.test@ubc.ca', 'charlie.test@ubc.ca', '
 If you want to reset for another test run:
 
 1. **Clear matches:**
+
    ```bash
    npm run dev
    # Navigate to /admin
@@ -638,6 +672,7 @@ If you want to reset for another test run:
    ```
 
 2. **Or reset database:**
+
    ```bash
    npx prisma migrate reset
    # This will delete all data and re-run migrations
@@ -659,6 +694,7 @@ If you want to reset for another test run:
 Use this checklist to track your progress:
 
 ### Authentication ✓
+
 - [ ] New user registration works
 - [ ] Email verification works
 - [ ] Login/logout works
@@ -667,6 +703,7 @@ Use this checklist to track your progress:
 - [ ] Duplicate email prevented
 
 ### Profile ✓
+
 - [ ] Profile creation works
 - [ ] Profile picture upload works
 - [ ] Privacy toggles work
@@ -674,6 +711,7 @@ Use this checklist to track your progress:
 - [ ] Tutorial displays and completes
 
 ### Questionnaire ✓
+
 - [ ] All question types work
 - [ ] Validation works
 - [ ] Progress saves
@@ -682,12 +720,14 @@ Use this checklist to track your progress:
 - [ ] Responses encrypted in database
 
 ### Admin Dashboard ✓
+
 - [ ] Admin access restricted properly
 - [ ] Timeline displays correctly
 - [ ] Status updates work
 - [ ] User counts accurate
 
 ### Questionnaire Editor ✓
+
 - [ ] Can edit questions
 - [ ] Can reorder questions
 - [ ] Can add/delete questions
@@ -696,6 +736,7 @@ Use this checklist to track your progress:
 - [ ] Preview works
 
 ### Matching Algorithm ✓
+
 - [ ] Algorithm runs successfully
 - [ ] Creates bidirectional matches
 - [ ] Sets correct status (accepted)
@@ -703,6 +744,7 @@ Use this checklist to track your progress:
 - [ ] Handles edge cases (0 users, etc.)
 
 ### Cupid System ✓
+
 - [ ] Candidates assigned to cupids
 - [ ] Cupid dashboard displays correctly
 - [ ] Cupids can select matches
@@ -710,6 +752,7 @@ Use this checklist to track your progress:
 - [ ] Top 5 reveal creates pending matches
 
 ### Match Reveal ✓
+
 - [ ] Before reveal shows waiting message
 - [ ] Admin can reveal matches
 - [ ] Algorithm matches display correctly
@@ -721,6 +764,7 @@ Use this checklist to track your progress:
 - [ ] Bidirectional updates work
 
 ### Edge Cases ✓
+
 - [ ] Session persistence works
 - [ ] Invalid operations prevented
 - [ ] Error messages clear
@@ -729,6 +773,7 @@ Use this checklist to track your progress:
 - [ ] Incompatible users handled
 
 ### UI/UX ✓
+
 - [ ] Responsive on all screen sizes
 - [ ] Visual consistency maintained
 - [ ] Loading states work
@@ -742,6 +787,7 @@ Use this checklist to track your progress:
 Document any issues you encounter:
 
 ### High Priority Issues
+
 - [ ] Authentication fails
 - [ ] Questionnaire submission fails
 - [ ] Matching algorithm crashes
@@ -749,12 +795,14 @@ Document any issues you encounter:
 - [ ] Accept/decline doesn't update status
 
 ### Medium Priority Issues
+
 - [ ] UI rendering issues
 - [ ] Slow performance
 - [ ] Missing validation
 - [ ] Inconsistent state
 
 ### Low Priority Issues
+
 - [ ] Minor styling issues
 - [ ] Typos
 - [ ] Missing tooltips
@@ -766,17 +814,17 @@ Document any issues you encounter:
 Use this space to document any issues, observations, or improvements:
 
 ```
-Date: 
-Tester: 
+Date:
+Tester:
 Issues Found:
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 Suggestions:
-1. 
-2. 
-3. 
+1.
+2.
+3.
 ```
 
 ---
@@ -786,6 +834,7 @@ Suggestions:
 If you have less than 90 minutes, use these abbreviated scenarios:
 
 ### 30-Minute Quick Test
+
 1. Create 2 users, complete questionnaires (10 min)
 2. Run matching algorithm as admin (5 min)
 3. View matches as both users (5 min)
@@ -793,6 +842,7 @@ If you have less than 90 minutes, use these abbreviated scenarios:
 5. Verify database changes in Prisma Studio (5 min)
 
 ### 60-Minute Standard Test
+
 1. Authentication flow (10 min)
 2. Profile + Questionnaire completion for 3 users (20 min)
 3. Admin operations: matching + cupid assignment (15 min)

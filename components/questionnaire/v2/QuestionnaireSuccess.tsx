@@ -40,7 +40,7 @@ export function QuestionnaireSuccess() {
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">•</span>
                 <span>
-                  Matches will be revealed on <strong>February 7, 2026</strong>
+                  Matches will be revealed on <strong>February 8, 2026</strong>
                 </span>
               </li>
               <li className="flex items-start gap-2">

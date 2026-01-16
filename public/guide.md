@@ -209,7 +209,7 @@ We hope you can create some romance this Valentine's Day!
 
 ### When Are Matches Revealed?
 
-Matches are revealed on **February 7, 2026**!
+Matches are revealed on **February 8, 2026**!
 This is so that matches can have time to plan their meet up (or date!) for Valentine's Day! 💘
 
 ### How Many Matches Will I Get?

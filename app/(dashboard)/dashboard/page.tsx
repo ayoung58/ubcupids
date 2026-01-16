@@ -196,7 +196,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-slate-600 mb-2">
               {matchesRevealed
                 ? "Help us improve! You'll have a chance to win 1 of 2 $20 Amazon gift cards!"
-                : "Feedback forms open when matches are revealed on Feb 7th"}
+                : "Feedback forms open when matches are revealed on Feb 8th"}
             </p>
             {matchesRevealed ? (
               <Link
@@ -229,7 +229,7 @@ export default async function DashboardPage() {
               ? "✅ Questionnaire completed"
               : "⏳ Complete your questionnaire (opens January 17)"}
           </p>
-          <p>⏳ Matches revealed February 7, 2026</p>
+          <p>⏳ Matches revealed February 8, 2026</p>
         </CardContent>
       </Card>
     </div>

@@ -31,7 +31,7 @@ const dashboardSteps: TutorialStep[] = [
     id: "matches",
     title: "View Your Matches",
     content:
-      "Your matches will be revealed here! Come back after February 1st to see who you've been matched with.",
+      "Your matches will be revealed here! Come back after February 8th to see who you've been matched with.",
     target: "[data-tutorial='matches-card']",
     position: "right",
   },

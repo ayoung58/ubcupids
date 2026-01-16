@@ -154,7 +154,7 @@ export function MatchesDisplay() {
               </h2>
               <p className="text-pink-600 max-w-md mx-auto">
                 The cupids are working hard behind the scenes to match you up!
-                Matches will be revealed on February 7th, stay tuned! 💘
+                Matches will be revealed on February 8th, stay tuned! 💘
               </p>
             </CardContent>
           </Card>
