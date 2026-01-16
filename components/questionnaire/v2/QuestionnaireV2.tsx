@@ -620,9 +620,9 @@ export function QuestionnaireV2({
     if (question.id === "q21") {
       return (
         <div className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4 items-start">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start">
             {/* Left: Which 2 love languages you like to receive (preference) */}
-            <div className="flex-[2] w-full">
+            <div className="flex-1 w-full">
               <label className="text-sm font-medium text-slate-700 mb-2 block">
                 Which 2 love languages do you like to{" "}
                 <span className="font-semibold text-green-600">receive</span>?
@@ -665,7 +665,7 @@ export function QuestionnaireV2({
 
             {/* Right: Importance Scale */}
             {!doesntMatter && (
-              <div className="flex-1 w-full">
+              <div className="flex-1 w-full md:border-l md:pl-6 pt-6 md:pt-0 border-t md:border-t-0 border-slate-200">
                 <ImportanceScale
                   value={response?.importance ?? null}
                   onChange={(value) =>
