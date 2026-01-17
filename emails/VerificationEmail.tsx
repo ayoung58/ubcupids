@@ -63,8 +63,8 @@ export default function VerificationEmail({
           </Section>
 
           <Text style={text}>
-            Go to the verification page and enter this code to complete your
-            registration.
+            Please go to the verification page and enter this code to complete
+            your registration.
           </Text>
 
           {/* Expiry notice */}

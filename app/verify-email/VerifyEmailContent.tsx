@@ -121,36 +121,37 @@ export default function VerifyEmailContent() {
               </p>
             </div>
 
-          <div className="flex flex-col gap-4">
-            <Button
-              type="submit"
-              disabled={isVerifying || code.length !== 6}
-              className="w-full"
-              size="lg"
-            >
-              {isVerifying ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                "Verify Email Address"
-              )}
-            </Button>
+            <div className="flex flex-col gap-4">
+              <Button
+                type="submit"
+                disabled={isVerifying || code.length !== 6}
+                className="w-full"
+                size="lg"
+              >
+                {isVerifying ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Verify Email Address"
+                )}
+              </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setCode("");
-                setError(null);
-                router.push("/resend-verification");
-              }}
-              className="w-full"
-            >
-              Resend Code
-            </Button>
-          </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setCode("");
+                  setError(null);
+                  router.push("/resend-verification");
+                }}
+                className="w-full"
+              >
+                Resend Code
+              </Button>
+            </div>
+          </form>
 
           <div className="text-center">
             <Button
