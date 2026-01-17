@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Verify POST] ✅ Email verified successfully: ${user.email}`);
     console.log(`  User ID: ${user.id}`);
-    console.log(`  Token: ${token.substring(0, 10)}...`);
+    console.log(`  Code: ${code}`);
     console.log(`  IP: ${ip}`);
     console.log(`  User-Agent: ${userAgent.substring(0, 80)}...`);
 
