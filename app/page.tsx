@@ -37,16 +37,21 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const now = new Date();
   const signupsClosed = now > SIGNUP_DEADLINE;
 
-  // Determine correct dashboard URL if user is logged in
+  // Determine correct dashboard URL(s) if user is logged in
   let dashboardUrl = "/dashboard";
   let userExists = false;
+  let isCupid = false;
+  let isMatchUser = false;
   if (session?.user && !showSignOutMessage) {
     const profile = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { isCupid: true },
+      select: { isCupid: true, isBeingMatched: true },
     });
     if (profile) {
       userExists = true;
+      isCupid = profile.isCupid;
+      isMatchUser = profile.isBeingMatched;
+      // Default URL if they only have one role
       dashboardUrl = profile.isCupid ? "/cupid-dashboard" : "/dashboard";
     }
   }
@@ -182,11 +187,43 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </>
             ) : userExists ? (
               // User is logged in and exists in database
-              <Link href={dashboardUrl}>
-                <Button size="lg" className="px-8">
-                  Go to Dashboard
-                </Button>
-              </Link>
+              <>
+                {isCupid && isMatchUser ? (
+                  // User has both roles - show two buttons side by side
+                  <>
+                    <Link href="/dashboard">
+                      <Button
+                        size="lg"
+                        className="px-6 bg-black hover:bg-gray-800 text-white"
+                      >
+                        Go to Match Dashboard
+                      </Button>
+                    </Link>
+                    <Link href="/cupid-dashboard">
+                      <Button
+                        size="lg"
+                        className="px-6 bg-white hover:bg-gray-50 text-black border-2 border-gray-400"
+                      >
+                        Go to Cupid Dashboard
+                      </Button>
+                    </Link>
+                  </>
+                ) : isCupid ? (
+                  // User is only a cupid
+                  <Link href="/cupid-dashboard">
+                    <Button size="lg" className="px-8">
+                      Go to Cupid Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  // User is only a match user
+                  <Link href="/dashboard">
+                    <Button size="lg" className="px-8">
+                      Go to Match Dashboard
+                    </Button>
+                  </Link>
+                )}
+              </>
             ) : (
               // User is logged out (normal state)
               <>
