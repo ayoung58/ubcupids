@@ -37,8 +37,9 @@ export default function VerificationPendingPage() {
             </p>
 
             <p className="text-sm text-slate-500">
-              Didn&apos;t receive the email? Check your spam folder or request a
-              new one.
+              If you didn&apos;t receive the email, you can try resending it, or
+              emailing support@ubcupids.org with the subject line &quot;UBCupids
+              Verification&quot; for manual verification.
             </p>
 
             <div className="pt-4 space-y-2">
