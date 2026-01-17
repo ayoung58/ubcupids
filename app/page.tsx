@@ -154,8 +154,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               Find your Valentine&apos;s Day match at UBC
             </p>
             <p className="text-slate-500 max-w-lg mx-auto">
-              Anonymous matching service for UBC students. Complete a
-              compatibility questionnaire to match with someone for
+              Anonymous matching service for UBC students. <br />
+              Complete a compatibility questionnaire to match with someone for
               Valentine&apos;s Day 2026, or help create romance as a Cupid!
             </p>
 
