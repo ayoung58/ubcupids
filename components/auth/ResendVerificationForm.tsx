@@ -39,6 +39,11 @@ export function ResendVerificationForm() {
       // Success
       setSuccess(true);
       setRemaining(data.remaining);
+
+      // Redirect to verification page after 3 seconds
+      setTimeout(() => {
+        window.location.href = "/verify-email";
+      }, 3000);
     } catch (err) {
       console.error("Resend verification error:", err);
       setError("An unexpected error occurred. Please try again.");
@@ -60,6 +65,9 @@ export function ResendVerificationForm() {
                   Verification code sent! Check your inbox and spam folder for
                   your 6-digit code. In order to receive emails more easily,
                   please whitelist support@ubcupids.org
+                </p>
+                <p className="text-sm mt-2">
+                  You will be redirected to enter your code in a few seconds...
                 </p>
                 <p className="text-sm mt-2">
                   If you haven&apos;t received a verification code, please email{" "}

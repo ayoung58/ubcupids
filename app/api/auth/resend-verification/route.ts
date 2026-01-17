@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
 import { sendVerificationEmail } from "@/lib/email";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -114,9 +113,9 @@ export async function POST(request: NextRequest) {
     console.log(`[Resend] Deleted old tokens for: ${normalizedEmail}`);
 
     // ============================================
-    // 6. GENERATE NEW VERIFICATION TOKEN
+    // 6. GENERATE NEW VERIFICATION CODE
     // ============================================
-    const token = crypto.randomBytes(32).toString("hex");
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     const expires = new Date();
     expires.setHours(expires.getHours() + 24);
@@ -124,20 +123,20 @@ export async function POST(request: NextRequest) {
     await prisma.verificationToken.create({
       data: {
         identifier: normalizedEmail,
-        token: token,
+        token: code,
         expires: expires,
       },
     });
 
     console.log(
-      `[Resend] New verification token created for: ${normalizedEmail}`
+      `[Resend] New verification code created for: ${normalizedEmail}`
     );
 
     // ============================================
     // 7. SEND VERIFICATION EMAIL
     // ============================================
     try {
-      await sendVerificationEmail(user.email, user.firstName, token);
+      await sendVerificationEmail(user.email, user.firstName, code);
       console.log(`[Resend] Verification email sent to: ${normalizedEmail}`);
     } catch (emailError) {
       console.error("[Resend] Failed to send verification email:", emailError);
