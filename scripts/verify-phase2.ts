@@ -60,7 +60,7 @@ function verifyPhase2() {
     IMPORTANCE_WEIGHTS.VERY_IMPORTANT === 2.0 &&
     SECTION_WEIGHTS.SECTION_1 === 0.65 &&
     AGE_LIMITS.MIN === 18 &&
-    AGE_LIMITS.MAX === 40
+    AGE_LIMITS.MAX === 100
   ) {
     console.log("  ✓ Importance weights correct");
     console.log("  ✓ Section weights correct");
