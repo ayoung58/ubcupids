@@ -14,8 +14,11 @@ export default function VerifyEmailContent() {
 
   const [code, setCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [email, setEmail] = useState("");
+  const [showEmailInput, setShowEmailInput] = useState(false);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,18 +141,86 @@ export default function VerifyEmailContent() {
                 )}
               </Button>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setCode("");
-                  setError(null);
-                  router.push("/resend-verification");
-                }}
-                className="w-full"
-              >
-                Resend Code
-              </Button>
+              {!showEmailInput ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEmailInput(true)}
+                  className="w-full"
+                  disabled={isResending}
+                >
+                  Resend Code
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isResending}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={async () => {
+                        if (!email) {
+                          setError("Please enter your email");
+                          return;
+                        }
+                        setIsResending(true);
+                        setError(null);
+                        try {
+                          const response = await fetch(
+                            "/api/auth/resend-verification",
+                            {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ email }),
+                            }
+                          );
+                          const data = await response.json();
+                          if (!response.ok) {
+                            setError(data.error || "Failed to resend code");
+                          } else {
+                            setCode("");
+                            setShowEmailInput(false);
+                            setEmail("");
+                          }
+                        } catch (err) {
+                          setError("Failed to resend code");
+                        } finally {
+                          setIsResending(false);
+                        }
+                      }}
+                      className="flex-1"
+                      disabled={isResending}
+                    >
+                      {isResending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        "Send"
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setShowEmailInput(false);
+                        setEmail("");
+                        setError(null);
+                      }}
+                      disabled={isResending}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </form>
 
