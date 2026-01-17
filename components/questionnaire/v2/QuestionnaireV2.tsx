@@ -162,7 +162,7 @@ export function QuestionnaireV2({
       id: "autosave",
       title: "Auto-Save Feature",
       content:
-        "Your progress is automatically saved as you answer questions. You can leave and come back anytime without losing your work!",
+        "Your progress is automatically saved as you answer questions. You can leave and come back anytime without losing your work! You can also manually save using the Save button.",
       target: "[data-tutorial='save-indicator']",
       position: "bottom",
     },

@@ -36,7 +36,7 @@ export default function QuestionnaireSuccessPage() {
           <div className="bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg p-6 space-y-3">
             <Heart className="h-8 w-8 mx-auto text-pink-500" />
             <p className="text-slate-700 font-medium">
-              Your responses have been encrypted and securely saved
+              Your responses have been securely saved!
             </p>
             <p className="text-sm text-slate-600">
               Our algorithm and cupids are now working to find your perfect
