@@ -21,16 +21,16 @@ import { RESEND_API_KEY, RESEND_FROM_EMAIL, NEXT_PUBLIC_APP_URL } from "./env";
 const resend = new Resend(RESEND_API_KEY);
 
 /**
- * Sends email verification link to new user
+ * Sends email verification code to new user
  *
  * @param email - User's email address
  * @param firstName - User's first name (for personalization)
- * @param token - Verification token (32-byte hex string)
+ * @param code - 6-digit verification code
  *
  * Email contains:
  * - Personalized greeting
- * - Verification link: {APP_URL}/verify-email?token={token}
- * - Link expiry notice (24 hours)
+ * - 6-digit verification code
+ * - Code expiry notice (24 hours)
  * - Support contact info
  *
  * Throws error if email fails to send (caller should handle)
@@ -38,11 +38,8 @@ const resend = new Resend(RESEND_API_KEY);
 export async function sendVerificationEmail(
   email: string,
   firstName: string | null,
-  token: string
+  code: string
 ): Promise<void> {
-  // Construct verification URL
-  const verificationUrl = `${NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
-
   try {
     // Send email using React Email component
     const { data, error } = await resend.emails.send({
@@ -51,7 +48,7 @@ export async function sendVerificationEmail(
       subject: "Verify your UBCupids account",
       react: VerificationEmail({
         firstName,
-        verificationUrl,
+        verificationCode: code,
       }),
     });
 
@@ -77,7 +74,7 @@ export async function sendVerificationEmail(
  *
  * Use cases:
  * - Email went to spam
- * - Token expired (24 hours)
+ * - Code expired (24 hours)
  * - User accidentally deleted email
  *
  * Security: Rate limit this endpoint to prevent abuse
@@ -109,24 +106,23 @@ export async function resendVerificationEmail(email: string): Promise<void> {
     where: { identifier: email },
   });
 
-  // Generate new token
-  const crypto = await import("crypto");
-  const token = crypto.randomBytes(32).toString("hex");
+  // Generate new 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
 
   const expires = new Date();
   expires.setHours(expires.getHours() + 24);
 
-  // Create new verification token
+  // Create new verification code (stored in token field)
   await prisma.verificationToken.create({
     data: {
       identifier: email,
-      token: token,
+      token: code,
       expires: expires,
     },
   });
 
-  // Send email
-  await sendVerificationEmail(user.email, user.firstName, token);
+  // Send email with code
+  await sendVerificationEmail(user.email, user.firstName, code);
 }
 
 /**

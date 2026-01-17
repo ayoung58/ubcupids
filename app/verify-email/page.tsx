@@ -4,38 +4,21 @@ import VerifyEmailContent from "./VerifyEmailContent";
 /**
  * Email Verification Page
  *
- * SECURITY FIX: Prevents email scanners from auto-verifying accounts
+ * SECURITY FIX: Uses code-based verification instead of link-based
  *
- * Problem:
+ * Why code-based?
  * - Email security scanners (Microsoft Safe Links, Google, etc.) automatically
- *   click links in emails to check for malware/phishing
- * - GET-based verification links were being auto-clicked
- * - This allowed account takeover: register with victim's email, scanner
- *   verifies it, attacker logs in
- *
- * Solution:
- * - User clicks email link → lands on THIS page
- * - Page shows "Verify Email" button
- * - User must click button → sends POST request to verify
- * - Scanners won't click buttons, only follow links
+ *   click links in emails to check for malware
+ * - Link-based verification was being auto-triggered by these scanners
+ * - Code-based verification requires manual input, preventing auto-verification
  *
  * Flow:
- * 1. User clicks link in email → GET /verify-email?token=xxx
- * 2. This page loads, shows button
- * 3. User clicks "Verify Email" button
- * 4. POST /api/auth/verify-email with token
- * 5. Email verified, redirect to login
+ * 1. User registers → receives email with 6-digit code
+ * 2. User visits this page
+ * 3. User enters code
+ * 4. Code is verified via POST to /api/auth/verify-email
+ * 5. User is verified and redirected to login
  */
 export default function VerifyEmailPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-          <div className="text-slate-600">Loading...</div>
-        </div>
-      }
-    >
-      <VerifyEmailContent />
-    </Suspense>
-  );
+  return <VerifyEmailContent />;
 }

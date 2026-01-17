@@ -228,7 +228,7 @@ export function RegisterForm({
               <p className="mt-1">
                 {isLinking
                   ? "Redirecting to your profile..."
-                  : "Check your email for a verification link. Redirecting..."}
+                  : "Check your email for a verification code. Redirecting..."}
               </p>
             </div>
           </div>
