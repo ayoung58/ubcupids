@@ -29,7 +29,7 @@ const profileSteps: TutorialStep[] = [
   },
   {
     id: "additional-contact",
-    title: "Additional Point of Contact",
+    title: "Additional Contact information",
     content:
       "Add an email for your matches to reach you at. The default is your ubc email.",
     target: "[data-tutorial='point-of-contact']",

@@ -979,10 +979,10 @@ export function ProfileForm() {
               </div>
             </div>
 
-            {/* Point of Contact */}
+            {/* Contact information */}
             <div className="space-y-2" data-tutorial="point-of-contact">
               <Label htmlFor="pointOfContact">
-                Point of Contact (Optional)
+                Contact information (Optional)
               </Label>
               <Input
                 id="pointOfContact"

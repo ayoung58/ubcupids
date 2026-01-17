@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check user cap before allowing linking (excluding test users)
+    const isCupid = accountType === "cupid";
     const currentUserCount = await prisma.user.count({
       where: {
         isTestUser: false,
@@ -98,8 +99,6 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
-
-    const isCupid = accountType === "cupid";
 
     // Validate required fields for Match accounts
     if (!isCupid) {

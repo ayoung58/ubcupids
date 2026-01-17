@@ -64,7 +64,7 @@ export default function PrivacyAndTermsPage() {
               </li>
               <li>
                 <a href="#principles" className="text-pink-600 hover:underline">
-                  2. Our Data Principles
+                  2. Data Principles
                 </a>
               </li>
               <li>
@@ -174,7 +174,7 @@ export default function PrivacyAndTermsPage() {
                   <li>
                     You have the right to access, modify, and delete your data
                   </li>
-                  <li>We are contactable and responsive to privacy concerns</li>
+                  <li>You can contact us about any concerns</li>
                 </ul>
               </div>
 
@@ -185,8 +185,7 @@ export default function PrivacyAndTermsPage() {
                 <ul className="list-disc pl-6 space-y-2 text-slate-700">
                   <li>Your participation is completely voluntary</li>
                   <li>
-                    You can delete your account at any time before matching
-                    begins
+                    You can delete your account at any time (though it would be appreciated by others if you do so before matching begins)
                   </li>
                   <li>
                     After matches are released, you choose whether to accept or
