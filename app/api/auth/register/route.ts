@@ -359,31 +359,31 @@ export async function POST(request: NextRequest) {
     console.log(`[Register] User created: ${user.email} (ID: ${user.id})`);
 
     // ============================================
-    // 10. GENERATE VERIFICATION TOKEN
+    // 10. GENERATE VERIFICATION CODE
     // ============================================
-    // Generate cryptographically secure random token (32 bytes = 64 hex chars)
-    const token = crypto.randomBytes(32).toString("hex");
+    // Generate 6-digit numeric code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Token expires in 24 hours
+    // Code expires in 24 hours
     const expires = new Date();
     expires.setHours(expires.getHours() + 24);
 
-    // Store token in database
+    // Store code in database (using token field for backwards compatibility)
     await prisma.verificationToken.create({
       data: {
         identifier: user.email, // Email address
-        token: token,
+        token: code,
         expires: expires,
       },
     });
 
-    console.log(`[Register] Verification token created for: ${user.email}`);
+    console.log(`[Register] Verification code created for: ${user.email}`);
 
     // ============================================
     // 11. SEND VERIFICATION EMAIL
     // ============================================
     try {
-      await sendVerificationEmail(user.email, user.firstName || "Cupid", token);
+      await sendVerificationEmail(user.email, user.firstName || "Cupid", code);
       console.log(`[Register] Verification email sent to: ${user.email}`);
     } catch (emailError) {
       console.error(

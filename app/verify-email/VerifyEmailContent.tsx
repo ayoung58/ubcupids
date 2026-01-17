@@ -1,24 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Loader2, Mail } from "lucide-react";
 
 export default function VerifyEmailContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
+  const [code, setCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleVerify = async () => {
-    if (!token) {
-      setError("Invalid verification link");
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!code || code.length !== 6) {
+      setError("Please enter a valid 6-digit code");
       return;
     }
 
@@ -29,7 +32,7 @@ export default function VerifyEmailContent() {
       const response = await fetch("/api/auth/verify-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ code: code.trim() }),
       });
 
       const data = await response.json();
@@ -52,33 +55,6 @@ export default function VerifyEmailContent() {
     }
   };
 
-  // Error state - invalid link
-  if (!token) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <AlertCircle className="w-6 h-6 text-red-600" />
-            </div>
-            <CardTitle>Invalid Verification Link</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-slate-600">
-              This verification link is invalid or incomplete.
-            </p>
-            <Button
-              onClick={() => router.push("/resend-verification")}
-              className="w-full"
-            >
-              Request New Verification Link
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Success state
   if (success) {
     return (
@@ -100,7 +76,7 @@ export default function VerifyEmailContent() {
     );
   }
 
-  // Main verification page - requires button click
+  // Main verification page - requires code input
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
       <Card className="w-full max-w-md">
@@ -119,28 +95,61 @@ export default function VerifyEmailContent() {
           )}
 
           <p className="text-center text-slate-600">
-            Click the button below to verify your email address and activate
-            your UBCupids account.
+            Enter the 6-digit verification code sent to your email address.
           </p>
 
-          <Button
-            onClick={handleVerify}
-            disabled={isVerifying}
-            className="w-full"
-            size="lg"
-          >
-            {isVerifying ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Verifying...
-              </>
-            ) : (
-              "Verify Email Address"
-            )}
-          </Button>
+          <form onSubmit={handleVerify} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="code">Verification Code</Label>
+              <Input
+                id="code"
+                type="text"
+                placeholder="123456"
+                value={code}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                  setCode(value);
+                }}
+                maxLength={6}
+                required
+                disabled={isVerifying}
+                className="text-center text-2xl tracking-widest font-mono"
+                autoComplete="off"
+              />
+              <p className="text-xs text-slate-500 text-center">
+                Check your email inbox (and spam folder)
+              </p>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isVerifying || code.length !== 6}
+              className="w-full"
+              size="lg"
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                "Verify Email Address"
+              )}
+            </Button>
+          </form>
+
+          <div className="text-center">
+            <Button
+              variant="link"
+              onClick={() => router.push("/resend-verification")}
+              className="text-sm"
+            >
+              Didn&apos;t receive a code? Resend
+            </Button>
+          </div>
 
           <p className="text-xs text-center text-slate-500">
-            This verification link will expire in 24 hours
+            Verification codes expire in 24 hours
           </p>
         </CardContent>
       </Card>

@@ -32,19 +32,24 @@ export default function VerificationPendingPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-center">
             <p className="text-slate-600">
-              We&apos;ve sent a verification link to your UBC email address.
-              Click the link in the email to activate your account.
+              We&apos;ve sent a 6-digit verification code to your UBC email
+              address. Enter this code on the verification page to activate your
+              account.
             </p>
 
             <p className="text-sm text-slate-500">
               Didn&apos;t receive the email? Check your spam folder or request a
-              new one.
+              new code.
             </p>
 
             <div className="pt-4 space-y-2">
+              <Link href="/verify-email">
+                <Button className="w-full">Enter Verification Code</Button>
+              </Link>
+
               <Link href="/resend-verification">
                 <Button variant="outline" className="w-full">
-                  Resend Verification Email
+                  Resend Verification Code
                 </Button>
               </Link>
 

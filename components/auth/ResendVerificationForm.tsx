@@ -57,13 +57,12 @@ export function ResendVerificationForm() {
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 <p>
-                  Verification email sent! Check your inbox and spam folder. In
-                  order to receive emails more easily, please whitelist
-                  support@ubcupids.org
+                  Verification code sent! Check your inbox and spam folder for
+                  your 6-digit code. In order to receive emails more easily,
+                  please whitelist support@ubcupids.org
                 </p>
                 <p className="text-sm mt-2">
-                  If you haven&apos;t received a verification email, please
-                  email{" "}
+                  If you haven&apos;t received a verification code, please email{" "}
                   <a
                     href="mailto:support@ubcupids.org?subject=UBCupids%20Verification"
                     className="font-medium underline hover:text-green-900"
@@ -113,7 +112,7 @@ export function ResendVerificationForm() {
                 Sending...
               </>
             ) : (
-              "Send Verification Email"
+              "Send Verification Code"
             )}
           </Button>
 

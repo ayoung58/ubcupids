@@ -31,12 +31,12 @@ import * as React from "react";
 
 interface VerificationEmailProps {
   firstName: string | null;
-  verificationUrl: string;
+  verificationCode: string;
 }
 
 export default function VerificationEmail({
   firstName = "there", // Default fallback
-  verificationUrl,
+  verificationCode,
 }: VerificationEmailProps) {
   return (
     <Html>
@@ -53,28 +53,23 @@ export default function VerificationEmail({
 
           {/* Main message */}
           <Text style={text}>
-            Welcome to UBCupids! Click the button below to verify your email
-            address and activate your account.
+            Welcome to UBCupids! Enter the verification code below on the
+            verification page to activate your account.
           </Text>
 
-          {/* Call-to-action button */}
-          <Section style={buttonContainer}>
-            <Button style={button} href={verificationUrl}>
-              Verify Email Address
-            </Button>
+          {/* Verification Code */}
+          <Section style={codeContainer}>
+            <Text style={codeText}>{verificationCode}</Text>
           </Section>
 
-          {/* Fallback link (if button doesn't render) */}
-          {/* <Text style={text}>
-            Or copy and paste this link into your browser:
+          <Text style={text}>
+            Go to the verification page and enter this code to complete your
+            registration.
           </Text>
-          <Link href={verificationUrl} style={link}>
-            {verificationUrl}
-          </Link> */}
 
           {/* Expiry notice */}
           <Text style={text}>
-            This link will expire in 24 hours. If you didn&apos;t create a
+            This code will expire in 24 hours. If you didn&apos;t create a
             UBCupids account, you can safely ignore this email.
           </Text>
 
@@ -122,21 +117,21 @@ const text = {
   margin: "16px 24px",
 };
 
-const buttonContainer = {
+const codeContainer = {
   textAlign: "center" as const,
   margin: "32px 0",
+  padding: "24px",
+  backgroundColor: "#f6f9fc",
+  borderRadius: "8px",
 };
 
-const button = {
-  backgroundColor: "#e63946", // UBCupids brand red (Valentine's theme)
-  borderRadius: "8px",
-  color: "#fff",
-  fontSize: "16px",
-  fontWeight: "bold",
-  textDecoration: "none",
-  textAlign: "center" as const,
-  display: "inline-block",
-  padding: "14px 32px",
+const codeText = {
+  fontSize: "36px",
+  fontWeight: "bold" as const,
+  color: "#e63946",
+  letterSpacing: "8px",
+  fontFamily: "monospace",
+  margin: "0",
 };
 
 const link = {
