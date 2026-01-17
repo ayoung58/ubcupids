@@ -56,7 +56,23 @@ export function ResendVerificationForm() {
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                <p>Verification email sent! Check your inbox and spam folder. In order to receive emails more easily, please whitelist support@ubcupids.org</p>
+                <p>
+                  Verification email sent! Check your inbox and spam folder. In
+                  order to receive emails more easily, please whitelist
+                  support@ubcupids.org
+                </p>
+                <p className="text-sm mt-2">
+                  If you haven&apos;t received a verification email, please
+                  email{" "}
+                  <a
+                    href="mailto:support@ubcupids.org?subject=UBCupids%20Verification"
+                    className="font-medium underline hover:text-green-900"
+                  >
+                    support@ubcupids.org
+                  </a>{" "}
+                  using your ubc email with the subject &quot;UBCupids
+                  Verification&quot; and you can be manually verified.
+                </p>
                 {remaining !== null && (
                   <p className="text-xs mt-1">
                     {remaining} attempt{remaining !== 1 ? "s" : ""} remaining in
