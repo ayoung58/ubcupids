@@ -42,6 +42,11 @@ next-env.d.ts
 
 /app/generated/prisma
 
-database-backup-restoration.md 
-claude.md 
-backups
+# Database backups (contains sensitive data)
+/backups/
+*.sql
+*.dump
+
+# Claude file
+claude.md
+database-backup-restoration.md
