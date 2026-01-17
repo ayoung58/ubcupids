@@ -185,7 +185,8 @@ export default function PrivacyAndTermsPage() {
                 <ul className="list-disc pl-6 space-y-2 text-slate-700">
                   <li>Your participation is completely voluntary</li>
                   <li>
-                    You can delete your account at any time (though it would be appreciated by others if you do so before matching begins)
+                    You can delete your account at any time (though it would be
+                    appreciated by others if you do so before matching begins)
                   </li>
                   <li>
                     After matches are released, you choose whether to accept or
@@ -245,7 +246,7 @@ export default function PrivacyAndTermsPage() {
 
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  3.3 Questionnaire Responses (Encrypted)
+                  3.3 Questionnaire Responses
                 </h3>
                 <ul className="list-disc pl-6 space-y-2 text-slate-700">
                   <li>
@@ -265,11 +266,11 @@ export default function PrivacyAndTermsPage() {
                     interests, hobbies, and personality
                   </li>
                 </ul>
-                <p className="text-sm text-slate-600 italic mt-2">
+                {/* <p className="text-sm text-slate-600 italic mt-2">
                   ⚠️ All questionnaire data is encrypted at rest using
                   AES-256-GCM encryption. Only the matching algorithm and
                   assigned cupids can access this data.
-                </p>
+                </p> */}
               </div>
 
               <div>
@@ -334,7 +335,7 @@ export default function PrivacyAndTermsPage() {
                     Calculate compatibility scores with other participants
                   </li>
                   <li>Apply hard filters (gender preferences, age ranges)</li>
-                  <li>Generate 1-3 potential matches per match candidate</li>
+                  <li>Generate potential matches per match candidate</li>
                   <li>
                     Provide match rationale based on shared values and interests
                   </li>
@@ -358,8 +359,8 @@ export default function PrivacyAndTermsPage() {
                   <li>Provide personalized rationale for each match</li>
                 </ul>
                 <p className="text-sm text-slate-600 italic mt-2">
-                  ⚠️ Cupids sign confidentiality agreements and are bound to
-                  keep all information private.
+                  ⚠️ Cupids agree to keep all information private, as per terms
+                  and conditions.
                 </p>
               </div>
 
@@ -406,13 +407,11 @@ export default function PrivacyAndTermsPage() {
                   4.5 What We DON&apos;T Do With Your Data
                 </h3>
                 <ul className="list-disc pl-6 space-y-2 text-slate-700">
-                  <li>❌ Sell or rent your personal information</li>
-                  <li>❌ Share your data with advertisers or marketers</li>
-                  <li>❌ Use social media scraping or external data sources</li>
-                  <li>❌ Train AI models on your questionnaire responses</li>
-                  <li>
-                    ❌ Share individually identifiable information publicly
-                  </li>
+                  <li>Sell or rent your personal information</li>
+                  <li>Share your data with advertisers or marketers</li>
+                  <li>Use social media scraping or external data sources</li>
+                  <li>Train AI models on your questionnaire responses</li>
+                  <li>Share individually identifiable information publicly</li>
                 </ul>
               </div>
             </div>
@@ -427,27 +426,25 @@ export default function PrivacyAndTermsPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  5.1 Encryption Standards
+                  5.1 Security Standards
                 </h3>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
                   <p className="font-semibold text-blue-900">
-                    Industry-Standard Encryption
+                    Industry-Standard Security
                   </p>
                   <ul className="list-disc pl-6 space-y-1 text-slate-700 text-sm">
                     <li>
-                      <strong>AES-256-GCM:</strong> All questionnaire responses
-                      and importance ratings are encrypted using Advanced
-                      Encryption Standard with 256-bit keys and Galois/Counter
-                      Mode for authenticated encryption
-                    </li>
-                    <li>
                       <strong>Bcrypt Hashing:</strong> Passwords are hashed with
-                      bcrypt (cost factor 10) before storage
+                      bcrypt (cost factor 10) before storage - your passwords
+                      are never stored in plain text
                     </li>
                     <li>
-                      <strong>Unique Encryption Keys:</strong> Each encrypted
-                      field uses a unique initialization vector (IV) to prevent
-                      pattern analysis
+                      <strong>Database Access Controls:</strong> Strict access
+                      controls limit who can view user data
+                    </li>
+                    <li>
+                      <strong>Secure Infrastructure:</strong> All data
+                      transmission uses HTTPS encryption (TLS/SSL)
                     </li>
                   </ul>
                 </div>
@@ -455,29 +452,7 @@ export default function PrivacyAndTermsPage() {
 
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  5.2 What This Means For You
-                </h3>
-                <ul className="list-disc pl-6 space-y-2 text-slate-700">
-                  <li>
-                    Even if someone gains unauthorized access to the database,
-                    they cannot read your encrypted questionnaire responses
-                    without the encryption key
-                  </li>
-                  <li>
-                    Database administrators cannot view your questionnaire
-                    answers
-                  </li>
-                  <li>Your passwords are never stored in plain text</li>
-                  <li>
-                    Each piece of encrypted data is cryptographically verified
-                    to prevent tampering
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  5.3 Infrastructure Security
+                  5.2 Infrastructure Security
                 </h3>
                 <ul className="list-disc pl-6 space-y-2 text-slate-700">
                   <li>
@@ -501,7 +476,7 @@ export default function PrivacyAndTermsPage() {
 
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  5.4 Data Retention
+                  5.3 Data Retention
                 </h3>
                 <ul className="list-disc pl-6 space-y-2 text-slate-700">
                   <li>
@@ -526,24 +501,27 @@ export default function PrivacyAndTermsPage() {
 
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  5.5 Security Incident Response
+                  5.4 Security Incident Response
                 </h3>
                 <p className="text-slate-700">
-                  In the unlikely event of a data breach:
+                  In the unlikely event of a security incident:
                 </p>
                 <ul className="list-disc pl-6 space-y-2 text-slate-700">
-                  <li>We will notify affected users within 72 hours</li>
                   <li>
-                    We will provide clear information about what data was
-                    affected
+                    We will notify affected users as soon as we become aware of
+                    the incident
+                  </li>
+                  <li>
+                    We will provide clear information about what data may have
+                    been affected
                   </li>
                   <li>
                     We will take immediate steps to secure systems and prevent
-                    further breaches
+                    further issues
                   </li>
                   <li>
-                    We will work with security experts to investigate and
-                    resolve the issue
+                    Users should report any suspicious activity to
+                    support@ubcupids.org immediately
                   </li>
                 </ul>
               </div>
@@ -652,6 +630,7 @@ export default function PrivacyAndTermsPage() {
                   <li>You must be at least 18 years old</li>
                   <li>
                     You must provide accurate information during registration
+                    (especially age)
                   </li>
                 </ul>
               </div>
@@ -870,7 +849,7 @@ export default function PrivacyAndTermsPage() {
                   </a>
                 </p>
                 <p className="text-slate-700">
-                  <strong>Response Time:</strong> We aim to respond within 48
+                  <strong>Response Time:</strong> We aim to respond within 24
                   hours
                 </p>
               </div>
@@ -888,7 +867,7 @@ export default function PrivacyAndTermsPage() {
               understood this Privacy Notice and Terms of Service.
             </p>
             <p className="text-sm text-slate-500 text-center mt-2">
-              Last Updated: January 4, 2026
+              Last Updated: January 16, 2026
             </p>
           </div>
         </div>
