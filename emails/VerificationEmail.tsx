@@ -65,12 +65,12 @@ export default function VerificationEmail({
           </Section>
 
           {/* Fallback link (if button doesn't render) */}
-          <Text style={text}>
+          {/* <Text style={text}>
             Or copy and paste this link into your browser:
           </Text>
           <Link href={verificationUrl} style={link}>
             {verificationUrl}
-          </Link>
+          </Link> */}
 
           {/* Expiry notice */}
           <Text style={text}>
@@ -80,7 +80,8 @@ export default function VerificationEmail({
 
           {/* Footer */}
           <Text style={footer}>
-            Need help? Reply to this email or contact us at support@ubcupids.org
+            If you&apos;re having trouble? Reply to this email or contact us at
+            support@ubcupids.org
           </Text>
         </Container>
       </Body>

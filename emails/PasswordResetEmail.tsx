@@ -41,13 +41,13 @@ export default function PasswordResetEmail({
               Reset Password
             </Button>
           </Section>
-
+          {/* 
           <Text style={text}>
             Or copy and paste this link into your browser:
           </Text>
           <Link href={resetUrl} style={link}>
             {resetUrl}
-          </Link>
+          </Link> */}
 
           <Text style={text}>
             This link will expire in 1 hour. If you didn&apos;t request a
@@ -55,8 +55,7 @@ export default function PasswordResetEmail({
           </Text>
 
           <Text style={footer}>
-            If you&apos;re having trouble, reply to this email or contact
-            support@ubcupids.org
+            If you&apos;re having trouble, please contact support@ubcupids.org
           </Text>
         </Container>
       </Body>
