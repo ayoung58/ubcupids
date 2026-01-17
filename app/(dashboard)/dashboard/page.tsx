@@ -46,13 +46,13 @@ async function getQuestionnaireStatus(userId: string) {
 
 function isQuestionnaireOpen(): boolean {
   const now = new Date();
-  const openingDate = new Date("2026-01-17T00:00:00.000Z"); // January 17, 2026, 00:00 UTC
+  const openingDate = new Date("2026-01-16T00:00:00.000Z"); // January 16, 2026, 00:00 UTC
   return now >= openingDate;
 }
 
 async function isQuestionnaireOpenForUser(userId: string): Promise<boolean> {
   const now = new Date();
-  const openingDate = new Date("2026-01-17T00:00:00.000Z"); // January 17, 2026, 00:00 UTC
+  const openingDate = new Date("2026-01-16T00:00:00.000Z"); // January 16, 2026, 00:00 UTC
 
   // Check if user is a test user
   const user = await prisma.user.findUnique({
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
           <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
             {!questionnaireOpen && (
               <p className="text-sm text-amber-600 mb-2 font-medium">
-                Questionnaires opening on January 17
+                Questionnaires opening on January 16
               </p>
             )}
             <p className="text-sm text-slate-600 mb-2">
@@ -227,7 +227,7 @@ export default async function DashboardPage() {
           <p>
             {questionnaireStatus === "completed"
               ? "✅ Questionnaire completed"
-              : "⏳ Complete your questionnaire (opens January 17)"}
+              : "⏳ Complete your questionnaire (opens January 16)"}
           </p>
           <p>⏳ Matches revealed February 8, 2026</p>
         </CardContent>

@@ -133,9 +133,67 @@ export async function POST(request: NextRequest) {
       }
       // Save preferred candidate email if provided
       if (preferredCandidateEmail && preferredCandidateEmail.trim()) {
-        updateData.preferredCandidateEmail = preferredCandidateEmail
+        const normalizedPreferredEmail = preferredCandidateEmail
           .trim()
           .toLowerCase();
+
+        // Prevent users from entering their own email
+        if (normalizedPreferredEmail === session.user.email?.toLowerCase()) {
+          return NextResponse.json(
+            {
+              error: "You cannot set yourself as your preferred candidate",
+              hint: "Please enter the email of someone you'd like to match.",
+            },
+            { status: 400 }
+          );
+        }
+
+        // Check if the preferred candidate exists and is a match user
+        const preferredCandidate = await prisma.user.findUnique({
+          where: { email: normalizedPreferredEmail },
+          select: { id: true, isBeingMatched: true },
+        });
+
+        if (!preferredCandidate) {
+          return NextResponse.json(
+            {
+              error: "Preferred candidate email not found",
+              hint: "This email is not registered in UBCupids. Please enter a valid match user's email or leave the field empty.",
+            },
+            { status: 400 }
+          );
+        }
+
+        if (!preferredCandidate.isBeingMatched) {
+          return NextResponse.json(
+            {
+              error: "This user is not participating in matching",
+              hint: "The email you entered belongs to a user who is not a match participant. Please enter a match user's email or leave the field empty.",
+            },
+            { status: 400 }
+          );
+        }
+
+        // Check if another cupid already has this preferred candidate
+        const existingCupid = await prisma.user.findFirst({
+          where: {
+            preferredCandidateEmail: normalizedPreferredEmail,
+            id: { not: session.user.id },
+          },
+          select: { id: true },
+        });
+
+        if (existingCupid) {
+          return NextResponse.json(
+            {
+              error: "This candidate is already preferred by another cupid",
+              hint: "Another cupid has already selected this person as their preferred match candidate.",
+            },
+            { status: 400 }
+          );
+        }
+
+        updateData.preferredCandidateEmail = normalizedPreferredEmail;
       }
     } else {
       updateData.isBeingMatched = true;
@@ -153,6 +211,7 @@ export async function POST(request: NextRequest) {
         id: true,
         isCupid: true,
         isBeingMatched: true,
+        preferredCandidateEmail: true,
       },
     });
 

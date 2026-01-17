@@ -47,7 +47,7 @@ export default function PrivacyAndTermsPage() {
               Privacy Notice & Terms of Service
             </h1>
             <p className="text-sm text-slate-500">
-              Last Updated: January 4, 2026
+              Last Updated: January 16, 2026
             </p>
           </div>
 

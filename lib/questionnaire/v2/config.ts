@@ -42,7 +42,6 @@ const GENDER_PREFERENCE_OPTIONS: QuestionOption[] = [
 
 const SEXUAL_ORIENTATION_OPTIONS: QuestionOption[] = [
   { value: "sexual_romantic", label: "Sexual & Romantic" },
-  { value: "pansexual", label: "Pansexual" },
   { value: "asexual", label: "Asexual (sexual attraction)" },
   { value: "aromantic", label: "Aromantic (romantic attraction)" },
   { value: "asexual_aromantic", label: "Asexual & aromantic" },
@@ -458,7 +457,7 @@ export const QUESTIONS_SECTION_1: QuestionConfig[] = [
   {
     id: "q12",
     section: Section.SECTION_1,
-    type: QuestionType.SINGLE_SELECT_MULTI_PREFERENCE,
+    type: QuestionType.ORDINAL_SAME_SIMILAR,
     questionText:
       "Which best describes your expectations around sexual activity in a relationship?",
     answerFormat: "single-select",

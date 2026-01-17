@@ -155,6 +155,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Prevent users from entering their own email
+      if (normalizedPreferredEmail === currentUser.email.toLowerCase()) {
+        return NextResponse.json(
+          { error: "You cannot set yourself as your preferred candidate" },
+          { status: 400 }
+        );
+      }
+
       // Check if preferred candidate exists and is a match account
       const preferredCandidate = await prisma.user.findUnique({
         where: { email: normalizedPreferredEmail },

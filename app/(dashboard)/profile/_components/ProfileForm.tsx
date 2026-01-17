@@ -639,7 +639,7 @@ export function ProfileForm() {
 
           {/* Account Linking Buttons */}
           {!accountInfo.isCupid && (
-            <div className="pt-2">
+            <div className="pt-2" data-tutorial="cupid-account-link">
               <Link href="/register?type=cupid&linking=true">
                 <Button variant="outline" className="w-full">
                   Create Cupid Account 🏹
@@ -1085,6 +1085,7 @@ export function ProfileForm() {
               variant="destructive"
               className="w-full"
               type="button"
+              data-tutorial="delete-account"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Account

@@ -52,6 +52,9 @@ export enum QuestionType {
   SPECIAL_SLEEP_SCHEDULE = "special_sleep_schedule",
   SPECIAL_CONFLICT_RESOLUTION = "special_conflict_resolution",
   SPECIAL_AGE = "special_age",
+
+  // Type J: Ordinal with same/similar preference
+  ORDINAL_SAME_SIMILAR = "ordinal_same_similar",
 }
 
 /**

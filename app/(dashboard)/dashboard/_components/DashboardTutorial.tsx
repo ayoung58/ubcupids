@@ -7,7 +7,7 @@ const dashboardSteps: TutorialStep[] = [
     id: "welcome",
     title: "Welcome to UBCupids! 💘",
     content:
-      "You can return to the homepage at any time by clicking on the UBCupids logo at the top of the page.",
+      "You can navigate to the homepage at any time by clicking on the UBCupids logo at the top of the page.",
     target: "[data-tutorial='logo']",
     position: "bottom",
   },
@@ -31,7 +31,7 @@ const dashboardSteps: TutorialStep[] = [
     id: "matches",
     title: "View Your Matches",
     content:
-      "Your matches will be revealed here! Come back after February 8th to see who you've been matched with.",
+      "Your matches will be revealed here! Come back on February 8th to see who you've been matched with.",
     target: "[data-tutorial='matches-card']",
     position: "right",
   },

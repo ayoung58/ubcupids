@@ -155,6 +155,8 @@ export function RegisterForm({
             lastName: formData.lastName || undefined,
             age: formData.age || undefined,
             major: formData.major || undefined,
+            preferredCandidateEmail:
+              formData.preferredCandidateEmail || undefined,
           }
         : { ...formData, accountType };
 

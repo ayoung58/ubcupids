@@ -10,8 +10,9 @@ export interface TutorialStep {
   title: string;
   content: string;
   target: string; // CSS selector for the element to highlight
-  position?: "top" | "bottom" | "left" | "right";
+  position?: "top" | "bottom" | "left" | "right" | "center";
   offset?: { x: number; y: number };
+  hideArrow?: boolean; // Option to hide the directional arrow
 }
 
 interface TutorialProps {
@@ -57,6 +58,12 @@ export function Tutorial({
           const offset = step.offset || { x: 0, y: 0 };
 
           switch (step.position || "bottom") {
+            case "center":
+              // Center the tooltip on screen
+              top = window.innerHeight / 2 - tooltipRect.height / 2 + offset.y;
+              left = window.innerWidth / 2 - tooltipRect.width / 2 + offset.x;
+              setArrowPosition("bottom"); // Default, but won't show if hideArrow is true
+              break;
             case "top":
               top = rect.top - tooltipRect.height - 20 + offset.y;
               left =
@@ -206,7 +213,8 @@ export function Tutorial({
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-3">
             <h3 className="text-lg font-semibold text-slate-900">
-              {getArrowChar(step.position || "bottom")} {step.title}
+              {!step.hideArrow && getArrowChar(step.position || "bottom")}{" "}
+              {step.title}
             </h3>
             <Button
               variant="ghost"
