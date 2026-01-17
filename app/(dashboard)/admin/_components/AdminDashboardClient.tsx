@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   UserPlus,
   UsersRound,
+  Mail,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -305,6 +306,12 @@ export function AdminDashboardClient({
             <Button className="w-full h-16" variant="outline">
               <Settings className="mr-2 h-5 w-5" />
               Edit Questionnaire Configuration
+            </Button>
+          </Link>
+          <Link href="/admin/manual-verify">
+            <Button className="w-full h-16" variant="outline">
+              <Mail className="mr-2 h-5 w-5" />
+              Manual Email Verification
             </Button>
           </Link>
         </CardContent>
