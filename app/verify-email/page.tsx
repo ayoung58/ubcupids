@@ -20,17 +20,5 @@ import VerifyEmailContent from "./VerifyEmailContent";
  * 5. User is verified and redirected to login
  */
 export default function VerifyEmailPage() {
-  return (
-    <VerifyEmailContent />
-  );
-}
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-          <div className="text-slate-600">Loading...</div>
-        </div>
-      }
-    >
-      <VerifyEmailContent />
-    </Suspense>
-  );
+  return <VerifyEmailContent />;
 }
