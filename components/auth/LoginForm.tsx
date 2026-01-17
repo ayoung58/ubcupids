@@ -52,7 +52,7 @@ export function LoginForm() {
         // Check for specific error types
         if (result.error === "EmailNotVerified") {
           // Email is in database but not verified
-          setError("Please verify your email or resend the verification link");
+          setError("Please verify your email or resend the verification code");
         } else if (result.error === "TooManyAttempts") {
           // NEW: Handle rate limit error
           setError(

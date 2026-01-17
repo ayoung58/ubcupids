@@ -121,6 +121,7 @@ export default function VerifyEmailContent() {
               </p>
             </div>
 
+          <div className="flex flex-col gap-4">
             <Button
               type="submit"
               disabled={isVerifying || code.length !== 6}
@@ -136,15 +137,28 @@ export default function VerifyEmailContent() {
                 "Verify Email Address"
               )}
             </Button>
-          </form>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setCode("");
+                setError(null);
+                router.push("/resend-verification");
+              }}
+              className="w-full"
+            >
+              Resend Code
+            </Button>
+          </div>
 
           <div className="text-center">
             <Button
               variant="link"
-              onClick={() => router.push("/resend-verification")}
+              onClick={() => router.push("/login")}
               className="text-sm"
             >
-              Didn&apos;t receive a code? Resend
+              Back to Login
             </Button>
           </div>
 

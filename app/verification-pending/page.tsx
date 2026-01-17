@@ -42,7 +42,7 @@ export default function VerificationPendingPage() {
               new code.
             </p>
 
-            <div className="pt-4 space-y-2">
+            <div className="pt-6 space-y-3">
               <Link href="/verify-email">
                 <Button className="w-full">Enter Verification Code</Button>
               </Link>

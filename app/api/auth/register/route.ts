@@ -343,7 +343,7 @@ export async function POST(request: NextRequest) {
           : (okMatchingDifferentCampus ?? true),
         displayName: `${firstName.trim()} ${lastName.trim()}`,
         cupidDisplayName: `${firstName.trim()} ${lastName.trim()}`, // Default to full name
-        emailVerified: null, // Will be set when user clicks verification link
+        emailVerified: null, // Will be set when user enters verification code
         acceptedTerms: new Date(), // Record timestamp of acceptance
         isCupid: isCupid,
         isBeingMatched: !isCupid, // Cupids are not being matched by default
