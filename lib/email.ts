@@ -45,8 +45,9 @@ export async function sendVerificationEmail(
 
   try {
     // Send email using React Email component
+    // TEMPORARY: Using Resend's verified domain due to reputation issues with support@ubcupids.org
     const { data, error } = await resend.emails.send({
-      from: RESEND_FROM_EMAIL || "UBCupids <onboarding@resend.dev>",
+      from: "UBCupids <onboarding@resend.dev>",
       to: email,
       subject: "Verify your UBCupids account",
       react: VerificationEmail({
