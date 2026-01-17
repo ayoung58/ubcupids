@@ -34,6 +34,15 @@ export function checkHardFilters(
   userA: MatchingUser,
   userB: MatchingUser
 ): HardFilterResult {
+  // Phase 1.0: Campus compatibility check
+  const campusCompatible = checkCampusCompatibility(userA, userB);
+  if (!campusCompatible) {
+    return {
+      passed: false,
+      reason: "Campus incompatibility",
+    };
+  }
+
   // Phase 1.1: Gender compatibility check
   const genderCompatible = checkGenderCompatibility(userA, userB);
   if (!genderCompatible) {
@@ -52,6 +61,36 @@ export function checkHardFilters(
   return {
     passed: true,
   };
+}
+
+/**
+ * Checks if two users are compatible based on campus preferences
+ *
+ * For userA to be compatible with userB:
+ * - If userA is NOT ok matching different campus, userB must be from the same campus
+ * - If userB is NOT ok matching different campus, userA must be from the same campus
+ * - If both are ok matching different campus, they can match regardless of campus
+ *
+ * @param userA - First user
+ * @param userB - Second user
+ * @returns True if both users are compatible based on campus preferences
+ */
+function checkCampusCompatibility(
+  userA: MatchingUser,
+  userB: MatchingUser
+): boolean {
+  // If userA is not ok with different campus, userB must be from same campus
+  if (!userA.okMatchingDifferentCampus && userA.campus !== userB.campus) {
+    return false;
+  }
+
+  // If userB is not ok with different campus, userA must be from same campus
+  if (!userB.okMatchingDifferentCampus && userA.campus !== userB.campus) {
+    return false;
+  }
+
+  // If both are ok with different campus, or they're from same campus, they're compatible
+  return true;
 }
 
 /**

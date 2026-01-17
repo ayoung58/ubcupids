@@ -32,6 +32,8 @@ function createMockUser(
     interestedInGenders: Array.isArray(interestedInGenders)
       ? interestedInGenders
       : [interestedInGenders],
+    campus: "Vancouver",
+    okMatchingDifferentCampus: true,
     responses,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     responseRecord: {} as any,

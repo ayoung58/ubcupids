@@ -18,6 +18,8 @@ function createUser(id: string, responses: Record<string, any>): MatchingUser {
     name: id,
     gender: "man",
     interestedInGenders: ["woman"],
+    campus: "Vancouver",
+    okMatchingDifferentCampus: true,
     responses,
     responseRecord: {} as any,
   };

@@ -220,6 +220,16 @@ function generateAge(): number {
   return 21;
 }
 
+// Generate random campus
+function generateCampus(): string {
+  return Math.random() < 0.85 ? "Vancouver" : "Okanagan"; // 85% Vancouver, 15% Okanagan
+}
+
+// Generate random campus preference
+function generateOkMatchingDifferentCampus(): boolean {
+  return Math.random() < 0.75; // 75% ok with different campus, 25% prefer same
+}
+
 // ============================================
 // Database Functions
 // ============================================
@@ -300,6 +310,8 @@ async function createTestUsers(hashedPassword: string): Promise<void> {
           displayName: `${firstName1} ${lastName1}`,
           cupidDisplayName: `${firstName1} ${lastName1}`,
           age: age1,
+          campus: generateCampus(),
+          okMatchingDifferentCampus: generateOkMatchingDifferentCampus(),
           emailVerified: new Date(),
           acceptedTerms: new Date(),
           isCupid: false,
@@ -338,6 +350,8 @@ async function createTestUsers(hashedPassword: string): Promise<void> {
           displayName: `${firstName2} ${lastName2}`,
           cupidDisplayName: `${firstName2} ${lastName2}`,
           age: age2,
+          campus: generateCampus(),
+          okMatchingDifferentCampus: generateOkMatchingDifferentCampus(),
           emailVerified: new Date(),
           acceptedTerms: new Date(),
           isCupid: false,
@@ -387,6 +401,8 @@ async function createTestUsers(hashedPassword: string): Promise<void> {
           displayName: `${firstName} ${lastName}`,
           cupidDisplayName: `${firstName} ${lastName}`,
           age,
+          campus: generateCampus(),
+          okMatchingDifferentCampus: generateOkMatchingDifferentCampus(),
           emailVerified: new Date(),
           acceptedTerms: new Date(),
           isCupid: false,
@@ -439,6 +455,8 @@ async function createTestCupids(hashedPassword: string): Promise<void> {
         displayName: `${firstName} ${lastName}`,
         cupidDisplayName: `${firstName} ${lastName}`,
         age,
+        campus: generateCampus(),
+        okMatchingDifferentCampus: generateOkMatchingDifferentCampus(),
         emailVerified: new Date(),
         acceptedTerms: new Date(),
         isCupid: true,

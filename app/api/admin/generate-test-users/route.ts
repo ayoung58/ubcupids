@@ -60,6 +60,8 @@ export async function POST(request: Request) {
       const lastName = `Test`;
       const email = `test${userIndex}@student.ubc.ca`;
       const isCupid = userType === "cupid";
+      const campus = Math.random() < 0.85 ? "Vancouver" : "Okanagan"; // 85% Vancouver
+      const okMatchingDifferentCampus = Math.random() < 0.75; // 75% ok with different campus
 
       usersToCreate.push({
         email,
@@ -67,8 +69,9 @@ export async function POST(request: Request) {
         firstName,
         lastName,
         displayName: `${firstName} ${lastName}`,
-        cupidDisplayName: `${firstName} ${lastName}`,
-        age: 18 + (i % 10), // Ages 18-27
+        cupidDisplayName: `${firstName} ${lastName}`,\n        age: 18 + (i % 10), // Ages 18-27
+        campus,
+        okMatchingDifferentCampus,
         emailVerified: new Date(), // Already verified
         acceptedTerms: new Date(),
         isCupid,

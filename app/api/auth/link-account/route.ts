@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
       lastName,
       age,
       major,
+      campus,
+      okMatchingDifferentCampus,
       preferredCandidateEmail,
     } = body;
 
@@ -202,6 +204,9 @@ export async function POST(request: NextRequest) {
       if (lastName) updateData.lastName = lastName.trim();
       if (age) updateData.age = parseInt(age);
       if (major) updateData.major = major.trim();
+      if (campus) updateData.campus = campus;
+      if (okMatchingDifferentCampus !== undefined)
+        updateData.okMatchingDifferentCampus = okMatchingDifferentCampus;
     }
 
     const updatedUser = await prisma.user.update({

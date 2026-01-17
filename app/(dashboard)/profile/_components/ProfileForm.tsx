@@ -32,6 +32,13 @@ import {
 } from "lucide-react";
 import { ProfileFormData } from "@/types/profile";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProfileTutorial } from "./ProfileTutorial";
@@ -70,6 +77,8 @@ export function ProfileForm() {
     cupidDisplayName: "",
     age: 18,
     major: "",
+    campus: "Vancouver",
+    okMatchingDifferentCampus: true,
     interests: "",
     bio: "",
     profilePicture: "",
@@ -123,6 +132,8 @@ export function ProfileForm() {
             data.cupidDisplayName || data.displayName || data.firstName,
           age: data.age || 18,
           major: data.major || "",
+          campus: data.campus || "Vancouver",
+          okMatchingDifferentCampus: data.okMatchingDifferentCampus ?? true,
           interests: data.interests || "",
           bio: data.bio || "",
           profilePicture: data.profilePicture || "",
@@ -400,6 +411,8 @@ export function ProfileForm() {
           cupidDisplayName: profileData.cupidDisplayName,
           age: profileData.age,
           major: profileData.major,
+          campus: profileData.campus,
+          okMatchingDifferentCampus: profileData.okMatchingDifferentCampus,
           interests: profileData.interests,
           bio: profileData.bio,
           pointOfContact: profileData.pointOfContact,
@@ -816,6 +829,49 @@ export function ProfileForm() {
                 {profileData.displayName.length}/50 characters
               </p>
             </div>
+
+            {/* Campus - Only for Match accounts */}
+            {accountInfo.isBeingMatched && (
+              <div className="space-y-2">
+                <Label htmlFor="campus">Campus</Label>
+                <Select
+                  value={profileData.campus}
+                  onValueChange={(value) =>
+                    handleProfileChange({ campus: value })
+                  }
+                >
+                  <SelectTrigger id="campus">
+                    <SelectValue placeholder="Select your campus" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Vancouver">Vancouver</SelectItem>
+                    <SelectItem value="Okanagan">Okanagan</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-600">
+                  Please select which UBC campus you&apos;re from.
+                </p>
+
+                {/* Campus Matching Preference Checkbox */}
+                <div className="flex items-start space-x-2 pt-2">
+                  <Checkbox
+                    id="okMatchingDifferentCampus"
+                    checked={profileData.okMatchingDifferentCampus}
+                    onCheckedChange={(checked) =>
+                      handleProfileChange({
+                        okMatchingDifferentCampus: checked as boolean,
+                      })
+                    }
+                  />
+                  <Label
+                    htmlFor="okMatchingDifferentCampus"
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    I am ok matching with students from a different campus
+                  </Label>
+                </div>
+              </div>
+            )}
 
             {/* Cupid Display Name - Only show if user has Cupid account */}
             {accountInfo.isCupid && (

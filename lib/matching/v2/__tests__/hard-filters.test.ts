@@ -23,6 +23,8 @@ function createMockUser(
     name: id,
     gender,
     interestedInGenders,
+    campus: "Vancouver",
+    okMatchingDifferentCampus: true,
     responses,
     responseRecord: {} as any,
   };
@@ -64,6 +66,90 @@ describe("Phase 1: Hard Filters", () => {
         {}
       );
       const userB = createMockUser("b", "woman", ["non-binary"], {});
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  describe("Campus Compatibility", () => {
+    test("should pass when both users are ok with different campus", () => {
+      const userA: MatchingUser = {
+        ...createMockUser("a", "man", ["woman"], {}),
+        campus: "Vancouver",
+        okMatchingDifferentCampus: true,
+      };
+      const userB: MatchingUser = {
+        ...createMockUser("b", "woman", ["man"], {}),
+        campus: "Okanagan",
+        okMatchingDifferentCampus: true,
+      };
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(true);
+    });
+
+    test("should pass when both users are from same campus", () => {
+      const userA: MatchingUser = {
+        ...createMockUser("a", "man", ["woman"], {}),
+        campus: "Vancouver",
+        okMatchingDifferentCampus: false,
+      };
+      const userB: MatchingUser = {
+        ...createMockUser("b", "woman", ["man"], {}),
+        campus: "Vancouver",
+        okMatchingDifferentCampus: false,
+      };
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(true);
+    });
+
+    test("should fail when userA not ok with different campus and campuses differ", () => {
+      const userA: MatchingUser = {
+        ...createMockUser("a", "man", ["woman"], {}),
+        campus: "Vancouver",
+        okMatchingDifferentCampus: false,
+      };
+      const userB: MatchingUser = {
+        ...createMockUser("b", "woman", ["man"], {}),
+        campus: "Okanagan",
+        okMatchingDifferentCampus: true,
+      };
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(false);
+      expect(result.reason).toBe("Campus incompatibility");
+    });
+
+    test("should fail when userB not ok with different campus and campuses differ", () => {
+      const userA: MatchingUser = {
+        ...createMockUser("a", "man", ["woman"], {}),
+        campus: "Vancouver",
+        okMatchingDifferentCampus: true,
+      };
+      const userB: MatchingUser = {
+        ...createMockUser("b", "woman", ["man"], {}),
+        campus: "Okanagan",
+        okMatchingDifferentCampus: false,
+      };
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(false);
+      expect(result.reason).toBe("Campus incompatibility");
+    });
+
+    test("should pass when one user ok with different campus and campuses differ", () => {
+      const userA: MatchingUser = {
+        ...createMockUser("a", "man", ["woman"], {}),
+        campus: "Vancouver",
+        okMatchingDifferentCampus: true,
+      };
+      const userB: MatchingUser = {
+        ...createMockUser("b", "woman", ["man"], {}),
+        campus: "Okanagan",
+        okMatchingDifferentCampus: true,
+      };
 
       const result = checkHardFilters(userA, userB);
       expect(result.passed).toBe(true);

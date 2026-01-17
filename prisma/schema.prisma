@@ -94,6 +94,10 @@ model User {
   showInterestsToMatches Boolean @default(true)  // Whether to display interests to matches
   showPointOfContactToMatches Boolean @default(true) // Whether to display point of contact to matches
   
+  // Campus Information (Match users only)
+  campus String @default("Vancouver") // UBC campus: Vancouver or Okanagan
+  okMatchingDifferentCampus Boolean @default(true) // Whether user is okay matching with different campus students
+  
   // Tutorial Completion Tracking (per-user)
   dashboardTutorialCompleted Boolean @default(false) // Match dashboard tutorial
   profileTutorialCompleted Boolean @default(false)   // Profile page tutorial

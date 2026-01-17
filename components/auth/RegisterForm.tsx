@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 
 /**
@@ -60,6 +67,8 @@ export function RegisterForm({
     lastName: "",
     age: "",
     major: "",
+    campus: "Vancouver",
+    okMatchingDifferentCampus: true,
     preferredCandidateEmail: "",
     acceptedTerms: false,
   });
@@ -155,6 +164,8 @@ export function RegisterForm({
             lastName: formData.lastName || undefined,
             age: formData.age || undefined,
             major: formData.major || undefined,
+            campus: formData.campus || undefined,
+            okMatchingDifferentCampus: formData.okMatchingDifferentCampus,
             preferredCandidateEmail:
               formData.preferredCandidateEmail || undefined,
           }
@@ -399,6 +410,54 @@ export function RegisterForm({
                 comfortable. Please use your real age. <br />
                 Your age cannot be edited afterwards.
               </p>
+            </div>
+          )}
+
+          {/* Campus Field - Only for Match accounts */}
+          {accountType === "match" && (
+            <div className="space-y-2">
+              <Label htmlFor="campus">
+                Campus <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.campus}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, campus: value })
+                }
+                disabled={isLoading}
+              >
+                <SelectTrigger id="campus">
+                  <SelectValue placeholder="Select your campus" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Vancouver">Vancouver</SelectItem>
+                  <SelectItem value="Okanagan">Okanagan</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-600">
+                Please select which UBC campus you&apos;re from.
+              </p>
+
+              {/* Campus Matching Preference Checkbox */}
+              <div className="flex items-start space-x-2 pt-2">
+                <Checkbox
+                  id="okMatchingDifferentCampus"
+                  checked={formData.okMatchingDifferentCampus}
+                  onCheckedChange={(checked) =>
+                    setFormData({
+                      ...formData,
+                      okMatchingDifferentCampus: checked as boolean,
+                    })
+                  }
+                  disabled={isLoading}
+                />
+                <Label
+                  htmlFor="okMatchingDifferentCampus"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  I am ok matching with students from a different campus
+                </Label>
+              </div>
             </div>
           )}
 

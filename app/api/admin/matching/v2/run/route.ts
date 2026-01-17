@@ -96,6 +96,8 @@ export async function POST(request: NextRequest) {
           interestedInGenders: Array.isArray(interestedInGenders)
             ? interestedInGenders.map(String)
             : [String(interestedInGenders)],
+          campus: u.campus || "Vancouver",
+          okMatchingDifferentCampus: u.okMatchingDifferentCampus ?? true,
           responses,
           responseRecord: u.questionnaireResponseV2!,
         };

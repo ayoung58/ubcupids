@@ -27,6 +27,8 @@ export interface MatchingUser {
   name: string;
   gender: string;
   interestedInGenders: string[];
+  campus: string;
+  okMatchingDifferentCampus: boolean;
   responses: Record<string, any>;
   responseRecord: QuestionnaireResponseV2;
 }

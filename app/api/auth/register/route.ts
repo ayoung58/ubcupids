@@ -70,6 +70,8 @@ export async function POST(request: NextRequest) {
       lastName,
       age,
       major,
+      campus,
+      okMatchingDifferentCampus,
       preferredCandidateEmail,
       acceptedTerms,
       accountType,
@@ -335,6 +337,10 @@ export async function POST(request: NextRequest) {
         lastName: lastName.trim(),
         age: isCupid ? null : parseInt(age),
         major: major?.trim() || null,
+        campus: isCupid ? "Vancouver" : campus || "Vancouver",
+        okMatchingDifferentCampus: isCupid
+          ? true
+          : (okMatchingDifferentCampus ?? true),
         displayName: `${firstName.trim()} ${lastName.trim()}`,
         cupidDisplayName: `${firstName.trim()} ${lastName.trim()}`, // Default to full name
         emailVerified: null, // Will be set when user clicks verification link

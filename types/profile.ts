@@ -11,6 +11,8 @@ export interface ProfileData {
   bio?: string;
   profilePicture?: string;
   pointOfContact?: string;
+  campus?: string;
+  okMatchingDifferentCampus?: boolean;
   showBioToMatches: boolean;
   showProfilePicToMatches: boolean;
   showInterestsToMatches: boolean;
@@ -30,6 +32,8 @@ export interface ProfileUpdateRequest {
   interests?: string;
   bio?: string;
   pointOfContact?: string;
+  campus?: string;
+  okMatchingDifferentCampus?: boolean;
   showBioToMatches: boolean;
   showProfilePicToMatches: boolean;
   showInterestsToMatches: boolean;

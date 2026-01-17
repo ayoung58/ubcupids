@@ -19,6 +19,8 @@ function createMockUsers(count: number): MatchingUser[] {
     name: `User ${i + 1}`,
     gender: "any",
     interestedInGenders: ["any"],
+    campus: "Vancouver",
+    okMatchingDifferentCampus: true,
     responses: {},
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     responseRecord: {} as any,
