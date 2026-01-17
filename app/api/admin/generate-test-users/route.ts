@@ -69,7 +69,8 @@ export async function POST(request: Request) {
         firstName,
         lastName,
         displayName: `${firstName} ${lastName}`,
-        cupidDisplayName: `${firstName} ${lastName}`,\n        age: 18 + (i % 10), // Ages 18-27
+        cupidDisplayName: `${firstName} ${lastName}`,
+        age: 18 + (i % 10), // Ages 18-27
         campus,
         okMatchingDifferentCampus,
         emailVerified: new Date(), // Already verified
