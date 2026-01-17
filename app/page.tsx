@@ -67,6 +67,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     }),
   ]);
 
+  // Show stats if either matches or cupids reach 300 or more
+  const showStats = matchUsersCount >= 300 || cupidUsersCount >= 300;
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header with Navigation Links */}
@@ -100,24 +103,26 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {/* Hero Section */}
       <div className="flex items-start justify-center px-4 py-12 sm:py-16 gap-6 max-w-7xl mx-auto">
         {/* Left Statistics Box */}
-        <div className="hidden lg:block">
-          <div className="sticky top-24 w-48 p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
-            <div className="text-center space-y-2">
-              <div className="text-4xl font-bold text-pink-600">
-                {matchUsersCount}
-              </div>
-              <div className="text-sm font-medium text-slate-700">
-                Match Users
-              </div>
-              <div className="text-xs text-slate-500">
-                Participating in matching
-              </div>
-              <div className="text-xs text-slate-500">
-                * Limit of 500 match users for 2026 *
+        {showStats && (
+          <div className="hidden lg:block">
+            <div className="sticky top-24 w-48 p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
+              <div className="text-center space-y-2">
+                <div className="text-4xl font-bold text-pink-600">
+                  {matchUsersCount}
+                </div>
+                <div className="text-sm font-medium text-slate-700">
+                  Match Users
+                </div>
+                <div className="text-xs text-slate-500">
+                  Participating in matching
+                </div>
+                <div className="text-xs text-slate-500">
+                  * Limit of 500 match users for 2026 *
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Main Content */}
         <div className="max-w-2xl w-full space-y-8 text-center">
@@ -225,49 +230,53 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </p>
 
           {/* Mobile Statistics - Side by Side */}
-          <div className="grid grid-cols-2 gap-4 pt-4 lg:hidden">
-            <div className="p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
-              <div className="text-center space-y-2">
-                <div className="text-3xl font-bold text-pink-600">
-                  {matchUsersCount}
+          {showStats && (
+            <div className="grid grid-cols-2 gap-4 pt-4 lg:hidden">
+              <div className="p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-pink-600">
+                    {matchUsersCount}
+                  </div>
+                  <div className="text-sm font-medium text-slate-700">
+                    Match Users
+                  </div>
                 </div>
-                <div className="text-sm font-medium text-slate-700">
-                  Match Users
+              </div>
+              <div className="p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-purple-600">
+                    {cupidUsersCount}
+                  </div>
+                  <div className="text-sm font-medium text-slate-700">
+                    Cupid Users
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
+          )}
+        </div>
+
+        {/* Right Statistics Box */}
+        {showStats && (
+          <div className="hidden lg:block">
+            <div className="sticky top-24 w-48 p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
               <div className="text-center space-y-2">
-                <div className="text-3xl font-bold text-purple-600">
+                <div className="text-4xl font-bold text-purple-600">
                   {cupidUsersCount}
                 </div>
                 <div className="text-sm font-medium text-slate-700">
                   Cupid Users
                 </div>
+                <div className="text-xs text-slate-500">
+                  Helping create matches
+                </div>
+                <div className="text-xs text-slate-500">
+                  * Limit of 500 cupids for 2026 *
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Right Statistics Box */}
-        <div className="hidden lg:block">
-          <div className="sticky top-24 w-48 p-6 bg-white rounded-lg border-1 border-slate-300 shadow-md">
-            <div className="text-center space-y-2">
-              <div className="text-4xl font-bold text-purple-600">
-                {cupidUsersCount}
-              </div>
-              <div className="text-sm font-medium text-slate-700">
-                Cupid Users
-              </div>
-              <div className="text-xs text-slate-500">
-                Helping create matches
-              </div>
-              <div className="text-xs text-slate-500">
-                * Limit of 500 cupids for 2026 *
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Timeline Section */}

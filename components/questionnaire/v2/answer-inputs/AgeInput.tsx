@@ -82,7 +82,7 @@ export function AgeInput({
     return (
       <div className="min-h-[120px]">
         <label className="text-sm font-medium text-slate-700 mb-3 block">
-          Your age
+          Your age (as of Feb. 8th, 2026)
         </label>
         <Input
           type="number"
