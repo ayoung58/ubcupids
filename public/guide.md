@@ -276,6 +276,9 @@ A: Any UBC student with the following valid UBC email addresses (@alumni.ubc.ca,
 **Q: Is this just for finding romantic partners?**  
 A: UBCupids focuses on compatibility for potential romantic connections, but how you use your matches is up to you! There is a question where you can specify what sort of relationship you're looking for.
 
+**Q: Why are matches revealed on Feb. 8th? Isn't this for Valentine's Day?**  
+A: We reveal matches on Feb. 8th so that matches have time to accept/deny match requests, message and respond to other people, and plan out their meet ups and potential dates for on/around Valentine's Day!
+
 **Q: What if I don't get any matches?**  
 A: While we strive to find matches for everyone, compatibility requires mutual alignment. If you don't receive matches this year, consider participating again next year!
 

@@ -159,9 +159,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               Find your Valentine&apos;s Day match at UBC
             </p>
             <p className="text-slate-500 max-w-lg mx-auto">
-              Anonymous matching service for UBC students. <br />
+              Anonymous matsching service for UBC students. <br />
               Complete a compatibility questionnaire to match with someone for
-              Valentine&apos;s Day 2026, or help create romance as a Cupid!
+              Valentine&apos;s Day 2026, help create romance as a Cupid, or
+              both!
             </p>
 
             <p className="text-slate-500 max-w-lg mx-auto">
@@ -246,18 +247,21 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="p-4 bg-white rounded-lg border border-slate-200">
               <p className="font-semibold text-slate-900">📝 Questionnaire</p>
               <p className="text-sm text-slate-600 mt-2">
-                Fill out compatibility questions by Jan. 31st
+                To be matched, fill out a compatibility questionnaire by Jan.
+                31st
               </p>
             </div>
             <div className="p-4 bg-white rounded-lg border border-slate-200">
-              <p className="font-semibold text-slate-900">🤖 Smart Matching</p>
+              <p className="font-semibold text-slate-900">💘 Cupid Matching</p>
               <p className="text-sm text-slate-600 mt-2">
-                Algorithm + human cupids
+                Human cupids match-make from Feb. 1-7th
               </p>
             </div>
             <div className="p-4 bg-white rounded-lg border border-slate-200">
               <p className="font-semibold text-slate-900">💌 Match Reveal</p>
-              <p className="text-sm text-slate-600 mt-2">February 8th, 2026</p>
+              <p className="text-sm text-slate-600 mt-2">
+                Algorithm and Cupid matches revealed on February 8th, 2026
+              </p>
             </div>
           </div>
 
