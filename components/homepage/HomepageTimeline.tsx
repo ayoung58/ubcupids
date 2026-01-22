@@ -372,6 +372,15 @@ export function HomepageTimeline() {
                 className="text-slate-400 hover:text-white transition-colors"
               >
                 Contact
+              </a>{" "}
+              <a
+                href="https://www.instagram.com/ubcupids/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-white transition-colors"
+                title="Follow us on Instagram"
+              >
+                Instagram
               </a>
             </div>
           </div>
