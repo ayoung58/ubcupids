@@ -35,6 +35,7 @@ export async function GET() {
         showProfilePicToMatches: true,
         showInterestsToMatches: true,
         showPointOfContactToMatches: true,
+        showFreeResponseToMatches: true,
         isCupid: true,
         isBeingMatched: true,
         isAdmin: true,
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
       showProfilePicToMatches,
       showInterestsToMatches,
       showPointOfContactToMatches,
+      showFreeResponseToMatches,
     } = body;
 
     // Validate required fields
@@ -227,6 +229,7 @@ export async function POST(request: NextRequest) {
         showProfilePicToMatches: showProfilePicToMatches ?? true,
         showInterestsToMatches: showInterestsToMatches ?? true,
         showPointOfContactToMatches: showPointOfContactToMatches ?? true,
+        showFreeResponseToMatches: showFreeResponseToMatches ?? true,
       },
       select: {
         firstName: true,
@@ -246,6 +249,7 @@ export async function POST(request: NextRequest) {
         showProfilePicToMatches: true,
         showInterestsToMatches: true,
         showPointOfContactToMatches: true,
+        showFreeResponseToMatches: true,
       },
     });
 

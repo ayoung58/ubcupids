@@ -17,6 +17,7 @@ export interface ProfileData {
   showProfilePicToMatches: boolean;
   showInterestsToMatches: boolean;
   showPointOfContactToMatches: boolean;
+  showFreeResponseToMatches: boolean;
 }
 
 export interface ProfileFormData extends ProfileData {
@@ -38,6 +39,7 @@ export interface ProfileUpdateRequest {
   showProfilePicToMatches: boolean;
   showInterestsToMatches: boolean;
   showPointOfContactToMatches: boolean;
+  showFreeResponseToMatches: boolean;
 }
 
 export interface ProfilePictureUploadResponse {

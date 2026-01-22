@@ -333,6 +333,14 @@ export interface MatchDisplay {
     bio: string | null;
     interests: string | null;
     pointOfContact: string | null;
+    freeResponses: {
+      freeResponse1: string | null;
+      freeResponse2: string | null;
+      freeResponse3: string | null;
+      freeResponse4: string | null;
+      freeResponse5: string | null;
+    } | null;
+    showFreeResponseToMatches: boolean;
   };
 
   revealedAt: Date | null;

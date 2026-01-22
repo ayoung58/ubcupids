@@ -87,6 +87,7 @@ export function ProfileForm() {
     showProfilePicToMatches: true,
     showInterestsToMatches: true,
     showPointOfContactToMatches: true,
+    showFreeResponseToMatches: true,
   });
 
   const [accountInfo, setAccountInfo] = useState({
@@ -142,6 +143,7 @@ export function ProfileForm() {
           showProfilePicToMatches: data.showProfilePicToMatches ?? true,
           showInterestsToMatches: data.showInterestsToMatches ?? true,
           showPointOfContactToMatches: data.showPointOfContactToMatches ?? true,
+          showFreeResponseToMatches: data.showFreeResponseToMatches ?? true,
         };
         setProfileData(profile);
         initialProfileData.current = profile;
@@ -421,6 +423,7 @@ export function ProfileForm() {
           showProfilePicToMatches: profileData.showProfilePicToMatches,
           showInterestsToMatches: profileData.showInterestsToMatches,
           showPointOfContactToMatches: profileData.showPointOfContactToMatches,
+          showFreeResponseToMatches: profileData.showFreeResponseToMatches,
         }),
       });
 
@@ -1078,6 +1081,36 @@ export function ProfileForm() {
                   </Label>
                 </div>
               </div>
+            </div>
+
+            {/* Free Response Visibility Toggle */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="showFreeResponse"
+                  checked={profileData.showFreeResponseToMatches}
+                  onCheckedChange={(checked) =>
+                    handleProfileChange({
+                      showFreeResponseToMatches: checked as boolean,
+                    })
+                  }
+                />
+                <Label
+                  htmlFor="showFreeResponse"
+                  className="text-sm font-normal cursor-pointer flex items-center gap-1"
+                >
+                  {profileData.showFreeResponseToMatches ? (
+                    <Eye className="h-3 w-3" />
+                  ) : (
+                    <EyeOff className="h-3 w-3" />
+                  )}
+                  Show my free response answers to matches
+                </Label>
+              </div>
+              <p className="text-xs text-slate-500 ml-6">
+                Free response answers are from your questionnaire. Uncheck this
+                if you prefer to keep them private.
+              </p>
             </div>
 
             {/* Cupid-related Items - Separate Section */}

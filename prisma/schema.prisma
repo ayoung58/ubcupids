@@ -93,6 +93,7 @@ model User {
   showProfilePicToMatches Boolean @default(true) // Whether to display profile pic to matches
   showInterestsToMatches Boolean @default(true)  // Whether to display interests to matches
   showPointOfContactToMatches Boolean @default(true) // Whether to display point of contact to matches
+  showFreeResponseToMatches Boolean @default(true) // Whether to display free response answers to matches
   
   // Campus Information (Match users only)
   campus String @default("Vancouver") // UBC campus: Vancouver or Okanagan

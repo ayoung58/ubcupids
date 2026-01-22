@@ -45,6 +45,16 @@ export async function GET() {
             showProfilePicToMatches: true,
             showInterestsToMatches: true,
             showPointOfContactToMatches: true,
+            showFreeResponseToMatches: true,
+            questionnaireResponseV2: {
+              select: {
+                freeResponse1: true,
+                freeResponse2: true,
+                freeResponse3: true,
+                freeResponse4: true,
+                freeResponse5: true,
+              },
+            },
           },
         },
       },
@@ -58,6 +68,24 @@ export async function GET() {
       // Hide contact info for pending cupid_received matches
       const isPendingRequest =
         match.matchType === "cupid_received" && match.status === "pending";
+
+      // Determine free responses to show
+      const freeResponses =
+        match.matchedUser.showFreeResponseToMatches &&
+        match.matchedUser.questionnaireResponseV2
+          ? {
+              freeResponse1:
+                match.matchedUser.questionnaireResponseV2.freeResponse1,
+              freeResponse2:
+                match.matchedUser.questionnaireResponseV2.freeResponse2,
+              freeResponse3:
+                match.matchedUser.questionnaireResponseV2.freeResponse3,
+              freeResponse4:
+                match.matchedUser.questionnaireResponseV2.freeResponse4,
+              freeResponse5:
+                match.matchedUser.questionnaireResponseV2.freeResponse5,
+            }
+          : null;
 
       return {
         matchId: match.id,
@@ -86,6 +114,9 @@ export async function GET() {
             isPendingRequest || !match.matchedUser.showPointOfContactToMatches
               ? null
               : match.matchedUser.pointOfContact,
+          freeResponses,
+          showFreeResponseToMatches:
+            match.matchedUser.showFreeResponseToMatches,
         },
         revealedAt: match.revealedAt,
         createdAt: match.createdAt,

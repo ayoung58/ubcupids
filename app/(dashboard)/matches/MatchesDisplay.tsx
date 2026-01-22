@@ -19,6 +19,8 @@ import {
   X,
   Send,
   Inbox,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 type MatchStatus = "accepted" | "pending" | "declined";
@@ -38,6 +40,14 @@ interface MatchDisplay {
     bio: string | null;
     interests: string | null;
     pointOfContact: string | null;
+    freeResponses: {
+      freeResponse1: string | null;
+      freeResponse2: string | null;
+      freeResponse3: string | null;
+      freeResponse4: string | null;
+      freeResponse5: string | null;
+    } | null;
+    showFreeResponseToMatches: boolean;
   };
   revealedAt: string | null;
   createdAt: string;
@@ -417,6 +427,14 @@ function AlgorithmMatchCard({ match }: { match: MatchDisplay }) {
                 </p>
               </div>
             )}
+
+            {/* Free Response Dropdown */}
+            <FreeResponseDropdown
+              freeResponses={match.matchedUser.freeResponses}
+              showFreeResponseToMatches={
+                match.matchedUser.showFreeResponseToMatches
+              }
+            />
           </div>
         </div>
       </CardContent>
@@ -523,6 +541,16 @@ function MatchRequestCard({
                     {match.matchedUser.interests}
                   </p>
                 </div>
+              )}
+
+              {/* Free Response Dropdown for accepted matches */}
+              {match.status === "accepted" && (
+                <FreeResponseDropdown
+                  freeResponses={match.matchedUser.freeResponses}
+                  showFreeResponseToMatches={
+                    match.matchedUser.showFreeResponseToMatches
+                  }
+                />
               )}
             </div>
           </div>
@@ -723,6 +751,16 @@ function RequestSentCard({ match }: { match: MatchDisplay }) {
                 </p>
               </div>
             )}
+
+            {/* Free Response Dropdown for accepted matches */}
+            {match.status === "accepted" && (
+              <FreeResponseDropdown
+                freeResponses={match.matchedUser.freeResponses}
+                showFreeResponseToMatches={
+                  match.matchedUser.showFreeResponseToMatches
+                }
+              />
+            )}
           </div>
         </div>
       </CardContent>
@@ -839,6 +877,86 @@ function LoadingSkeleton() {
           </Card>
         ))}
       </div>
+    </div>
+  );
+}
+
+// Free Response Dropdown Component
+function FreeResponseDropdown({
+  freeResponses,
+  showFreeResponseToMatches,
+}: {
+  freeResponses: {
+    freeResponse1: string | null;
+    freeResponse2: string | null;
+    freeResponse3: string | null;
+    freeResponse4: string | null;
+    freeResponse5: string | null;
+  } | null;
+  showFreeResponseToMatches: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Define the questions
+  const questions = [
+    "What do you value most in a relationship?",
+    "Ask your match a question!",
+    "One thing you want your match to know",
+    "Something you're passionate about",
+    "Something you cannot compromise on",
+  ];
+
+  // Get non-null responses with their questions
+  const responseEntries = freeResponses
+    ? [
+        { question: questions[0], answer: freeResponses.freeResponse1 },
+        { question: questions[1], answer: freeResponses.freeResponse2 },
+        { question: questions[2], answer: freeResponses.freeResponse3 },
+        { question: questions[3], answer: freeResponses.freeResponse4 },
+        { question: questions[4], answer: freeResponses.freeResponse5 },
+      ].filter((entry) => entry.answer)
+    : [];
+
+  return (
+    <div className="mt-3">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors"
+      >
+        <span className="text-sm font-medium text-slate-700">
+          Free Response Answers
+        </span>
+        {isOpen ? (
+          <ChevronUp className="h-4 w-4 text-slate-500" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-slate-500" />
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="mt-2 p-4 bg-slate-50 rounded-lg border border-slate-200">
+          {!showFreeResponseToMatches ? (
+            <p className="text-sm text-slate-500 italic">
+              This person chose not to share their free responses.
+            </p>
+          ) : responseEntries.length === 0 ? (
+            <p className="text-sm text-slate-500 italic">
+              No free response answers available.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {responseEntries.map((entry, index) => (
+                <div key={index}>
+                  <p className="text-xs font-medium text-slate-600 mb-1">
+                    {entry.question}
+                  </p>
+                  <p className="text-sm text-slate-700">{entry.answer}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
