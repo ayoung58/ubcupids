@@ -379,22 +379,39 @@ export function generatePerfectMatchPair(): [
     indifferentRate: 0.1,
   });
 
-  // User 2: Mirror user 1's responses
-  const user2 = generateV2Responses({
-    gender: "man",
-    genderPreferences: ["women"],
-    age: 23,
-    ageRange: { min: 20, max: 25 },
-    highImportanceRate: 0.5,
-    dealbreakerRate: 0.02,
-    indifferentRate: 0.1,
-  });
+  // User 2: Mirror user 1's responses completely (except gender/age)
+  const user2: GeneratedResponses = {
+    responses: {},
+    freeResponse1: user1.freeResponse1,
+    freeResponse2: user1.freeResponse2,
+    freeResponse3: user1.freeResponse3,
+    freeResponse4: user1.freeResponse4,
+    freeResponse5: user1.freeResponse5,
+  };
 
-  // Make them highly compatible by copying some responses
-  const keysToMatch = ["q3", "q6", "q7", "q11", "q21", "q25", "q29"];
-  for (const key of keysToMatch) {
-    if (user2.responses[key]) {
-      user2.responses[key].answer = user1.responses[key].answer;
+  // Copy ALL responses from user1, but override gender/age specific ones
+  for (const [key, value] of Object.entries(user1.responses)) {
+    if (key === "q1") {
+      // Q1: Gender identity
+      user2.responses[key] = {
+        answer: "man",
+      };
+    } else if (key === "q2") {
+      // Q2: Gender preference
+      user2.responses[key] = {
+        answer: ["women"],
+      };
+    } else if (key === "q4") {
+      // Q4: Age (compatible with user1's preference)
+      user2.responses[key] = {
+        answer: 23,
+        preference: { min: 20, max: 25 },
+        importance: value.importance,
+        dealbreaker: value.dealbreaker,
+      };
+    } else {
+      // All other questions: exact copy
+      user2.responses[key] = { ...value };
     }
   }
 

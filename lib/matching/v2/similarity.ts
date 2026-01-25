@@ -19,8 +19,11 @@
  * @see docs/Matching/MATCHING_ALGORITHM_V2.md Phase 2
  */
 
-import { MatchingUser } from "./types";
+import { MatchingUser, ResponseValue } from "./types";
 import { MATCHING_CONFIG } from "./config";
+import { calculateLoveLanguageCompatibility } from "./special-cases/love-languages";
+import { calculateConflictResolutionCompatibility } from "./special-cases/conflict-resolution";
+import { calculateSleepScheduleCompatibility } from "./special-cases/sleep-schedule";
 
 /**
  * Calculates similarity scores for all questions between two users
@@ -28,7 +31,8 @@ import { MATCHING_CONFIG } from "./config";
  */
 export function calculateSimilarity(
   userA: MatchingUser,
-  userB: MatchingUser
+  userB: MatchingUser,
+  config: typeof MATCHING_CONFIG = MATCHING_CONFIG
 ): Record<string, number> {
   const similarities: Record<string, number> = {};
 
@@ -45,7 +49,8 @@ export function calculateSimilarity(
       qId,
       userA,
       userB,
-      questionType
+      questionType,
+      config
     );
   });
 
@@ -69,20 +74,48 @@ function determineQuestionType(
   | "binary" {
   // Map question IDs to their types
   const typeMap: Record<string, any> = {
-    q3: "age",
+    // Hard filters (rarely scored)
+    q1: "categorical-same",
+    q2: "multi-select",
+
+    // Section 1: Lifestyle
+    q3: "categorical-multi", // Sexual orientation - single with multi-pref
     q4: "age",
-    q7: "numeric",
-    q8: "categorical-multi",
-    q10: "directional",
-    q11: "numeric",
-    q12: "ordinal",
-    q14: "multi-select",
-    q15: "multi-select",
-    q16: "binary",
-    q17: "binary",
-    q18: "binary",
-    q19: "binary",
-    q20: "binary",
+    q5: "multi-select", // Cultural background - multi with multi-pref
+    q6: "multi-select", // Religion - multi with same/similar pref
+    q7: "numeric", // Political leaning - Likert
+    q8: "categorical-multi", // Alcohol - single with multi-pref
+    q9a: "multi-select", // Drug substances - multi with multi-pref
+    q9b: "ordinal", // Drug frequency - ordinal (never < occasionally < regularly)
+    q10: "directional", // Exercise - directional preference
+    q11: "categorical-same", // Relationship style - same preference
+    q12: "ordinal", // Sexual activity - ordinal same/similar
+    q13: "multi-select", // Relationship intent - multi with multi-pref
+    q14: "multi-select", // Field of study - multi with multi-pref
+    q15: "categorical-multi", // Living situation - single with multi-pref
+    q16: "same-similar-different", // Ambition - can be different
+    q17: "same-similar-different", // Financial - can be different
+    q18: "numeric", // Time availability - Likert same/similar
+    q19: "categorical-multi", // Pet attitude - single with multi-pref
+    q20: "categorical-multi", // Relationship experience - single with multi-pref
+
+    // Section 2: Personality
+    q21: "love-languages", // SPECIAL CASE
+    q22: "same-similar-different", // Social energy - can be different
+    q23: "same-similar-different", // Battery recharge - ordinal with different option
+    q24: "numeric", // Party interest - Likert
+    q25: "conflict-resolution", // SPECIAL CASE
+    q26: "categorical-multi", // Texting frequency - single with multi-pref
+    q27: "numeric", // Physical affection - Likert
+    q28: "same-similar-different", // Planning - can be different
+    q29: "sleep-schedule", // SPECIAL CASE
+    q30: "numeric", // Cleanliness - Likert
+    q31: "numeric", // Openness - Likert
+    q32: "multi-select", // What counts as cheating - multi-select same/similar
+    q33: "same-similar-different", // Group socializing - can be different
+    q34: "same-similar-different", // Outdoor vs indoor - can be different
+    q35: "same-similar-different", // Communication - can be different
+    q36: "numeric", // Emotional processing - Likert
   };
 
   return typeMap[questionId] || "numeric";
@@ -111,6 +144,10 @@ export function calculateQuestionSimilarity(
     | "same-similar-different"
     | "directional"
     | "binary"
+    | "love-languages"
+    | "conflict-resolution"
+    | "sleep-schedule",
+  config: typeof MATCHING_CONFIG = MATCHING_CONFIG
 ): number {
   const aResponse = userA.responses[questionId];
   const bResponse = userB.responses[questionId];
@@ -122,7 +159,7 @@ export function calculateQuestionSimilarity(
     case "numeric":
       return calculateTypeA_Numeric(aResponse, bResponse);
     case "ordinal":
-      return calculateTypeF_Ordinal(questionId, aResponse, bResponse);
+      return calculateTypeF_Ordinal(questionId, aResponse, bResponse, config);
     case "categorical-same":
       return calculateTypeB_CategoricalSame(aResponse, bResponse);
     case "categorical-multi":
@@ -137,6 +174,12 @@ export function calculateQuestionSimilarity(
       return calculateTypeG_Directional(aResponse, bResponse);
     case "binary":
       return calculateTypeH_Binary(aResponse, bResponse);
+    case "love-languages":
+      return calculateLoveLanguages(aResponse, bResponse, config);
+    case "conflict-resolution":
+      return calculateConflictResolution(aResponse, bResponse, config);
+    case "sleep-schedule":
+      return calculateSleepSchedule(aResponse, bResponse, config);
     default:
       console.warn(`Unknown question type: ${questionType} for ${questionId}`);
       return 0.5;
@@ -168,7 +211,10 @@ function mapOrdinalToNumeric(questionId: string, value: string): number | null {
  * Example: 5-point scale (1-5), A=2, B=4
  * Similarity = 1 - (|2-4| / 4) = 1 - 0.5 = 0.5
  */
-function calculateTypeA_Numeric(aResponse: any, bResponse: any): number {
+function calculateTypeA_Numeric(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue
+): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
 
@@ -189,8 +235,8 @@ function calculateTypeA_Numeric(aResponse: any, bResponse: any): number {
  * Similarity = 1.0 if answers match, 0.0 otherwise
  */
 function calculateTypeB_CategoricalSame(
-  aResponse: any,
-  bResponse: any
+  aResponse: ResponseValue,
+  bResponse: ResponseValue
 ): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
@@ -209,8 +255,8 @@ function calculateTypeB_CategoricalSame(
  * Returns average of (A satisfied by B, B satisfied by A)
  */
 function calculateTypeC_CategoricalMulti(
-  aResponse: any,
-  bResponse: any
+  aResponse: ResponseValue,
+  bResponse: ResponseValue
 ): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
@@ -236,7 +282,10 @@ function calculateTypeC_CategoricalMulti(
  * Union = [1,2,3,4] (size 4)
  * Similarity = 2/4 = 0.5
  */
-function calculateTypeD_MultiSelect(aResponse: any, bResponse: any): number {
+function calculateTypeD_MultiSelect(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue
+): number {
   const aAnswer = aResponse.answer || [];
   const bAnswer = bResponse.answer || [];
 
@@ -267,7 +316,10 @@ function calculateTypeD_MultiSelect(aResponse: any, bResponse: any): number {
  * - 0.0 if outside range
  * - Average of both directions
  */
-function calculateTypeE_Age(aResponse: any, bResponse: any): number {
+function calculateTypeE_Age(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue
+): number {
   const aAge = aResponse.answer?.age;
   const bAge = bResponse.answer?.age;
 
@@ -308,8 +360,9 @@ function calculateTypeE_Age(aResponse: any, bResponse: any): number {
  */
 function calculateTypeF_Ordinal(
   questionId: string,
-  aResponse: any,
-  bResponse: any
+  aResponse: ResponseValue,
+  bResponse: ResponseValue,
+  config: typeof MATCHING_CONFIG
 ): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
@@ -327,16 +380,14 @@ function calculateTypeF_Ordinal(
       : null;
 
   // Handle prefer_not_to_answer or invalid values
-  // Note: The spec suggests using 0.3 for "Very Important" questions when partner
-  // prefers not to answer, but at this phase we don't have access to importance weights.
-  // Using 0.5 as a neutral penalty is a reasonable compromise.
+  // Per V2.2 spec: Use configured similarity penalty for uncertainty
   if (
     aNumeric === null ||
     bNumeric === null ||
     aNumeric === -1 ||
     bNumeric === -1
   ) {
-    return 0.5;
+    return config.PREFER_NOT_ANSWER_SIMILARITY;
   }
 
   // Calculate raw numeric similarity
@@ -378,8 +429,8 @@ function calculateTypeF_Ordinal(
  * 3. Return average of (A satisfied, B satisfied)
  */
 function calculateTypeF_SameSimilarDifferent(
-  aResponse: any,
-  bResponse: any
+  aResponse: ResponseValue,
+  bResponse: ResponseValue
 ): number {
   // First, calculate raw numeric similarity
   const rawSimilarity = calculateTypeA_Numeric(aResponse, bResponse);
@@ -419,7 +470,10 @@ function calculateTypeF_SameSimilarDifferent(
  * - answer: number (Likert scale)
  * - preference: "more" | "less" | "similar" | "same"
  */
-function calculateTypeG_Directional(aResponse: any, bResponse: any): number {
+function calculateTypeG_Directional(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue
+): number {
   // For Phase 2, just calculate raw numeric similarity
   // Phase 4 will apply α/β based on directional preference alignment
   return calculateTypeA_Numeric(aResponse, bResponse);
@@ -431,9 +485,88 @@ function calculateTypeG_Directional(aResponse: any, bResponse: any): number {
  *
  * Similarity = 1.0 if answers match, 0.0 otherwise
  */
-function calculateTypeH_Binary(aResponse: any, bResponse: any): number {
+function calculateTypeH_Binary(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue
+): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
 
   return aAnswer === bAnswer ? 1.0 : 0.0;
+}
+
+/**
+ * Special Case: Love Languages (Q21)
+ * Wrapper for the special case function
+ */
+function calculateLoveLanguages(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue,
+  config: typeof MATCHING_CONFIG
+): number {
+  // Defensive check for missing answer data
+  if (!aResponse?.answer || !bResponse?.answer) {
+    return config.PREFER_NOT_ANSWER_SIMILARITY;
+  }
+
+  const result = calculateLoveLanguageCompatibility(
+    aResponse.answer, // LoveLanguageResponse
+    bResponse.answer, // LoveLanguageResponse
+    config
+  );
+  return result.weightedScore;
+}
+
+/**
+ * Special Case: Conflict Resolution (Q25)
+ * Wrapper for the special case function
+ */
+function calculateConflictResolution(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue,
+  config: typeof MATCHING_CONFIG
+): number {
+  // Defensive check for missing data
+  if (!aResponse || !bResponse) {
+    return config.PREFER_NOT_ANSWER_SIMILARITY;
+  }
+
+  // Ensure responses have the required structure
+  const aConflictResponse = {
+    answer: aResponse.answer || [],
+    preference: aResponse.preference || "compatible",
+  };
+  const bConflictResponse = {
+    answer: bResponse.answer || [],
+    preference: bResponse.preference || "compatible",
+  };
+
+  const result = calculateConflictResolutionCompatibility(
+    aConflictResponse,
+    bConflictResponse,
+    config
+  );
+  return result.finalScore;
+}
+
+/**
+ * Special Case: Sleep Schedule (Q29)
+ * Wrapper for the special case function
+ */
+function calculateSleepSchedule(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue,
+  config: typeof MATCHING_CONFIG
+): number {
+  // Defensive check for missing answer data
+  if (!aResponse?.answer || !bResponse?.answer) {
+    return config.PREFER_NOT_ANSWER_SIMILARITY;
+  }
+
+  const result = calculateSleepScheduleCompatibility(
+    aResponse, // Full response with answer
+    bResponse, // Full response with answer
+    config
+  );
+  return result.finalScore;
 }

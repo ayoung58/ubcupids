@@ -608,7 +608,7 @@ Section Weights: LIFESTYLE 0.65, PERSONALITY 0.35
 Importance Weights: NOT 0, SOMEWHAT 0.5, IMPORTANT 1.0, VERY 2.0
 Mutuality Alpha: 0.65 (balance between min and mean)
 Relative Threshold Beta: 0.6 (prevents settling)
-Absolute Threshold Min: 50 (minimum quality gate)
+Absolute Threshold Min: 40 (minimum quality gate)
 Love Language Weights: SHOW 0.6, RECEIVE 0.4
 Conflict Resolution Matrix: 4×4 compatibility matrix
 Sleep Flexibility Bonus: Reserved for future use

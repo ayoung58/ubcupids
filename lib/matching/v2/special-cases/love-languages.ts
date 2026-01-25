@@ -69,6 +69,16 @@ export function calculateLoveLanguageCompatibility(
   userBResponse: LoveLanguageResponse,
   config: MatchingConfig
 ): LoveLanguageCompatibilityResult {
+  // Defensive check for invalid responses
+  if (!userAResponse || !userBResponse) {
+    return {
+      showCompatibility: 0.5,
+      receiveCompatibility: 0.5,
+      weightedScore: 0.5,
+      mutualMatches: 0,
+    };
+  }
+
   // Calculate how many of A's "show" languages match B's "receive" preferences
   const aShowMatchesBReceive = countMatches(
     userAResponse.show,
@@ -109,6 +119,10 @@ export function calculateLoveLanguageCompatibility(
  * @returns Count of matching items
  */
 function countMatches(arrayA: LoveLanguage[], arrayB: LoveLanguage[]): number {
+  // Defensive check for undefined/null arrays
+  if (!arrayA || !Array.isArray(arrayA) || !arrayB || !Array.isArray(arrayB)) {
+    return 0;
+  }
   const setB = new Set(arrayB);
   return arrayA.filter((item) => setB.has(item)).length;
 }

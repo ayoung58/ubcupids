@@ -77,8 +77,10 @@ export function checkEligibility(
   userABestScore: number,
   userBBestScore: number,
   config: MatchingConfig,
-  beta: number = 0.6
+  beta?: number
 ): EligibilityResult {
+  // Use beta from config if not explicitly provided
+  const effectiveBeta = beta ?? config.RELATIVE_THRESHOLD_BETA;
   const failureReasons: string[] = [];
 
   // Check 1: Absolute threshold
@@ -90,20 +92,20 @@ export function checkEligibility(
   }
 
   // Check 2: User A relative threshold
-  const userAThreshold = userABestScore * beta;
+  const userAThreshold = userABestScore * effectiveBeta;
   const passedUserARelativeThreshold = userAToB >= userAThreshold;
   if (!passedUserARelativeThreshold) {
     failureReasons.push(
-      `User A score ${userAToB.toFixed(1)} below relative threshold ${userAThreshold.toFixed(1)} (${beta}× best score ${userABestScore.toFixed(1)})`
+      `User A score ${userAToB.toFixed(1)} below relative threshold ${userAThreshold.toFixed(1)} (${effectiveBeta}× best score ${userABestScore.toFixed(1)})`
     );
   }
 
   // Check 3: User B relative threshold
-  const userBThreshold = userBBestScore * beta;
+  const userBThreshold = userBBestScore * effectiveBeta;
   const passedUserBRelativeThreshold = userBToA >= userBThreshold;
   if (!passedUserBRelativeThreshold) {
     failureReasons.push(
-      `User B score ${userBToA.toFixed(1)} below relative threshold ${userBThreshold.toFixed(1)} (${beta}× best score ${userBBestScore.toFixed(1)})`
+      `User B score ${userBToA.toFixed(1)} below relative threshold ${userBThreshold.toFixed(1)} (${effectiveBeta}× best score ${userBBestScore.toFixed(1)})`
     );
   }
 
@@ -118,7 +120,7 @@ export function checkEligibility(
     passedUserARelativeThreshold,
     passedUserBRelativeThreshold,
     absoluteThreshold: config.T_MIN,
-    relativeThreshold: beta,
+    relativeThreshold: effectiveBeta,
     failureReasons,
   };
 }

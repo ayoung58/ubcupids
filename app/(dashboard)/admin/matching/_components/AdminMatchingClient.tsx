@@ -12,9 +12,7 @@ import {
   Users,
   Heart,
   AlertCircle,
-  CheckCircle2,
   Clock,
-  TrendingUp,
   BarChart3,
   Beaker,
   Rocket,
@@ -56,13 +54,11 @@ interface MatchingRunResult {
 interface AdminMatchingClientProps {
   productionStats: Stats;
   testStats: Stats;
-  recentRuns: any[] | null;
 }
 
 export function AdminMatchingClient({
   productionStats,
   testStats,
-  recentRuns,
 }: AdminMatchingClientProps) {
   const router = useRouter();
   const [userType, setUserType] = useState<"test" | "production">("test");
@@ -473,13 +469,13 @@ export function AdminMatchingClient({
                         <DiagnosticRow
                           label="Phase 2-6: Pair Scoring"
                           value={`${lastResult.diagnostics.phase2to6_pairScoresCalculated} pairs scored`}
-                          subvalue={`Avg: ${lastResult.diagnostics.phase2to6_averageRawScore.toFixed(1)}/100`}
+                          subvalue={`Avg: ${(lastResult.diagnostics.phase2to6_averageRawScore ?? 0).toFixed(1)}/100`}
                           color="blue"
                         />
                         <DiagnosticRow
                           label="Phase 7: Eligibility Filtering"
                           value={`${lastResult.diagnostics.phase7_eligiblePairs} eligible pairs`}
-                          subvalue={`Failed: ${lastResult.diagnostics.phase7_failedAbsolute} absolute, ${lastResult.diagnostics.phase7_failedRelativeA + lastResult.diagnostics.phase7_failedRelativeB} relative`}
+                          subvalue={`Failed: ${lastResult.diagnostics.phase7_failedAbsolute ?? 0} absolute, ${(lastResult.diagnostics.phase7_failedRelativeA ?? 0) + (lastResult.diagnostics.phase7_failedRelativeB ?? 0)} relative`}
                           color="amber"
                         />
                         <DiagnosticRow

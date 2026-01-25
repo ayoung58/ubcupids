@@ -147,7 +147,6 @@ export default async function AdminMatchingPage() {
     <AdminMatchingClient
       productionStats={productionStats}
       testStats={testStats}
-      recentRuns={recentRuns}
     />
   );
 }

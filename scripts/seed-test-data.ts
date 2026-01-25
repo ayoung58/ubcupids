@@ -275,7 +275,7 @@ async function createTestUsers(hashedPassword: string): Promise<void> {
     SCENARIO === "dealbreaker" ||
     SCENARIO === "asymmetric"
   ) {
-    const pairCount = Math.min(10, Math.floor(NUM_USERS / 2));
+    const pairCount = Math.floor(NUM_USERS / 2); // Create pairs for ALL users
     const pairs = [];
 
     for (let i = 0; i < pairCount; i++) {

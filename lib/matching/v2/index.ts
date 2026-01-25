@@ -27,6 +27,60 @@ import {
 } from "./blossom-matching";
 import { MatchingConfig, DEFAULT_CONFIG } from "./config";
 
+/**
+ * Normalizes gender values to handle inconsistencies between Q1 and Q2
+ * Q1 (Gender Identity) uses: "man", "woman", "non-binary", "genderqueer"
+ * Q2 (Gender Preference) uses: "men", "women", "non_binary", "genderqueer"
+ *
+ * We normalize to Q2's format (plural/underscore) for consistency
+ *
+ * @param gender - Raw gender value from questionnaire
+ * @returns Normalized gender value
+ */
+function normalizeGenderValue(gender: string): string {
+  // Normalize singular to plural
+  if (gender === "man") return "men";
+  if (gender === "woman") return "women";
+
+  // Normalize hyphen to underscore
+  if (gender === "non-binary") return "non_binary";
+
+  return gender;
+}
+
+/**
+ * Converts importance level string to numeric weight
+ * Maps questionnaire importance strings to numeric values for scoring
+ * Per V2.2 spec: NOT=0, SOMEWHAT=0.5, IMPORTANT=1.0, VERY=2.0
+ *
+ * @param importance - Importance string from questionnaire response
+ * @param config - Matching configuration
+ * @returns Numeric importance value per spec
+ */
+function getImportanceWeight(
+  importance: string | number | undefined,
+  config: MatchingConfig = DEFAULT_CONFIG
+): number {
+  if (typeof importance === "number") return importance;
+  if (!importance) return config.IMPORTANCE_WEIGHTS.SOMEWHAT_IMPORTANT; // Default to somewhat important
+
+  const weights = config.IMPORTANCE_WEIGHTS;
+  
+  // Normalize to uppercase to handle both uppercase and lowercase values
+  const normalizedImportance = typeof importance === "string" 
+    ? importance.toUpperCase() 
+    : importance;
+  
+  const importanceMap: Record<string, number> = {
+    NOT_IMPORTANT: weights.NOT_IMPORTANT,
+    SOMEWHAT_IMPORTANT: weights.SOMEWHAT_IMPORTANT,
+    IMPORTANT: weights.IMPORTANT,
+    VERY_IMPORTANT: weights.VERY_IMPORTANT,
+  };
+
+  return importanceMap[normalizedImportance] ?? weights.SOMEWHAT_IMPORTANT;
+}
+
 export interface MatchingPipelineResult {
   matches: MatchingResult["matched"];
   unmatched: MatchingResult["unmatched"];
@@ -42,6 +96,7 @@ export interface PipelineDiagnostics {
     userAId: string;
     userBId: string;
     questionId: string;
+    reason?: string;
   }[];
 
   // Phase 2-6: Scoring
@@ -99,14 +154,23 @@ export function runMatchingPipeline(
   // Extract gender and interestedInGenders from responses if not present
   const processedUsers = users.map((user) => {
     if (!user.gender && user.responses.q1) {
-      user.gender = user.responses.q1.answer as string;
+      user.gender = normalizeGenderValue(user.responses.q1.answer as string);
     }
     if (!user.interestedInGenders && user.responses.q2) {
       const q2Answer = user.responses.q2.answer;
-      user.interestedInGenders = Array.isArray(q2Answer)
-        ? q2Answer
-        : [q2Answer];
+      const genderPrefs = Array.isArray(q2Answer) ? q2Answer : [q2Answer];
+      user.interestedInGenders = genderPrefs.map(normalizeGenderValue);
+    } else if (user.interestedInGenders) {
+      // Normalize existing gender preferences
+      user.interestedInGenders =
+        user.interestedInGenders.map(normalizeGenderValue);
     }
+
+    // Normalize gender if already set
+    if (user.gender) {
+      user.gender = normalizeGenderValue(user.gender);
+    }
+
     return user;
   });
 
@@ -115,6 +179,7 @@ export function runMatchingPipeline(
     userAId: string;
     userBId: string;
     questionId: string;
+    reason?: string;
   }[] = [];
   const pairScores: { userAId: string; userBId: string; score: number }[] = [];
   const eligiblePairs: EligiblePair[] = [];
@@ -137,6 +202,7 @@ export function runMatchingPipeline(
             userAId: userA.id,
             userBId: userB.id,
             questionId: hardFilterResult.failedQuestions[0], // Just record first one
+            reason: hardFilterResult.reason,
           });
         }
         continue;
@@ -296,23 +362,71 @@ function calculateDirectionalScoreComplete(
   config: MatchingConfig
 ): number {
   // Phase 2: Calculate raw similarities for all questions
-  const similarities = calculateSimilarity(userA, userB);
+  const similarities = calculateSimilarity(userA, userB, config);
 
-  // Phase 3-5: We need to aggregate scores across all questions
-  // For now, return a simple average of similarities scaled to 0-100
   const questionIds = Object.keys(similarities);
   if (questionIds.length === 0) return 0;
 
-  const totalSimilarity = questionIds.reduce((sum, qid) => {
-    const rawSim = similarities[qid];
-    // Get importance from userA for this question
-    const importance = userA.responses[qid]?.importance || 3;
-    const weighted = rawSim * (importance / 5);
-    return sum + weighted;
-  }, 0);
+  // Phase 3-4: Apply importance weighting
+  // Separate questions by section
+  const lifestyleQuestions = [
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "q6",
+    "q7",
+    "q8",
+    "q9a",
+    "q9b",
+    "q10",
+    "q11",
+    "q12",
+    "q13",
+    "q14",
+    "q15",
+    "q16",
+    "q17",
+    "q18",
+    "q19",
+    "q20",
+  ];
 
-  const averageScore = totalSimilarity / questionIds.length;
-  return averageScore * 100; // Scale to 0-100
+  let lifestyleScore = 0;
+  let lifestyleCount = 0;
+  let personalityScore = 0;
+  let personalityCount = 0;
+
+  questionIds.forEach((qid) => {
+    const rawSim = similarities[qid];
+    // Get importance from userA for this question and convert to numeric weight
+    const importanceStr = userA.responses[qid]?.importance;
+    const importance = getImportanceWeight(importanceStr, config);
+    // Apply importance weight directly (no normalization needed)
+    const weighted = rawSim * importance;
+
+    if (lifestyleQuestions.includes(qid)) {
+      lifestyleScore += weighted;
+      lifestyleCount++;
+    } else {
+      personalityScore += weighted;
+      personalityCount++;
+    }
+  });
+
+  // Calculate average scores per section
+  const avgLifestyle = lifestyleCount > 0 ? lifestyleScore / lifestyleCount : 0;
+  const avgPersonality =
+    personalityCount > 0 ? personalityScore / personalityCount : 0;
+
+  // Phase 5: Apply section weighting (65% lifestyle, 35% personality)
+  const weightedTotal =
+    avgLifestyle * config.SECTION_WEIGHTS.LIFESTYLE +
+    avgPersonality * config.SECTION_WEIGHTS.PERSONALITY;
+
+  // Scale to 0-100 (max weighted score when importance=2.0 is 2.0, so divide by 2)
+  return (weightedTotal / config.IMPORTANCE_WEIGHTS.VERY_IMPORTANT) * 100;
 }
 
 /**

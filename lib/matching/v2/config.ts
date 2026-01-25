@@ -25,9 +25,9 @@ export const MATCHING_CONFIG = {
   /**
    * T_MIN - Minimum pair score threshold for eligibility
    * Pairs below this score are not considered for matching
-   * Range: [0, 100], Default: 50
+   * Range: [0, 100], Default: 40
    */
-  T_MIN: 50,
+  T_MIN: 40,
 
   /**
    * Section weights - Relative importance of each section
@@ -67,6 +67,41 @@ export const MATCHING_CONFIG = {
    * Range: [0, 1], Default: 0.2 (20% bonus)
    */
   SLEEP_FLEXIBILITY_BONUS: 0.2,
+
+  /**
+   * Importance Weights - Maps importance levels to numeric multipliers
+   * Per V2.2 spec: NOT=0, SOMEWHAT=0.5, IMPORTANT=1.0, VERY=2.0
+   */
+  IMPORTANCE_WEIGHTS: {
+    NOT_IMPORTANT: 0,
+    SOMEWHAT_IMPORTANT: 0.5,
+    IMPORTANT: 1.0,
+    VERY_IMPORTANT: 2.0,
+  },
+
+  /**
+   * Mutuality Alpha - Balance between min and mean in pair score calculation
+   * Formula: pair_score = α × min(A→B, B→A) + (1-α) × mean(A→B, B→A)
+   * Range: [0, 1], Default: 0.65
+   * Higher values prioritize the weakest link (more conservative matching)
+   */
+  MUTUALITY_ALPHA: 0.65,
+
+  /**
+   * Relative Threshold Beta - Prevents "settling" for worse matches
+   * Users can only match with someone scoring ≥ β × their_best_score
+   * Range: [0, 1], Default: 0.6
+   * Higher values mean stricter relative filtering
+   */
+  RELATIVE_THRESHOLD_BETA: 0.6,
+
+  /**
+   * Prefer Not to Answer Similarity - Penalty for uncertain responses
+   * Applied when one user chooses "prefer not to answer"
+   * Range: [0, 1], Default: 0.3
+   * Lower values penalize uncertainty more heavily
+   */
+  PREFER_NOT_ANSWER_SIMILARITY: 0.3,
 };
 
 export type MatchingConfig = typeof MATCHING_CONFIG;

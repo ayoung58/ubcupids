@@ -111,7 +111,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Run matching algorithm
+    console.log(
+      `[Matching] Running pipeline for ${users.length} users (isTestUser: ${isTestUser})`
+    );
     const result = runMatchingPipeline(users);
+    console.log(
+      `[Matching] Pipeline complete: ${result.matches.length} matches, ${result.unmatched.length} unmatched`
+    );
 
     // Generate run ID
     const runId = `match-run-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -174,51 +180,53 @@ export async function POST(request: NextRequest) {
       timestamp,
       dryRun,
       userCount: users.length,
+      matchesCreated: result.diagnostics.phase8_matchesCreated,
+      unmatchedCount: result.diagnostics.phase8_unmatchedUsers,
+      executionTimeMs: result.diagnostics.executionTimeMs,
       pairScoresCalculated: result.diagnostics.phase2to6_pairScoresCalculated,
       eligiblePairs: result.diagnostics.phase7_eligiblePairs,
-      matchesCreated: result.diagnostics.phase8_matchesCreated,
-      unmatchedUsers: result.diagnostics.phase8_unmatchedUsers,
     };
 
     // Include diagnostics if requested
     if (includeDiagnostics) {
+      // Convert scoreDistribution array to object for React rendering
+      const scoreDistributionObj = result.diagnostics.scoreDistribution.reduce(
+        (acc, { range, count }) => {
+          acc[range] = count;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+
       response.diagnostics = {
         executionTimeMs: result.diagnostics.executionTimeMs,
 
-        phase1: {
-          filteredPairs: result.diagnostics.phase1_filteredPairs,
-          dealbreakers: result.diagnostics.phase1_dealbreakers,
-        },
+        // Flatten phase diagnostics to match client expectations
+        phase1_filteredPairs: result.diagnostics.phase1_filteredPairs,
+        phase1_dealbreakers: result.diagnostics.phase1_dealbreakers,
 
-        phase2to6: {
-          pairScoresCalculated:
-            result.diagnostics.phase2to6_pairScoresCalculated,
-          averageRawScore:
-            Math.round(result.diagnostics.phase2to6_averageRawScore * 100) /
-            100,
-          scoreDistribution: result.diagnostics.scoreDistribution,
-        },
+        phase2to6_pairScoresCalculated:
+          result.diagnostics.phase2to6_pairScoresCalculated,
+        phase2to6_averageRawScore:
+          Math.round(result.diagnostics.phase2to6_averageRawScore * 100) / 100,
+        scoreDistribution: scoreDistributionObj,
 
-        phase7: {
-          eligiblePairs: result.diagnostics.phase7_eligiblePairs,
-          failedAbsoluteThreshold: result.diagnostics.phase7_failedAbsolute,
-          failedRelativeThresholdA: result.diagnostics.phase7_failedRelativeA,
-          failedRelativeThresholdB: result.diagnostics.phase7_failedRelativeB,
-          perfectionistUsers: result.diagnostics.phase7_perfectionists,
-        },
+        phase7_eligiblePairs: result.diagnostics.phase7_eligiblePairs,
+        phase7_failedAbsolute: result.diagnostics.phase7_failedAbsolute,
+        phase7_failedRelativeA: result.diagnostics.phase7_failedRelativeA,
+        phase7_failedRelativeB: result.diagnostics.phase7_failedRelativeB,
+        phase7_perfectionists: result.diagnostics.phase7_perfectionists,
 
-        phase8: {
-          matchesCreated: result.diagnostics.phase8_matchesCreated,
-          unmatchedUsers: result.diagnostics.phase8_unmatchedUsers,
-          averageMatchScore:
-            Math.round(result.diagnostics.phase8_averageMatchScore * 100) / 100,
-          medianMatchScore:
-            Math.round(result.diagnostics.phase8_medianMatchScore * 100) / 100,
-          minMatchScore:
-            Math.round(result.diagnostics.phase8_minMatchScore * 100) / 100,
-          maxMatchScore:
-            Math.round(result.diagnostics.phase8_maxMatchScore * 100) / 100,
-        },
+        phase8_matchesCreated: result.diagnostics.phase8_matchesCreated,
+        phase8_unmatchedUsers: result.diagnostics.phase8_unmatchedUsers,
+        phase8_averageMatchScore:
+          Math.round(result.diagnostics.phase8_averageMatchScore * 100) / 100,
+        phase8_medianMatchScore:
+          Math.round(result.diagnostics.phase8_medianMatchScore * 100) / 100,
+        phase8_minMatchScore:
+          Math.round(result.diagnostics.phase8_minMatchScore * 100) / 100,
+        phase8_maxMatchScore:
+          Math.round(result.diagnostics.phase8_maxMatchScore * 100) / 100,
 
         unmatchedDetails: result.unmatched.map((u) => ({
           userId: u.userId,
@@ -234,10 +242,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error running matching algorithm:", error);
+    if (error instanceof Error) {
+      console.error("Error stack:", error.stack);
+    }
     return NextResponse.json(
       {
         error: "Failed to run matching algorithm",
         details: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
       },
       { status: 500 }
     );

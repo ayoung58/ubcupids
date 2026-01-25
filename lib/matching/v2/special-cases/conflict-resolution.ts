@@ -34,7 +34,7 @@ export type ConflictResolutionPreference = "same" | "compatible";
  * Q25 response structure (updated for multi-select)
  */
 export interface ConflictResolutionResponse {
-  answer: ConflictResolutionStyle[]; // Array of 1-2 styles
+  answer: ConflictResolutionStyle[] | ConflictResolutionStyle; // Array of 1-2 styles OR single string (for backward compatibility)
   preference: ConflictResolutionPreference;
 }
 
@@ -83,8 +83,31 @@ export function calculateConflictResolutionCompatibility(
   userBResponse: ConflictResolutionResponse,
   config: MatchingConfig
 ): ConflictResolutionCompatibilityResult {
-  const aStyles = userAResponse.answer || [];
-  const bStyles = userBResponse.answer || [];
+  // Defensive check for invalid responses
+  if (!userAResponse || !userBResponse) {
+    return {
+      overlapScore: 0,
+      avgCompatibility: 0.5,
+      finalScore: 0.5,
+      bothWantSame: false,
+    };
+  }
+
+  // Normalize answers to arrays (handle both string and array inputs)
+  const rawAStyles = userAResponse.answer;
+  const rawBStyles = userBResponse.answer;
+
+  const aStyles = Array.isArray(rawAStyles)
+    ? rawAStyles
+    : rawAStyles
+      ? [rawAStyles]
+      : [];
+  const bStyles = Array.isArray(rawBStyles)
+    ? rawBStyles
+    : rawBStyles
+      ? [rawBStyles]
+      : [];
+
   const aPreference = userAResponse.preference;
   const bPreference = userBResponse.preference;
 

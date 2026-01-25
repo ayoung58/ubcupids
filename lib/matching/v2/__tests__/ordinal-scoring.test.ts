@@ -10,12 +10,15 @@ import { MatchingUser } from "../types";
 
 function createUser(id: string, responses: Record<string, any>): MatchingUser {
   return {
-    userId: id,
+    id,
+    email: `${id}@test.com`,
+    name: id,
     responses,
-    genderIdentity: "woman",
-    genderPreference: ["men"],
-    age: 22,
-    ageRange: { min: 20, max: 25 },
+    gender: "woman",
+    interestedInGenders: ["men"],
+    campus: "UBCV",
+    okMatchingDifferentCampus: true,
+    responseRecord: {} as any,
   };
 }
 

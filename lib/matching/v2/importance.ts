@@ -39,17 +39,18 @@ export function applyImportanceWeighting(
   userBWeighted: number;
   averageWeighted: number;
 } {
-  // Default importance to 3 (neutral) if not provided
-  const aImportance = userAImportance ?? 3;
-  const bImportance = userBImportance ?? 3;
+  // Use importance weights directly from config (0, 0.5, 1.0, 2.0)
+  // Default to SOMEWHAT_IMPORTANT (0.5) if not provided
+  const aImportance = userAImportance ?? 0.5;
+  const bImportance = userBImportance ?? 0.5;
 
-  // Ensure importance is in valid range [1, 5]
-  const clampedAImportance = Math.max(1, Math.min(5, aImportance));
-  const clampedBImportance = Math.max(1, Math.min(5, bImportance));
+  // Ensure importance is in valid range [0, 2.0]
+  const clampedAImportance = Math.max(0, Math.min(2.0, aImportance));
+  const clampedBImportance = Math.max(0, Math.min(2.0, bImportance));
 
-  // Apply importance as multiplier
-  const userAWeighted = rawSimilarity * (clampedAImportance / 5);
-  const userBWeighted = rawSimilarity * (clampedBImportance / 5);
+  // Apply importance as direct multiplier (no division)
+  const userAWeighted = rawSimilarity * clampedAImportance;
+  const userBWeighted = rawSimilarity * clampedBImportance;
 
   // Return average of both weighted scores
   const averageWeighted = (userAWeighted + userBWeighted) / 2;

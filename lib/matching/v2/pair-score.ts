@@ -78,8 +78,8 @@ export function calculatePairScore(
   questionScores: Record<string, { a: number; b: number; section: string }>,
   config: MatchingConfig
 ): PairScoreResult {
-  // Apply mutuality formula (α=0.65)
-  const alpha = 0.65;
+  // Apply mutuality formula using config alpha
+  const alpha = config.MUTUALITY_ALPHA;
   const minScore = Math.min(userAToB, userBToA);
   const meanScore = (userAToB + userBToA) / 2;
   const pairScore = alpha * minScore + (1 - alpha) * meanScore;

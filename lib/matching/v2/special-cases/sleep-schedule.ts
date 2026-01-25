@@ -60,6 +60,16 @@ export function calculateSleepScheduleCompatibility(
   userBResponse: SleepScheduleResponse,
   config: MatchingConfig
 ): SleepScheduleCompatibilityResult {
+  // Defensive check for invalid responses
+  if (!userAResponse?.answer || !userBResponse?.answer) {
+    return {
+      similarity: 0.5,
+      isFlexible: false,
+      appliedFlexibilityBonus: false,
+      finalScore: 0.5,
+    };
+  }
+
   const aSchedule = userAResponse.answer;
   const bSchedule = userBResponse.answer;
 
