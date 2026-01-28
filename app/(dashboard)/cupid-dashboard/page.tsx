@@ -50,6 +50,11 @@ export default async function CupidDashboardPage() {
     where: {
       batchNumber: 1,
       cupidUser: {
+        isTestUser: profile?.isTestUser ?? false,
+      },
+    },
+  });
+
   const isProductionCupid = !profile?.isTestUser;
   const currentDate = new Date();
   const launchDate = new Date("2026-02-01T00:00:00.000Z");
