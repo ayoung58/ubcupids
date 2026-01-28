@@ -79,7 +79,7 @@ export async function getApprovedCupids(): Promise<
  * 5. Candidates with fewer than 5 compatible matches are skipped
  */
 export async function assignCandidatesToCupids(
-  batchNumber: number = CURRENT_BATCH
+  batchNumber: number = CURRENT_BATCH,
 ): Promise<{
   totalCandidates: number;
   assignedCandidates: number;
@@ -95,7 +95,7 @@ export async function assignCandidatesToCupids(
     where: { batchNumber },
   });
   console.log(
-    `Cleared ${deletedCount.count} existing assignments for batch ${batchNumber}`
+    `Cleared ${deletedCount.count} existing assignments for batch ${batchNumber}`,
   );
 
   // Get ALL cupids: users with isCupid=true OR users with CupidProfile entries
@@ -171,11 +171,11 @@ export async function assignCandidatesToCupids(
     };
   }
 
-  // Get all candidates (users who are being matched and have completed questionnaire)
+  // Get all candidates (users who are being matched and have completed questionnaire V2)
   const candidates = await prisma.user.findMany({
     where: {
       isBeingMatched: true,
-      questionnaireResponse: {
+      questionnaireResponseV2: {
         isSubmitted: true,
       },
     },
@@ -203,12 +203,12 @@ export async function assignCandidatesToCupids(
 
     // Find the preferred candidate
     const preferredCandidate = candidates.find(
-      (c) => c.email.toLowerCase() === preferredEmail.toLowerCase()
+      (c) => c.email.toLowerCase() === preferredEmail.toLowerCase(),
     );
 
     if (!preferredCandidate) {
       console.log(
-        `Cupid ${cupid.userId}'s preferred candidate (${preferredEmail}) not found or not eligible`
+        `Cupid ${cupid.userId}'s preferred candidate (${preferredEmail}) not found or not eligible`,
       );
       continue;
     }
@@ -216,37 +216,40 @@ export async function assignCandidatesToCupids(
     // Check if this candidate is already assigned
     if (assignedCandidateIds.has(preferredCandidate.id)) {
       console.log(
-        `Preferred candidate ${preferredCandidate.id} already assigned to another cupid`
+        `Preferred candidate ${preferredCandidate.id} already assigned to another cupid`,
       );
       continue;
     }
 
     // Get top compatible matches for this candidate
+    // Sort by bidirectional score, but candidate→match preference is prioritized
     const topMatches = await prisma.compatibilityScore.findMany({
       where: {
         userId: preferredCandidate.id,
         batchNumber,
         bidirectionalScore: { not: null },
         targetUser: {
-          questionnaireResponse: {
+          questionnaireResponseV2: {
             isSubmitted: true,
           },
         },
       },
-      orderBy: {
-        bidirectionalScore: "desc",
-      },
+      orderBy: [
+        { totalScore: "desc" }, // Sort by user→target score (candidate's preference)
+        { bidirectionalScore: "desc" }, // Then bidirectional score
+      ],
       take: 25, // Fetch top 25 matches
       select: {
         targetUserId: true,
         bidirectionalScore: true,
+        totalScore: true,
       },
     });
 
     // Skip if no matches at all
     if (topMatches.length === 0) {
       console.log(
-        `Skipping preferred candidate ${preferredCandidate.id} - has no compatible matches`
+        `Skipping preferred candidate ${preferredCandidate.id} - has no compatible matches`,
       );
       continue;
     }
@@ -272,7 +275,7 @@ export async function assignCandidatesToCupids(
     preferredCount++;
 
     console.log(
-      `✓ Assigned preferred candidate ${preferredCandidate.id} to cupid ${cupid.userId}`
+      `✓ Assigned preferred candidate ${preferredCandidate.id} to cupid ${cupid.userId}`,
     );
   }
 
@@ -287,31 +290,34 @@ export async function assignCandidatesToCupids(
     }
 
     // Get top compatible matches for this candidate (fetch top 25)
+    // Sort by candidate→match directional score (what candidate prefers most)
     const topMatches = await prisma.compatibilityScore.findMany({
       where: {
         userId: candidate.id,
         batchNumber,
         bidirectionalScore: { not: null },
         targetUser: {
-          questionnaireResponse: {
+          questionnaireResponseV2: {
             isSubmitted: true,
           },
         },
       },
-      orderBy: {
-        bidirectionalScore: "desc",
-      },
+      orderBy: [
+        { totalScore: "desc" }, // Sort by user→target score (candidate's preference)
+        { bidirectionalScore: "desc" }, // Then bidirectional score
+      ],
       take: 25, // Fetch top 25 for potential expansion
       select: {
         targetUserId: true,
         bidirectionalScore: true,
+        totalScore: true,
       },
     });
 
     // Skip candidates with no compatible matches
     if (topMatches.length === 0) {
       console.log(
-        `Skipping candidate ${candidate.id} - has no compatible matches`
+        `Skipping candidate ${candidate.id} - has no compatible matches`,
       );
       skippedCount++;
       continue;
@@ -348,7 +354,7 @@ export async function assignCandidatesToCupids(
         });
 
         console.log(
-          `Assigned candidate ${candidate.id} to cupid ${cupid.userId}`
+          `Assigned candidate ${candidate.id} to cupid ${cupid.userId}`,
         );
 
         assignedCount++;
@@ -374,7 +380,7 @@ export async function assignCandidatesToCupids(
       });
 
       console.log(
-        `Assigned additional candidate ${candidate.id} to cupid ${cupid.userId}`
+        `Assigned additional candidate ${candidate.id} to cupid ${cupid.userId}`,
       );
 
       assignedCount++;
@@ -415,7 +421,7 @@ export const assignPairsToCupids = assignCandidatesToCupids;
  */
 export async function getCupidDashboard(
   cupidUserId: string,
-  batchNumber: number = CURRENT_BATCH
+  batchNumber: number = CURRENT_BATCH,
 ): Promise<CupidDashboard | null> {
   // Get cupid profile
   const cupidProfile = await prisma.cupidProfile.findUnique({
@@ -453,7 +459,7 @@ export async function getCupidDashboard(
 
   // Get pending assignments with candidate and potential match details
   const pendingAssignments = assignments.filter(
-    (a) => a.selectedMatchId === null
+    (a) => a.selectedMatchId === null,
   );
   const pendingCandidateAssignments: CupidPairAssignment[] = [];
 
@@ -464,7 +470,7 @@ export async function getCupidDashboard(
       assignment.potentialMatches as { userId: string; score: number }[],
       (assignment.rejectedMatches as string[]) || [],
       cupidUserId,
-      25 // Show top 25 matches
+      25, // Show top 25 matches
     );
 
     if (candidateAssignment) {
@@ -497,7 +503,7 @@ async function getCandidateAssignmentDetails(
   potentialMatchesData: { userId: string; score: number }[],
   rejectedMatches: string[],
   cupidUserId: string,
-  maxMatches?: number // Optional: limit number of matches returned
+  maxMatches?: number, // Optional: limit number of matches returned
 ): Promise<Omit<
   CupidCandidateAssignment,
   "selectedMatchId" | "selectionReason"
@@ -527,7 +533,7 @@ async function getCandidateAssignmentDetails(
         });
       } else {
         console.warn(
-          `Could not load profile for potential match ${matchData.userId}`
+          `Could not load profile for potential match ${matchData.userId}`,
         );
       }
     }
@@ -560,7 +566,7 @@ async function getPairDetails(
   user1Id: string,
   user2Id: string,
   algorithmScore: number,
-  cupidUserId: string
+  cupidUserId: string,
 ): Promise<{
   assignmentId: string;
   cupidUserId: string;
@@ -588,16 +594,17 @@ async function getPairDetails(
 }
 
 /**
- * Get user profile with AI summary for cupid review
+ * Get user profile for cupid review (V2 - No AI summary)
+ * Uses display name and only shows fields that user has allowed
  */
 async function getUserProfileForCupid(
-  userId: string
+  userId: string,
 ): Promise<CupidProfileView | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
-      firstName: true,
+      displayName: true,
       age: true,
       bio: true,
       interests: true,
@@ -605,7 +612,8 @@ async function getUserProfileForCupid(
       profilePicture: true,
       showBioToMatches: true,
       showInterestsToMatches: true,
-      questionnaireResponse: {
+      showFreeResponseToMatches: true,
+      questionnaireResponseV2: {
         select: {
           responses: true,
         },
@@ -613,49 +621,53 @@ async function getUserProfileForCupid(
     },
   });
 
-  if (!user || !user.questionnaireResponse || !user.age) {
+  if (!user || !user.questionnaireResponseV2 || !user.age) {
     return null;
   }
 
   // Decrypt responses
-  let responses: DecryptedResponses;
+  let responses: Record<string, any>;
   try {
-    responses = decryptJSON<DecryptedResponses>(
-      user.questionnaireResponse.responses
-    );
+    const responsesData = user.questionnaireResponseV2.responses;
+    if (!responsesData || typeof responsesData !== "string") {
+      console.error(`Invalid responses data type for user ${userId}`);
+      return null;
+    }
+    responses = decryptJSON<Record<string, any>>(responsesData);
   } catch (error) {
     console.error(`Error decrypting responses for user ${userId}:`, error);
     return null;
   }
 
-  // Generate or get cached AI summary
-  const profile = await generateProfileSummary(
-    userId,
-    responses,
-    user.firstName,
-    user.age
-  );
+  // Build profile view without AI summary
+  // Extract key information from questionnaire V2 responses
+  const lookingFor = responses.q13?.answer || "Not specified";
+  const relationshipIntent = Array.isArray(lookingFor)
+    ? lookingFor.join(", ")
+    : lookingFor;
 
-  if (!profile) {
-    return null;
-  }
-
-  // Add question highlights
-  profile.highlights = getQuestionHighlights(responses);
-
-  // Add bio and interests if available and visible
-  profile.bio = user.showBioToMatches ? user.bio : null;
-  profile.interests = user.showInterestsToMatches ? user.interests : null;
-  profile.major = user.major;
-  profile.profilePicture = user.profilePicture;
+  const profile: CupidProfileView = {
+    userId: user.id,
+    firstName: user.displayName || "Anonymous", // Use display name
+    age: user.age,
+    summary: "", // No AI summary
+    keyTraits: [],
+    lookingFor: relationshipIntent,
+    highlights: [],
+    bio: user.showBioToMatches ? user.bio : null,
+    interests: user.showInterestsToMatches ? user.interests : null,
+    major: user.major,
+    profilePicture: user.profilePicture,
+  };
 
   return profile;
 }
 
 /**
  * Get key question/answer highlights for cupid review
+ * TODO: Update for V2 questionnaire free response questions
  */
-function getQuestionHighlights(responses: DecryptedResponses): Array<{
+function getQuestionHighlights(responses: any): Array<{
   questionId: string;
   question: string;
   answer: string;
@@ -666,25 +678,8 @@ function getQuestionHighlights(responses: DecryptedResponses): Array<{
     answer: string;
   }> = [];
 
-  // Key questions to highlight
-  const highlightQuestions = [
-    { id: "Q33", question: "What are you looking for?" },
-    { id: "Q60", question: "Non-negotiable in a relationship" },
-    { id: "Q61", question: "Hidden passion" },
-    { id: "Q62", question: "What matches should know" },
-  ];
-
-  for (const q of highlightQuestions) {
-    const answer = responses[q.id];
-    if (answer) {
-      highlights.push({
-        questionId: q.id,
-        question: q.question,
-        answer: typeof answer === "string" ? answer : JSON.stringify(answer),
-      });
-    }
-  }
-
+  // For V2, highlights will be shown in separate free response tab
+  // This function is kept for compatibility but returns empty array
   return highlights;
 }
 
@@ -702,7 +697,7 @@ export async function submitCupidSelection(
   assignmentId: string,
   cupidUserId: string,
   selectedMatchId: string,
-  reason?: string
+  reason?: string,
 ): Promise<{ success: boolean; message: string }> {
   // Verify the assignment belongs to this cupid
   const assignment = await prisma.cupidAssignment.findUnique({
@@ -727,7 +722,7 @@ export async function submitCupidSelection(
     score: number;
   }[];
   const isValidSelection = potentialMatches.some(
-    (m) => m.userId === selectedMatchId
+    (m) => m.userId === selectedMatchId,
   );
 
   if (!isValidSelection) {
@@ -813,20 +808,20 @@ export async function makeTestCupidRandomSelections(): Promise<{
         assignment.id,
         assignment.cupidUserId,
         selectedMatch.userId,
-        rationale
+        rationale,
       );
       successful++;
     } catch (error) {
       console.error(
         `Failed to auto-select for test cupid ${assignment.cupidUserId}:`,
-        error
+        error,
       );
       skipped++;
     }
   }
 
   console.log(
-    `Auto-selected ${successful} matches for test cupids (${skipped} skipped)`
+    `Auto-selected ${successful} matches for test cupids (${skipped} skipped)`,
   );
 
   return {
@@ -846,13 +841,13 @@ export async function makeTestCupidRandomSelections(): Promise<{
  * This is called after cupid review period ends to create actual matches.
  */
 export async function createCupidSelectedMatches(
-  batchNumber: number = CURRENT_BATCH
+  batchNumber: number = CURRENT_BATCH,
 ): Promise<{
   created: number;
   skipped: number;
 }> {
   console.log(
-    `Creating matches from cupid selections for batch ${batchNumber}...`
+    `Creating matches from cupid selections for batch ${batchNumber}...`,
   );
 
   const completedAssignments = await prisma.cupidAssignment.findMany({
@@ -910,7 +905,7 @@ export async function createCupidSelectedMatches(
       score: number;
     }[];
     const matchData = potentialMatches.find(
-      (m) => m.userId === selectedMatchId
+      (m) => m.userId === selectedMatchId,
     );
     const compatibilityScore = matchData?.score || 0;
 
@@ -959,7 +954,7 @@ export async function createCupidSelectedMatches(
       // Match might already exist (duplicate)
       console.warn(
         `Could not create cupid match for ${candidateId} - ${selectedMatchId}:`,
-        error
+        error,
       );
       skipped++;
     }
@@ -983,7 +978,7 @@ export const createCupidApprovedMatches = createCupidSelectedMatches;
  * Sets revealedAt timestamp on all matches
  */
 export async function revealMatches(
-  batchNumber: number = CURRENT_BATCH
+  batchNumber: number = CURRENT_BATCH,
 ): Promise<number> {
   console.log(`Revealing matches for batch ${batchNumber}...`);
 
@@ -1046,7 +1041,7 @@ export async function getCupidStats(): Promise<
       });
 
       const reviewed = assignments.filter(
-        (a) => a.selectedMatchId !== null
+        (a) => a.selectedMatchId !== null,
       ).length;
 
       return {
@@ -1056,7 +1051,7 @@ export async function getCupidStats(): Promise<
         assignmentsReviewed: reviewed,
         approvalRate: reviewed > 0 ? 100 : 0, // All reviewed assignments result in matches now
       };
-    })
+    }),
   );
 
   return stats.sort((a, b) => b.matchesCreated - a.matchesCreated);

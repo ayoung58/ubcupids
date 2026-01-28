@@ -21,6 +21,7 @@ import {
   X,
   XCircle,
   Plus,
+  FileText,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -32,27 +33,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import questionnaireConfig from "@/src/data/questionnaire-config.json";
+import {
+  QuestionnaireV2Display,
+  FreeResponseDisplay,
+} from "@/components/cupid/QuestionnaireV2Display";
+import { CupidPortalTutorial } from "./CupidPortalTutorial";
 import type {
   Responses,
   ImportanceRatings,
 } from "@/src/lib/questionnaire-types";
-import { CupidPortalTutorial } from "./CupidPortalTutorial";
+import { ALL_QUESTIONS } from "@/lib/questionnaire/v2/config";
 
 /**
  * CupidMatchingPortal Component
  *
  * Allows cupids to review candidate profiles and select matches from potential matches.
- *
- * ⚠️ NOTE: This component currently displays V1 questionnaire data.
- * TODO (Phase 8+): Update to display QuestionnaireResponseV2 data:
- * - Update API endpoints to fetch V2 responses
- * - Display split-screen format (answer + preference + importance)
- * - Show dealbreakers and "doesn't matter" selections
- * - Update matching score calculation display for V2 algorithm
- *
- * For now, cupids can still review candidate profiles and bio information,
- * but questionnaire details will be limited to V1 format until Phase 8.
+ * Updated to use V2 questionnaire display with collapsible sections and free response tab.
  */
 
 // Types
@@ -112,23 +108,28 @@ export function CupidMatchingPortal({
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [candidateResponses, setCandidateResponses] =
-    useState<Responses | null>(null);
-  const [candidateImportance, setCandidateImportance] =
-    useState<ImportanceRatings | null>(null);
-  const [matchResponses, setMatchResponses] = useState<Responses | null>(null);
-  const [matchImportance, setMatchImportance] =
-    useState<ImportanceRatings | null>(null);
+
+  // V2 Questionnaire State
+  const [candidateResponses, setCandidateResponses] = useState<any | null>(
+    null,
+  );
+  const [candidateShowFreeResponse, setCandidateShowFreeResponse] =
+    useState(true);
+  const [matchResponses, setMatchResponses] = useState<any | null>(null);
+  const [matchShowFreeResponse, setMatchShowFreeResponse] = useState(true);
   const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(false);
-  const [candidateTab, setCandidateTab] = useState<"profile" | "questionnaire">(
-    "profile"
-  );
-  const [matchTab, setMatchTab] = useState<"profile" | "questionnaire">(
-    "profile"
-  );
+
+  // Tab state - now includes free response
+  const [candidateTab, setCandidateTab] = useState<
+    "profile" | "questionnaire" | "freeResponse"
+  >("profile");
+  const [matchTab, setMatchTab] = useState<
+    "profile" | "questionnaire" | "freeResponse"
+  >("profile");
+
   const [isInfoCollapsed, setIsInfoCollapsed] = useState(false);
   const [rejectedMatches, setRejectedMatches] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [matchToReject, setMatchToReject] = useState<string | null>(null);
@@ -183,41 +184,41 @@ export function CupidMatchingPortal({
 
     setLoadingQuestionnaires(true);
     try {
-      // Load candidate questionnaire
+      // Load candidate questionnaire V2
       const candidateRes = await fetch(
-        `/api/questionnaire/view?userId=${currentAssignment.candidate.userId}`
+        `/api/questionnaire/v2/view?userId=${currentAssignment.candidate.userId}`,
       );
       if (candidateRes.ok) {
         const candidateData = await candidateRes.json();
         setCandidateResponses(candidateData.responses);
-        setCandidateImportance(candidateData.importance);
+        setCandidateShowFreeResponse(
+          candidateData.showFreeResponseToMatches ?? true,
+        );
       } else {
         console.error(
           `Failed to load candidate questionnaire: ${candidateRes.status}`,
-          await candidateRes.text()
+          await candidateRes.text(),
         );
         setCandidateResponses(null);
-        setCandidateImportance(null);
       }
 
-      // Load match questionnaire
+      // Load match questionnaire V2
       const currentMatch =
         currentAssignment.potentialMatches[currentMatchIndex];
       if (currentMatch) {
         const matchRes = await fetch(
-          `/api/questionnaire/view?userId=${currentMatch.userId}`
+          `/api/questionnaire/v2/view?userId=${currentMatch.userId}`,
         );
         if (matchRes.ok) {
           const matchData = await matchRes.json();
           setMatchResponses(matchData.responses);
-          setMatchImportance(matchData.importance);
+          setMatchShowFreeResponse(matchData.showFreeResponseToMatches ?? true);
         } else {
           console.error(
             `Failed to load match questionnaire for ${currentMatch.userId}: ${matchRes.status}`,
-            await matchRes.text()
+            await matchRes.text(),
           );
           setMatchResponses(null);
-          setMatchImportance(null);
         }
       }
     } catch (err) {
@@ -233,7 +234,7 @@ export function CupidMatchingPortal({
     // Validate rationale is provided
     if (!reason || reason.trim().length === 0) {
       setRationaleError(
-        "Please provide brief rationale for your match! Your match will be able to see this, and they'd appreciate it!"
+        "Please provide brief rationale for your match! Your match will be able to see this, and they'd appreciate it!",
       );
       return;
     }
@@ -261,7 +262,7 @@ export function CupidMatchingPortal({
         return {
           ...prev,
           pendingAssignments: prev.pendingAssignments.filter(
-            (a) => a.assignmentId !== currentAssignment.assignmentId
+            (a) => a.assignmentId !== currentAssignment.assignmentId,
           ),
           reviewed: prev.reviewed + 1,
           pending: prev.pending - 1,
@@ -298,12 +299,12 @@ export function CupidMatchingPortal({
 
     // Check if this is the last remaining match
     const remainingMatches = currentAssignment.potentialMatches.filter(
-      (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject
+      (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject,
     );
 
     if (remainingMatches.length === 0) {
       setError(
-        "This is the last potential match for this match candidate. You cannot reject it."
+        "This is the last potential match for this match candidate. You cannot reject it.",
       );
       setShowRejectDialog(false);
       setMatchToReject(null);
@@ -338,7 +339,7 @@ export function CupidMatchingPortal({
 
       // Navigate to next non-rejected match, or loop to beginning
       const visibleMatches = currentAssignment.potentialMatches.filter(
-        (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject
+        (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject,
       );
 
       if (visibleMatches.length === 0) {
@@ -393,7 +394,7 @@ export function CupidMatchingPortal({
   // Filter out rejected matches and limit to revealed count
   const allAvailableMatches =
     currentAssignment?.potentialMatches.filter(
-      (m) => !rejectedMatches.has(m.userId)
+      (m) => !rejectedMatches.has(m.userId),
     ) || [];
 
   const visibleMatches = allAvailableMatches.slice(0, revealedMatchCount);
@@ -403,7 +404,7 @@ export function CupidMatchingPortal({
 
   const handleRevealMore = () => {
     setRevealedMatchCount((prev) =>
-      Math.min(prev + 5, allAvailableMatches.length)
+      Math.min(prev + 5, allAvailableMatches.length),
     );
   };
 
@@ -552,7 +553,7 @@ export function CupidMatchingPortal({
                   variant="outline"
                   onClick={() =>
                     setCurrentAssignmentIndex((i) =>
-                      Math.min(dashboard.pendingAssignments.length - 1, i + 1)
+                      Math.min(dashboard.pendingAssignments.length - 1, i + 1),
                     )
                   }
                   disabled={
@@ -576,7 +577,7 @@ export function CupidMatchingPortal({
                           Match selected:{" "}
                           {
                             currentAssignment?.potentialMatches.find(
-                              (m) => m.userId === selectedMatchId
+                              (m) => m.userId === selectedMatchId,
                             )?.profile.firstName
                           }
                         </span>
@@ -707,7 +708,7 @@ export function CupidMatchingPortal({
                     onClick={() => setCandidateTab("profile")}
                     className="flex-1"
                   >
-                    Profile Info
+                    Profile
                   </Button>
                   <Button
                     variant={
@@ -719,17 +720,37 @@ export function CupidMatchingPortal({
                   >
                     Questionnaire
                   </Button>
+                  <Button
+                    variant={
+                      candidateTab === "freeResponse" ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() => setCandidateTab("freeResponse")}
+                    className="flex-1"
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    Free Response
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto p-0">
                 {candidateTab === "profile" ? (
                   <ProfileDisplay profile={currentAssignment.candidate} />
+                ) : candidateTab === "freeResponse" ? (
+                  loadingQuestionnaires ? (
+                    <LoadingQuestionnairesSkeleton />
+                  ) : (
+                    <FreeResponseDisplay
+                      responses={candidateResponses}
+                      showFreeResponse={candidateShowFreeResponse}
+                    />
+                  )
                 ) : loadingQuestionnaires ? (
                   <LoadingQuestionnairesSkeleton />
                 ) : (
-                  <QuestionnaireDisplay
+                  <QuestionnaireV2Display
                     responses={candidateResponses}
-                    importance={candidateImportance}
+                    showFreeResponse={candidateShowFreeResponse}
                   />
                 )}
               </CardContent>
@@ -835,7 +856,7 @@ export function CupidMatchingPortal({
                     onClick={() => setMatchTab("profile")}
                     className="flex-1"
                   >
-                    Profile Info
+                    Profile
                   </Button>
                   <Button
                     variant={
@@ -847,17 +868,37 @@ export function CupidMatchingPortal({
                   >
                     Questionnaire
                   </Button>
+                  <Button
+                    variant={
+                      matchTab === "freeResponse" ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() => setMatchTab("freeResponse")}
+                    className="flex-1"
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    Free Response
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto p-0">
                 {matchTab === "profile" ? (
                   <ProfileDisplay profile={currentMatch.profile} />
+                ) : matchTab === "freeResponse" ? (
+                  loadingQuestionnaires ? (
+                    <LoadingQuestionnairesSkeleton />
+                  ) : (
+                    <FreeResponseDisplay
+                      responses={matchResponses}
+                      showFreeResponse={matchShowFreeResponse}
+                    />
+                  )
                 ) : loadingQuestionnaires ? (
                   <LoadingQuestionnairesSkeleton />
                 ) : (
-                  <QuestionnaireDisplay
+                  <QuestionnaireV2Display
                     responses={matchResponses}
-                    importance={matchImportance}
+                    showFreeResponse={matchShowFreeResponse}
                   />
                 )}
               </CardContent>
@@ -876,7 +917,7 @@ export function CupidMatchingPortal({
               <strong>
                 {
                   currentAssignment?.potentialMatches.find(
-                    (m) => m.userId === selectedMatchId
+                    (m) => m.userId === selectedMatchId,
                   )?.profile.firstName
                 }
               </strong>{" "}
@@ -937,7 +978,7 @@ export function CupidMatchingPortal({
               <strong>
                 {
                   currentAssignment?.potentialMatches.find(
-                    (m) => m.userId === matchToReject
+                    (m) => m.userId === matchToReject,
                   )?.profile.firstName
                 }
               </strong>{" "}
@@ -1126,13 +1167,10 @@ function QuestionnaireDisplay({
 
   return (
     <div className="space-y-0">
-      {questionnaireConfig.sections.map((section) => (
-        <div key={section.id} className="space-y-0">
-          <div className="sticky top-0 bg-white border-b border-slate-200 py-3 px-4 z-10">
-            <h3 className="font-bold text-slate-800">{section.title}</h3>
-          </div>
+      {ALL_QUESTIONS.map((question) => (
+        <div key={question.id} className="space-y-0">
           <div className="px-4 py-4 space-y-4">
-            {section.questions.map((question) => {
+            {(() => {
               const response =
                 responses[question.id] || responses[question.id.toUpperCase()];
               const importanceValue =
@@ -1144,13 +1182,13 @@ function QuestionnaireDisplay({
               return (
                 <div
                   key={question.id}
-                  className="bg-slate-50 p-3 rounded-lg space-y-2"
+                  className="bg-slate-50 p-3 rounded-lg space-y-4"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium text-slate-700">
-                      {question.text}
+                      {question.questionText}
                     </p>
-                    {question.hasImportance && importanceValue && (
+                    {importanceValue && (
                       <span className="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded whitespace-nowrap">
                         Importance: {importanceValue}/5
                       </span>
@@ -1161,7 +1199,7 @@ function QuestionnaireDisplay({
                   </div>
                 </div>
               );
-            })}
+            })()}
           </div>
         </div>
       ))}
@@ -1176,7 +1214,7 @@ function formatResponse(
     | number
     | { value: string; text: string }
     | { minAge: number; maxAge: number }
-    | undefined
+    | undefined,
 ): string {
   if (response === undefined || response === null) return "No answer";
   if (Array.isArray(response)) {

@@ -6,7 +6,7 @@ import { prisma } from "../prisma";
 import { CURRENT_BATCH } from "./config";
 
 export async function assignCandidatesToCupidsForTestUsers(
-  batchNumber: number = CURRENT_BATCH
+  batchNumber: number = CURRENT_BATCH,
 ): Promise<{
   totalCandidates: number;
   assignedCandidates: number;
@@ -16,7 +16,7 @@ export async function assignCandidatesToCupidsForTestUsers(
   preferredAssignments: number;
 }> {
   console.log(
-    `Assigning TEST candidates to cupids for batch ${batchNumber}...`
+    `Assigning TEST candidates to cupids for batch ${batchNumber}...`,
   );
 
   // Clear existing assignments for test users
@@ -28,9 +28,10 @@ export async function assignCandidatesToCupidsForTestUsers(
   });
   console.log(`Cleared ${deletedCount.count} existing TEST user assignments`);
 
-  // Get cupids (can be test or non-test)
+  // Get TEST cupids only
   const cupids = await prisma.user.findMany({
     where: {
+      isTestUser: true, // ONLY test cupids
       OR: [{ isCupid: true }, { cupidProfile: { isNot: null } }],
       emailVerified: { not: null },
     },
@@ -57,7 +58,7 @@ export async function assignCandidatesToCupidsForTestUsers(
     where: {
       isBeingMatched: true,
       isTestUser: true, // ONLY test users
-      questionnaireResponse: {
+      questionnaireResponseV2: {
         isSubmitted: true,
       },
     },
@@ -80,7 +81,7 @@ export async function assignCandidatesToCupidsForTestUsers(
     if (!preferredEmail) continue;
 
     const preferredCandidate = candidates.find(
-      (c) => c.email.toLowerCase() === preferredEmail.toLowerCase()
+      (c) => c.email.toLowerCase() === preferredEmail.toLowerCase(),
     );
 
     if (
@@ -91,6 +92,7 @@ export async function assignCandidatesToCupidsForTestUsers(
     }
 
     // Get top matches (only among test users)
+    // Sort by candidate→match directional score
     const topMatches = await prisma.compatibilityScore.findMany({
       where: {
         userId: preferredCandidate.id,
@@ -98,18 +100,20 @@ export async function assignCandidatesToCupidsForTestUsers(
         bidirectionalScore: { not: null },
         targetUser: {
           isTestUser: true, // Match only with test users
-          questionnaireResponse: {
+          questionnaireResponseV2: {
             isSubmitted: true,
           },
         },
       },
-      orderBy: {
-        bidirectionalScore: "desc",
-      },
+      orderBy: [
+        { totalScore: "desc" }, // Sort by user→target score (candidate's preference)
+        { bidirectionalScore: "desc" },
+      ],
       take: 25,
       select: {
         targetUserId: true,
         bidirectionalScore: true,
+        totalScore: true,
       },
     });
 
@@ -144,6 +148,7 @@ export async function assignCandidatesToCupidsForTestUsers(
     if (assignedCandidateIds.has(candidate.id)) continue;
 
     // Get top matches (only among test users)
+    // Sort by candidate→match directional score
     const topMatches = await prisma.compatibilityScore.findMany({
       where: {
         userId: candidate.id,
@@ -151,18 +156,20 @@ export async function assignCandidatesToCupidsForTestUsers(
         bidirectionalScore: { not: null },
         targetUser: {
           isTestUser: true, // Match only with test users
-          questionnaireResponse: {
+          questionnaireResponseV2: {
             isSubmitted: true,
           },
         },
       },
-      orderBy: {
-        bidirectionalScore: "desc",
-      },
+      orderBy: [
+        { totalScore: "desc" }, // Sort by user→target score (candidate's preference)
+        { bidirectionalScore: "desc" },
+      ],
       take: 25,
       select: {
         targetUserId: true,
         bidirectionalScore: true,
+        totalScore: true,
       },
     });
 
