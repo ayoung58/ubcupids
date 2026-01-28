@@ -20,6 +20,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Stats {
   totalUsers: number;
@@ -173,12 +174,23 @@ export function AdminMatchingClient({
     <div className="max-w-6xl mx-auto space-y-6 p-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-3xl font-bold text-slate-900">
-          🎯 Matching Algorithm V2.2
-        </h1>
-        <p className="text-slate-600 mt-1">
-          Run the global matching algorithm and view diagnostics
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">
+              🎯 Matching Algorithm V2.2
+            </h1>
+            <p className="text-slate-600 mt-1">
+              Run the global matching algorithm and view diagnostics
+            </p>
+          </div>
+          <div className="ml-4">
+            <Link href="/admin">
+              <Button variant="ghost" className="h-10">
+                ← Admin Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* User Type Toggle */}

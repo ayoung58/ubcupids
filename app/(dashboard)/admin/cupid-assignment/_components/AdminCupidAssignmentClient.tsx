@@ -16,6 +16,9 @@ import {
   CheckCircle2,
   Clock,
   ArrowRight,
+  Eye,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -36,6 +39,25 @@ interface AssignmentResult {
   skippedCandidates: number;
   preferredAssignments: number;
   timestamp: string;
+  preview?: boolean;
+  assignments?: Array<{
+    cupidId: string;
+    cupidEmail: string;
+    cupidDisplayName: string | null;
+    candidates: Array<{
+      candidateId: string;
+      candidateEmail: string;
+      candidateDisplayName: string | null;
+      isPreferred: boolean;
+      top25Matches: Array<{
+        userId: string;
+        email: string;
+        displayName: string | null;
+        score: number;
+        isInitiallyVisible: boolean;
+      }>;
+    }>;
+  }>;
 }
 
 interface AdminCupidAssignmentClientProps {
@@ -50,10 +72,72 @@ export function AdminCupidAssignmentClient({
   const router = useRouter();
   const [userType, setUserType] = useState<"test" | "production">("test");
   const [isRunning, setIsRunning] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
   const [lastResult, setLastResult] = useState<AssignmentResult | null>(null);
+  const [previewData, setPreviewData] = useState<AssignmentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [expandedCupids, setExpandedCupids] = useState<Set<string>>(new Set());
+  const [expandedCandidates, setExpandedCandidates] = useState<Set<string>>(
+    new Set(),
+  );
 
   const currentStats = userType === "test" ? testStats : productionStats;
+
+  const toggleCupid = (cupidId: string) => {
+    setExpandedCupids((prev) => {
+      const next = new Set(prev);
+      if (next.has(cupidId)) {
+        next.delete(cupidId);
+      } else {
+        next.add(cupidId);
+      }
+      return next;
+    });
+  };
+
+  const toggleCandidate = (candidateId: string) => {
+    setExpandedCandidates((prev) => {
+      const next = new Set(prev);
+      if (next.has(candidateId)) {
+        next.delete(candidateId);
+      } else {
+        next.add(candidateId);
+      }
+      return next;
+    });
+  };
+
+  const runPreview = async () => {
+    setIsPreviewing(true);
+    setError(null);
+    setPreviewData(null);
+
+    try {
+      const endpoint =
+        userType === "test"
+          ? "/api/admin/pair-cupids-test/preview"
+          : "/api/admin/pair-cupids-production/preview";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate preview");
+      }
+
+      setPreviewData(data);
+      setExpandedCupids(new Set()); // Reset expanded state
+      setExpandedCandidates(new Set());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
+    } finally {
+      setIsPreviewing(false);
+    }
+  };
 
   const runAssignment = async () => {
     // Confirmation for production user runs
@@ -69,6 +153,7 @@ export function AdminCupidAssignmentClient({
     setIsRunning(true);
     setError(null);
     setLastResult(null);
+    setPreviewData(null); // Clear preview when running actual
 
     try {
       const endpoint =
@@ -103,12 +188,23 @@ export function AdminCupidAssignmentClient({
     <div className="max-w-6xl mx-auto space-y-6 p-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-3xl font-bold text-slate-900">
-          🏹 Cupid Assignment
-        </h1>
-        <p className="text-slate-600 mt-1">
-          Assign match candidates to cupids for personalized review
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">
+              🏹 Cupid Assignment
+            </h1>
+            <p className="text-slate-600 mt-1">
+              Assign match candidates to cupids for personalized review
+            </p>
+          </div>
+          <div className="ml-4">
+            <Link href="/admin">
+              <Button variant="ghost" className="h-10">
+                ← Admin Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* User Type Toggle */}
@@ -293,8 +389,32 @@ export function AdminCupidAssignmentClient({
 
           <div className="flex gap-3">
             <Button
+              onClick={runPreview}
+              disabled={
+                isPreviewing || isRunning || currentStats.totalCandidates === 0
+              }
+              variant="outline"
+              size="lg"
+              className="flex-1"
+            >
+              {isPreviewing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Preview...
+                </>
+              ) : (
+                <>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview Assignment
+                </>
+              )}
+            </Button>
+
+            <Button
               onClick={runAssignment}
-              disabled={isRunning || currentStats.totalCandidates === 0}
+              disabled={
+                isRunning || isPreviewing || currentStats.totalCandidates === 0
+              }
               className="flex-1"
               size="lg"
             >
@@ -346,6 +466,211 @@ export function AdminCupidAssignmentClient({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
+      )}
+
+      {/* Preview Display */}
+      {previewData && previewData.preview && (
+        <Card className="border-blue-200 bg-blue-50/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-900">
+              <Eye className="h-5 w-5 text-blue-600" />
+              Assignment Preview (Not Saved to Database)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-slate-600">Total Candidates</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {previewData.totalCandidates}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-slate-600">Assigned</p>
+                <p className="text-2xl font-bold text-blue-700">
+                  {previewData.assignedCandidates}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-slate-600">Skipped</p>
+                <p className="text-2xl font-bold text-slate-500">
+                  {previewData.skippedCandidates}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-slate-600">Total Cupids</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {previewData.totalCupids}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-slate-600">Candidates per Cupid</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  ~{previewData.candidatesPerCupid}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-slate-600">Preferred Assignments</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {previewData.preferredAssignments}
+                </p>
+              </div>
+            </div>
+
+            {/* Assignment Details */}
+            {previewData.assignments && previewData.assignments.length > 0 && (
+              <div className="space-y-3 pt-4 border-t">
+                <h3 className="font-semibold text-slate-900">
+                  Cupid Assignments
+                </h3>
+                <div className="space-y-2">
+                  {previewData.assignments.map((assignment) => (
+                    <div
+                      key={assignment.cupidId}
+                      className="border border-slate-200 rounded-lg bg-white overflow-hidden"
+                    >
+                      <button
+                        onClick={() => toggleCupid(assignment.cupidId)}
+                        className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Heart className="h-5 w-5 text-pink-500" />
+                          <div className="text-left">
+                            <p className="font-medium text-slate-900">
+                              {assignment.cupidDisplayName ||
+                                assignment.cupidEmail}
+                            </p>
+                            <p className="text-sm text-slate-500">
+                              {assignment.candidates.length} candidate
+                              {assignment.candidates.length !== 1 ? "s" : ""}
+                              {assignment.candidates.some(
+                                (c) => c.isPreferred,
+                              ) && (
+                                <span className="ml-2 text-purple-600 font-medium">
+                                  (
+                                  {
+                                    assignment.candidates.filter(
+                                      (c) => c.isPreferred,
+                                    ).length
+                                  }{" "}
+                                  preferred)
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        {expandedCupids.has(assignment.cupidId) ? (
+                          <ChevronUp className="h-5 w-5 text-slate-400" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-slate-400" />
+                        )}
+                      </button>
+
+                      {expandedCupids.has(assignment.cupidId) && (
+                        <div className="border-t border-slate-200 p-4 space-y-3 bg-slate-50">
+                          {assignment.candidates.map((candidate) => (
+                            <div
+                              key={candidate.candidateId}
+                              className="border border-slate-200 rounded-lg bg-white overflow-hidden"
+                            >
+                              <button
+                                onClick={() =>
+                                  toggleCandidate(candidate.candidateId)
+                                }
+                                className="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-blue-500" />
+                                  <div className="text-left">
+                                    <p className="font-medium text-slate-900">
+                                      {candidate.candidateDisplayName ||
+                                        candidate.candidateEmail}
+                                      {candidate.isPreferred && (
+                                        <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-semibold">
+                                          Preferred
+                                        </span>
+                                      )}
+                                    </p>
+                                    <p className="text-xs text-slate-500">
+                                      {candidate.top25Matches.length} matches
+                                      available
+                                    </p>
+                                  </div>
+                                </div>
+                                {expandedCandidates.has(
+                                  candidate.candidateId,
+                                ) ? (
+                                  <ChevronUp className="h-4 w-4 text-slate-400" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 text-slate-400" />
+                                )}
+                              </button>
+
+                              {expandedCandidates.has(
+                                candidate.candidateId,
+                              ) && (
+                                <div className="border-t border-slate-200 p-3 bg-slate-50">
+                                  <p className="text-sm font-medium text-slate-700 mb-2">
+                                    Top 25 Matches (First 5 initially visible):
+                                  </p>
+                                  <div className="space-y-1.5">
+                                    {candidate.top25Matches.map(
+                                      (match, idx) => (
+                                        <div
+                                          key={match.userId}
+                                          className={`flex items-center justify-between p-2 rounded ${
+                                            match.isInitiallyVisible
+                                              ? "bg-green-50 border border-green-200"
+                                              : "bg-white border border-slate-200"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs font-mono text-slate-500 w-6">
+                                              #{idx + 1}
+                                            </span>
+                                            <span className="text-sm text-slate-900">
+                                              {match.displayName || match.email}
+                                            </span>
+                                            {match.isInitiallyVisible && (
+                                              <span className="px-1.5 py-0.5 bg-green-600 text-white text-xs rounded font-semibold">
+                                                Shown
+                                              </span>
+                                            )}
+                                          </div>
+                                          <span className="text-sm font-mono text-slate-600">
+                                            {match.score.toFixed(1)}
+                                          </span>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Alert className="bg-blue-50 border-blue-200">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-sm text-blue-800">
+                <strong>This is a preview only.</strong> Click &quot;Run
+                Assignment&quot; to actually create these assignments in the
+                database.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
       )}
 
       {/* Results Display */}
