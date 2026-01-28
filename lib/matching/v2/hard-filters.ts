@@ -32,7 +32,7 @@ const HARD_FILTER_QUESTIONS = ["q1", "q2", "q4"] as const;
  */
 export function checkHardFilters(
   userA: MatchingUser,
-  userB: MatchingUser
+  userB: MatchingUser,
 ): HardFilterResult {
   // Phase 1.0: Campus compatibility check
   const campusCompatible = checkCampusCompatibility(userA, userB);
@@ -43,7 +43,17 @@ export function checkHardFilters(
     };
   }
 
-  // Phase 1.1: Gender compatibility check
+  // Phase 1.1: Age compatibility check
+  const ageCompatible = checkAgeCompatibility(userA, userB);
+  if (!ageCompatible) {
+    return {
+      passed: false,
+      reason: "Age incompatibility",
+      failedQuestions: ["q4"],
+    };
+  }
+
+  // Phase 1.2: Gender compatibility check
   const genderCompatible = checkGenderCompatibility(userA, userB);
   if (!genderCompatible) {
     return {
@@ -52,7 +62,7 @@ export function checkHardFilters(
     };
   }
 
-  // Phase 1.2: Check all dealbreaker questions
+  // Phase 1.3: Check all dealbreaker questions
   const dealbreakerResult = checkAllDealbreakers(userA, userB);
   if (!dealbreakerResult.passed) {
     return dealbreakerResult;
@@ -77,7 +87,7 @@ export function checkHardFilters(
  */
 function checkCampusCompatibility(
   userA: MatchingUser,
-  userB: MatchingUser
+  userB: MatchingUser,
 ): boolean {
   // If userA is not ok with different campus, userB must be from same campus
   if (!userA.okMatchingDifferentCampus && userA.campus !== userB.campus) {
@@ -90,6 +100,93 @@ function checkCampusCompatibility(
   }
 
   // If both are ok with different campus, or they're from same campus, they're compatible
+  return true;
+}
+
+/**
+ * Checks if two users' ages fall within each other's preferred age ranges
+ *
+ * For userA to be compatible with userB:
+ * - userB's age must be within userA's preferred age range (minAge to maxAge)
+ * - userA's age must be within userB's preferred age range (minAge to maxAge)
+ *
+ * Handles multiple data formats:
+ * - Format 1: answer: { age: number }, preference: { minAge, maxAge }
+ * - Format 2: answer: { userAge: number, minAge, maxAge }
+ * - Format 3: answer: number, preference: { min, max }
+ *
+ * @param userA - First user
+ * @param userB - Second user
+ * @returns True if both users' ages are within each other's ranges
+ */
+function checkAgeCompatibility(
+  userA: MatchingUser,
+  userB: MatchingUser,
+): boolean {
+  const aResponse = userA.responses.q4;
+  const bResponse = userB.responses.q4;
+
+  // If either user hasn't answered age question, skip check
+  if (!aResponse || !bResponse) return true;
+
+  // Extract age values - handle multiple formats
+  let aAge: number | undefined;
+  let bAge: number | undefined;
+  let aMinAge: number | undefined;
+  let aMaxAge: number | undefined;
+  let bMinAge: number | undefined;
+  let bMaxAge: number | undefined;
+
+  // User A formats
+  if (typeof aResponse.answer === "number") {
+    // Format 3: answer is just the age number
+    aAge = aResponse.answer;
+    aMinAge = aResponse.preference?.min;
+    aMaxAge = aResponse.preference?.max;
+  } else if (aResponse.answer?.age !== undefined) {
+    // Format 1: answer.age + preference.minAge/maxAge
+    aAge = aResponse.answer.age;
+    aMinAge = aResponse.preference?.minAge;
+    aMaxAge = aResponse.preference?.maxAge;
+  } else if (aResponse.answer?.userAge !== undefined) {
+    // Format 2: answer.userAge + answer.minAge/maxAge
+    aAge = aResponse.answer.userAge;
+    aMinAge = aResponse.answer.minAge;
+    aMaxAge = aResponse.answer.maxAge;
+  }
+
+  // User B formats
+  if (typeof bResponse.answer === "number") {
+    bAge = bResponse.answer;
+    bMinAge = bResponse.preference?.min;
+    bMaxAge = bResponse.preference?.max;
+  } else if (bResponse.answer?.age !== undefined) {
+    bAge = bResponse.answer.age;
+    bMinAge = bResponse.preference?.minAge;
+    bMaxAge = bResponse.preference?.maxAge;
+  } else if (bResponse.answer?.userAge !== undefined) {
+    bAge = bResponse.answer.userAge;
+    bMinAge = bResponse.answer.minAge;
+    bMaxAge = bResponse.answer.maxAge;
+  }
+
+  // If we couldn't extract ages, skip check (data format issue)
+  if (typeof aAge !== "number" || typeof bAge !== "number") return true;
+
+  // Check if A's age is within B's range (if B has preferences)
+  if (bMinAge !== undefined && bMaxAge !== undefined) {
+    if (aAge < bMinAge || aAge > bMaxAge) {
+      return false; // A's age is outside B's preferred range
+    }
+  }
+
+  // Check if B's age is within A's range (if A has preferences)
+  if (aMinAge !== undefined && aMaxAge !== undefined) {
+    if (bAge < aMinAge || bAge > aMaxAge) {
+      return false; // B's age is outside A's preferred range
+    }
+  }
+
   return true;
 }
 
@@ -109,7 +206,7 @@ function checkCampusCompatibility(
  */
 function checkGenderCompatibility(
   userA: MatchingUser,
-  userB: MatchingUser
+  userB: MatchingUser,
 ): boolean {
   // Handle "Prefer not to say" special case
   const aPreferNotToSay = userA.gender === "prefer_not_to_answer";
@@ -158,7 +255,7 @@ function checkGenderCompatibility(
  */
 function checkAllDealbreakers(
   userA: MatchingUser,
-  userB: MatchingUser
+  userB: MatchingUser,
 ): HardFilterResult {
   const failedQuestions: string[] = [];
 
@@ -225,7 +322,7 @@ function checkAllDealbreakers(
  */
 function isCompatibleWithPreference(
   matchResponse: any,
-  userResponse: any
+  userResponse: any,
 ): boolean {
   const matchAnswer = matchResponse.answer;
   const userPreference = userResponse.preference;

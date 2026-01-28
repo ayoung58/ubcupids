@@ -15,7 +15,7 @@ function createMockUser(
   id: string,
   gender: string,
   interestedInGenders: string[],
-  responses: Record<string, any>
+  responses: Record<string, any>,
 ): MatchingUser {
   return {
     id,
@@ -63,7 +63,7 @@ describe("Phase 1: Hard Filters", () => {
         "a",
         "non-binary",
         ["man", "woman", "non-binary"],
-        {}
+        {},
       );
       const userB = createMockUser("b", "woman", ["non-binary"], {});
 
@@ -150,6 +150,73 @@ describe("Phase 1: Hard Filters", () => {
         campus: "Okanagan",
         okMatchingDifferentCampus: true,
       };
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  describe("Age Compatibility", () => {
+    test("should pass when both ages are within each other's ranges", () => {
+      const userA = createMockUser("a", "man", ["woman"], {
+        q4: { answer: 23, preference: { min: 20, max: 25 } },
+      });
+      const userB = createMockUser("b", "woman", ["man"], {
+        q4: { answer: 22, preference: { min: 21, max: 26 } },
+      });
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(true);
+    });
+
+    test("should fail when userB age is outside userA's range", () => {
+      const userA = createMockUser("a", "man", ["woman"], {
+        q4: { answer: { userAge: 23, minAge: 23, maxAge: 27 } },
+      });
+      const userB = createMockUser("b", "woman", ["man"], {
+        q4: { answer: { userAge: 20, minAge: 19, maxAge: 22 } },
+      });
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(false);
+      expect(result.reason).toBe("Age incompatibility");
+      expect(result.failedQuestions).toContain("q4");
+    });
+
+    test("should fail when userA age is outside userB's range", () => {
+      const userA = createMockUser("a", "man", ["woman"], {
+        q4: { answer: 30, preference: { min: 25, max: 35 } },
+      });
+      const userB = createMockUser("b", "woman", ["man"], {
+        q4: { answer: 22, preference: { min: 18, max: 24 } },
+      });
+
+      const result = checkHardFilters(userA, userB);
+      expect(result.passed).toBe(false);
+      expect(result.reason).toBe("Age incompatibility");
+    });
+
+    test("should handle combined format (userAge, minAge, maxAge)", () => {
+      const userA = createMockUser("a", "man", ["woman"], {
+        q4: { answer: { userAge: 21, minAge: 20, maxAge: 25 } },
+      });
+      const userB = createMockUser("b", "woman", ["man"], {
+        q4: { answer: { userAge: 20, minAge: 19, maxAge: 21 } },
+      });
+
+      const result = checkHardFilters(userA, userB);
+      // A (21) is in B's range (19-21) ✓
+      // B (20) is in A's range (20-25) ✓
+      expect(result.passed).toBe(true);
+    });
+
+    test("should pass when no age preferences specified", () => {
+      const userA = createMockUser("a", "man", ["woman"], {
+        q4: { answer: 23 }, // No preference
+      });
+      const userB = createMockUser("b", "woman", ["man"], {
+        q4: { answer: 40 },
+      });
 
       const result = checkHardFilters(userA, userB);
       expect(result.passed).toBe(true);

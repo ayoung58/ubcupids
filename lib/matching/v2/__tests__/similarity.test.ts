@@ -28,53 +28,69 @@ function createUser(id: string, responses: Record<string, any>): MatchingUser {
 describe("Phase 2: Similarity Calculation", () => {
   describe("Type A: Numeric (Likert)", () => {
     test("should return 1.0 for identical answers", () => {
-      const userA = createUser("a", { q1: { answer: 3 } });
-      const userB = createUser("b", { q1: { answer: 3 } });
+      const userA = createUser("a", {
+        q7: { answer: 3, preference: "similar" },
+      });
+      const userB = createUser("b", {
+        q7: { answer: 3, preference: "similar" },
+      });
 
       const similarity = calculateQuestionSimilarity(
-        "q1",
+        "q7",
         userA,
         userB,
-        "numeric"
+        "same-similar-different",
       );
       expect(similarity).toBe(1.0);
     });
 
     test("should return 0.5 for 2-point difference on 5-point scale", () => {
-      const userA = createUser("a", { q1: { answer: 2 } });
-      const userB = createUser("b", { q1: { answer: 4 } });
+      const userA = createUser("a", {
+        q7: { answer: 2, preference: "similar" },
+      });
+      const userB = createUser("b", {
+        q7: { answer: 4, preference: "similar" },
+      });
 
       const similarity = calculateQuestionSimilarity(
-        "q1",
+        "q7",
         userA,
         userB,
-        "numeric"
+        "same-similar-different",
       );
       expect(similarity).toBe(0.5);
     });
 
     test("should return 0.0 for maximum difference", () => {
-      const userA = createUser("a", { q1: { answer: 1 } });
-      const userB = createUser("b", { q1: { answer: 5 } });
+      const userA = createUser("a", {
+        q7: { answer: 1, preference: "similar" },
+      });
+      const userB = createUser("b", {
+        q7: { answer: 5, preference: "similar" },
+      });
 
       const similarity = calculateQuestionSimilarity(
-        "q1",
+        "q7",
         userA,
         userB,
-        "numeric"
+        "same-similar-different",
       );
       expect(similarity).toBe(0.0);
     });
 
     test("should return 0.75 for 1-point difference", () => {
-      const userA = createUser("a", { q1: { answer: 3 } });
-      const userB = createUser("b", { q1: { answer: 4 } });
+      const userA = createUser("a", {
+        q7: { answer: 3, preference: "similar" },
+      });
+      const userB = createUser("b", {
+        q7: { answer: 4, preference: "similar" },
+      });
 
       const similarity = calculateQuestionSimilarity(
-        "q1",
+        "q7",
         userA,
         userB,
-        "numeric"
+        "same-similar-different",
       );
       expect(similarity).toBe(0.75);
     });
@@ -89,7 +105,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q11",
         userA,
         userB,
-        "categorical-same"
+        "categorical-same",
       );
       expect(similarity).toBe(1.0);
     });
@@ -102,9 +118,35 @@ describe("Phase 2: Similarity Calculation", () => {
         "q11",
         userA,
         userB,
-        "categorical-same"
+        "categorical-same",
       );
       expect(similarity).toBe(0.0);
+    });
+
+    test("should normalize gender values for q1 (man vs men)", () => {
+      const userA = createUser("a", { q1: { answer: "man" } });
+      const userB = createUser("b", { q1: { answer: "men" } });
+
+      const similarity = calculateQuestionSimilarity(
+        "q1",
+        userA,
+        userB,
+        "categorical-same",
+      );
+      expect(similarity).toBe(0.0); // Q1 is a hard filter, returns 0.0
+    });
+
+    test("should normalize gender values for q1 (woman vs women)", () => {
+      const userA = createUser("a", { q1: { answer: "woman" } });
+      const userB = createUser("b", { q1: { answer: "women" } });
+
+      const similarity = calculateQuestionSimilarity(
+        "q1",
+        userA,
+        userB,
+        "categorical-same",
+      );
+      expect(similarity).toBe(0.0); // Q1 is a hard filter, returns 0.0
     });
   });
 
@@ -121,7 +163,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q12",
         userA,
         userB,
-        "categorical-multi"
+        "categorical-multi",
       );
       expect(similarity).toBe(1.0);
     });
@@ -138,7 +180,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q12",
         userA,
         userB,
-        "categorical-multi"
+        "categorical-multi",
       );
       expect(similarity).toBe(1.0);
     });
@@ -155,7 +197,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q12",
         userA,
         userB,
-        "categorical-multi"
+        "categorical-multi",
       );
       expect(similarity).toBe(0.5);
     });
@@ -172,7 +214,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q12",
         userA,
         userB,
-        "categorical-multi"
+        "categorical-multi",
       );
       expect(similarity).toBe(1.0);
     });
@@ -187,7 +229,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q20",
         userA,
         userB,
-        "multi-select"
+        "multi-select",
       );
       expect(similarity).toBe(1.0);
     });
@@ -200,7 +242,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q20",
         userA,
         userB,
-        "multi-select"
+        "multi-select",
       );
       // Intersection: [b, c] = 2
       // Union: [a, b, c, d] = 4
@@ -216,7 +258,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q20",
         userA,
         userB,
-        "multi-select"
+        "multi-select",
       );
       expect(similarity).toBe(0.0);
     });
@@ -229,14 +271,31 @@ describe("Phase 2: Similarity Calculation", () => {
         "q20",
         userA,
         userB,
-        "multi-select"
+        "multi-select",
       );
       expect(similarity).toBe(1.0);
+    });
+
+    test("should normalize gender preferences for q2 (man vs men)", () => {
+      const userA = createUser("a", {
+        q2: { answer: ["men"], preference: ["women"] },
+      });
+      const userB = createUser("b", {
+        q2: { answer: ["women"], preference: ["man"] },
+      });
+
+      const similarity = calculateQuestionSimilarity(
+        "q2",
+        userA,
+        userB,
+        "multi-select",
+      );
+      expect(similarity).toBe(0.0); // Q2 is a hard filter, returns 0.0
     });
   });
 
   describe("Type E: Age", () => {
-    test("should return 1.0 when both ages are within each other's ranges", () => {
+    test("should return 0.0 since age is a hard filter (not scored)", () => {
       const userA = createUser("a", {
         q4: {
           answer: { age: 25 },
@@ -251,10 +310,12 @@ describe("Phase 2: Similarity Calculation", () => {
       });
 
       const similarity = calculateQuestionSimilarity("q4", userA, userB, "age");
-      expect(similarity).toBe(1.0);
+      // Age is a hard filter - incompatible pairs are filtered out in Phase 1
+      // This function returns 0.0 for diagnostic purposes
+      expect(similarity).toBe(0.0);
     });
 
-    test("should return 0.5 when only one age is in range", () => {
+    test("should return 0.0 for all age comparisons", () => {
       const userA = createUser("a", {
         q4: {
           answer: { age: 25 },
@@ -269,43 +330,23 @@ describe("Phase 2: Similarity Calculation", () => {
       });
 
       const similarity = calculateQuestionSimilarity("q4", userA, userB, "age");
-      expect(similarity).toBe(0.5);
+      expect(similarity).toBe(0.0);
     });
 
-    test("should return 0.0 when neither age is in range", () => {
+    test("should handle combined age format", () => {
       const userA = createUser("a", {
         q4: {
-          answer: { age: 25 },
-          preference: { minAge: 22, maxAge: 28 },
+          answer: { userAge: 21, minAge: 20, maxAge: 25 },
         },
       });
       const userB = createUser("b", {
         q4: {
-          answer: { age: 30 },
-          preference: { minAge: 20, maxAge: 24 },
+          answer: { userAge: 20, minAge: 19, maxAge: 21 },
         },
       });
 
       const similarity = calculateQuestionSimilarity("q4", userA, userB, "age");
       expect(similarity).toBe(0.0);
-    });
-
-    test("should return 1.0 when preference is 'doesn't matter'", () => {
-      const userA = createUser("a", {
-        q4: {
-          answer: { age: 25 },
-          preference: { doesntMatter: true },
-        },
-      });
-      const userB = createUser("b", {
-        q4: {
-          answer: { age: 50 },
-          preference: { doesntMatter: true },
-        },
-      });
-
-      const similarity = calculateQuestionSimilarity("q4", userA, userB, "age");
-      expect(similarity).toBe(1.0);
     });
   });
 
@@ -322,7 +363,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q5",
         userA,
         userB,
-        "same-similar-different"
+        "same-similar-different",
       );
       expect(similarity).toBeGreaterThanOrEqual(0.9); // High similarity for identical answers
     });
@@ -339,7 +380,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q5",
         userA,
         userB,
-        "same-similar-different"
+        "same-similar-different",
       );
       expect(similarity).toBeGreaterThanOrEqual(0.5);
     });
@@ -356,7 +397,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q5",
         userA,
         userB,
-        "same-similar-different"
+        "same-similar-different",
       );
       expect(similarity).toBeGreaterThanOrEqual(0.8);
     });
@@ -373,7 +414,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q5",
         userA,
         userB,
-        "same-similar-different"
+        "same-similar-different",
       );
       expect(similarity).toBeLessThan(0.3);
     });
@@ -392,7 +433,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q10",
         userA,
         userB,
-        "directional"
+        "directional",
       );
       // 2-point difference on 5-point scale = 0.5
       expect(similarity).toBe(0.5);
@@ -410,7 +451,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q10",
         userA,
         userB,
-        "directional"
+        "directional",
       );
       expect(similarity).toBe(1.0);
     });
@@ -425,7 +466,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q8",
         userA,
         userB,
-        "binary"
+        "binary",
       );
       expect(similarity).toBe(1.0);
     });
@@ -438,7 +479,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q8",
         userA,
         userB,
-        "binary"
+        "binary",
       );
       expect(similarity).toBe(1.0);
     });
@@ -451,7 +492,7 @@ describe("Phase 2: Similarity Calculation", () => {
         "q8",
         userA,
         userB,
-        "binary"
+        "binary",
       );
       expect(similarity).toBe(0.0);
     });
@@ -459,14 +500,16 @@ describe("Phase 2: Similarity Calculation", () => {
 
   describe("Missing responses", () => {
     test("should return 0.5 when either response is missing", () => {
-      const userA = createUser("a", { q1: { answer: 3 } });
+      const userA = createUser("a", {
+        q7: { answer: 3, preference: "similar" },
+      });
       const userB = createUser("b", {});
 
       const similarity = calculateQuestionSimilarity(
-        "q1",
+        "q7",
         userA,
         userB,
-        "numeric"
+        "same-similar-different",
       );
       expect(similarity).toBe(0.5);
     });

@@ -26,13 +26,52 @@ import { calculateConflictResolutionCompatibility } from "./special-cases/confli
 import { calculateSleepScheduleCompatibility } from "./special-cases/sleep-schedule";
 
 /**
+ * Normalizes gender values in responses to handle inconsistencies between Q1 and Q2
+ * Q1 (Gender Identity) uses: "man", "woman", "non-binary", "genderqueer"
+ * Q2 (Gender Preference) uses: "men", "women", "non_binary", "genderqueer"
+ *
+ * We normalize to Q2's format (plural/underscore) for consistency
+ */
+function normalizeGenderResponse(response: ResponseValue): ResponseValue {
+  if (!response) return response;
+
+  const normalized = { ...response };
+
+  // Normalize answer (for q1 single values)
+  if (typeof normalized.answer === "string") {
+    normalized.answer = normalizeGenderValue(normalized.answer);
+  }
+
+  // Normalize preference (for q2 arrays)
+  if (Array.isArray(normalized.preference)) {
+    normalized.preference = normalized.preference.map(normalizeGenderValue);
+  }
+
+  return normalized;
+}
+
+/**
+ * Normalizes a single gender value to Q2 format
+ */
+function normalizeGenderValue(gender: string): string {
+  // Normalize singular to plural
+  if (gender === "man") return "men";
+  if (gender === "woman") return "women";
+
+  // Normalize hyphen to underscore
+  if (gender === "non-binary") return "non_binary";
+
+  return gender;
+}
+
+/**
  * Calculates similarity scores for all questions between two users
  * Returns object with similarity scores by question
  */
 export function calculateSimilarity(
   userA: MatchingUser,
   userB: MatchingUser,
-  config: typeof MATCHING_CONFIG = MATCHING_CONFIG
+  config: typeof MATCHING_CONFIG = MATCHING_CONFIG,
 ): Record<string, number> {
   const similarities: Record<string, number> = {};
 
@@ -50,7 +89,7 @@ export function calculateSimilarity(
       userA,
       userB,
       questionType,
-      config
+      config,
     );
   });
 
@@ -61,7 +100,7 @@ export function calculateSimilarity(
  * Determines the similarity calculation type for a question
  */
 function determineQuestionType(
-  questionId: string
+  questionId: string,
 ):
   | "numeric"
   | "ordinal"
@@ -83,7 +122,7 @@ function determineQuestionType(
     q4: "age",
     q5: "multi-select", // Cultural background - multi with multi-pref
     q6: "multi-select", // Religion - multi with same/similar pref
-    q7: "numeric", // Political leaning - Likert
+    q7: "same-similar-different", // Political leaning - Likert same/similar
     q8: "categorical-multi", // Alcohol - single with multi-pref
     q9a: "multi-select", // Drug substances - multi with multi-pref
     q9b: "ordinal", // Drug frequency - ordinal (never < occasionally < regularly)
@@ -95,7 +134,7 @@ function determineQuestionType(
     q15: "categorical-multi", // Living situation - single with multi-pref
     q16: "same-similar-different", // Ambition - can be different
     q17: "same-similar-different", // Financial - can be different
-    q18: "numeric", // Time availability - Likert same/similar
+    q18: "same-similar-different", // Time availability - Likert same/similar
     q19: "categorical-multi", // Pet attitude - single with multi-pref
     q20: "categorical-multi", // Relationship experience - single with multi-pref
 
@@ -103,19 +142,19 @@ function determineQuestionType(
     q21: "love-languages", // SPECIAL CASE
     q22: "same-similar-different", // Social energy - can be different
     q23: "same-similar-different", // Battery recharge - ordinal with different option
-    q24: "numeric", // Party interest - Likert
+    q24: "same-similar-different", // Party interest - Likert same/similar
     q25: "conflict-resolution", // SPECIAL CASE
-    q26: "categorical-multi", // Texting frequency - single with multi-pref
-    q27: "numeric", // Physical affection - Likert
+    q26: "categorical-multi", // Texting frequency - special flexible handling
+    q27: "same-similar-different", // Physical affection - Likert same/similar
     q28: "same-similar-different", // Planning - can be different
     q29: "sleep-schedule", // SPECIAL CASE
-    q30: "numeric", // Cleanliness - Likert
-    q31: "numeric", // Openness - Likert
+    q30: "same-similar-different", // Cleanliness - Likert same/similar
+    q31: "same-similar-different", // Openness - Likert same/similar
     q32: "multi-select", // What counts as cheating - multi-select same/similar
     q33: "same-similar-different", // Group socializing - can be different
     q34: "same-similar-different", // Outdoor vs indoor - can be different
     q35: "same-similar-different", // Communication - can be different
-    q36: "numeric", // Emotional processing - Likert
+    q36: "same-similar-different", // Emotional processing - Likert same/similar
   };
 
   return typeMap[questionId] || "numeric";
@@ -147,13 +186,26 @@ export function calculateQuestionSimilarity(
     | "love-languages"
     | "conflict-resolution"
     | "sleep-schedule",
-  config: typeof MATCHING_CONFIG = MATCHING_CONFIG
+  config: typeof MATCHING_CONFIG = MATCHING_CONFIG,
 ): number {
-  const aResponse = userA.responses[questionId];
-  const bResponse = userB.responses[questionId];
+  // Q1 and Q2 are HARD FILTERS - they should NOT be scored in Phase 2
+  // They are validated in Phase 1 (hard filtering). If a pair passed Phase 1,
+  // these questions should not appear in similarity scoring
+  if (questionId === "q1" || questionId === "q2") {
+    return 0.0;
+  }
+
+  let aResponse = userA.responses[questionId];
+  let bResponse = userB.responses[questionId];
 
   // If either response is missing, return 0.5 (neutral)
   if (!aResponse || !bResponse) return 0.5;
+
+  // Special handling for gender questions (q1, q2) - normalize values
+  if (questionId === "q1" || questionId === "q2") {
+    aResponse = normalizeGenderResponse(aResponse);
+    bResponse = normalizeGenderResponse(bResponse);
+  }
 
   switch (questionType) {
     case "numeric":
@@ -163,7 +215,7 @@ export function calculateQuestionSimilarity(
     case "categorical-same":
       return calculateTypeB_CategoricalSame(aResponse, bResponse);
     case "categorical-multi":
-      return calculateTypeC_CategoricalMulti(aResponse, bResponse);
+      return calculateTypeC_CategoricalMulti(aResponse, bResponse, questionId);
     case "multi-select":
       return calculateTypeD_MultiSelect(aResponse, bResponse);
     case "age":
@@ -187,9 +239,21 @@ export function calculateQuestionSimilarity(
 }
 
 /**
- * Helper: Map ordinal string values to numeric for Q12 (sexual activity expectations)
+ * Helper: Map ordinal string values to numeric for ordinal questions
+ * Supports Q9b (drug frequency) and Q12 (sexual activity expectations)
  */
 function mapOrdinalToNumeric(questionId: string, value: string): number | null {
+  if (questionId === "q9b") {
+    // DRUG_FREQUENCY_OPTIONS in order: never < occasionally < regularly
+    const ordinalMap: Record<string, number> = {
+      never: 1,
+      occasionally: 2,
+      regularly: 3,
+      prefer_not_to_answer: -1, // Handle separately
+    };
+    return ordinalMap[value] ?? null;
+  }
+
   if (questionId === "q12") {
     // SEXUAL_ACTIVITY_EXPECTATIONS_OPTIONS in order
     const ordinalMap: Record<string, number> = {
@@ -213,7 +277,7 @@ function mapOrdinalToNumeric(questionId: string, value: string): number | null {
  */
 function calculateTypeA_Numeric(
   aResponse: ResponseValue,
-  bResponse: ResponseValue
+  bResponse: ResponseValue,
 ): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
@@ -236,7 +300,7 @@ function calculateTypeA_Numeric(
  */
 function calculateTypeB_CategoricalSame(
   aResponse: ResponseValue,
-  bResponse: ResponseValue
+  bResponse: ResponseValue,
 ): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
@@ -246,28 +310,107 @@ function calculateTypeB_CategoricalSame(
 
 /**
  * Type C: Categorical (Single-select, multi preference)
- * User specifies list of acceptable answers
+ * User specifies list of acceptable answers OR preference string (same/similar)
  *
- * Similarity:
+ * For array preferences:
  * - 1.0 if partner's answer is in user's preference list
  * - 0.0 otherwise
  *
+ * For string preferences (like "similar"):
+ * - Treated as ordinal comparison (answers with natural order)
+ * - "similar": answers are same or adjacent → high score
+ * - "same": answers must be identical → 1.0 or 0.0
+ *
  * Returns average of (A satisfied by B, B satisfied by A)
+ *
+ * Special handling:
+ * - Q26: "whatever_feels_natural" is compatible with all options
+ * - Q26: Preference "similar" uses ordinal-like comparison (minimal < moderate < frequent < constant)
  */
 function calculateTypeC_CategoricalMulti(
   aResponse: ResponseValue,
-  bResponse: ResponseValue
+  bResponse: ResponseValue,
+  questionId?: string,
 ): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
-  const aPreference = aResponse.preference || [];
-  const bPreference = bResponse.preference || [];
+  const aPreference = aResponse.preference;
+  const bPreference = bResponse.preference;
+
+  // Q26 special case: "whatever_feels_natural" is compatible with everything
+  if (questionId === "q26") {
+    if (
+      aAnswer === "whatever_feels_natural" ||
+      bAnswer === "whatever_feels_natural"
+    ) {
+      return 1.0;
+    }
+
+    // Q26 has string preferences ("similar" or "same"), not array preferences
+    // Define ordinal ordering for Q26 options
+    const q26Order: Record<string, number> = {
+      minimal: 1,
+      moderate: 2,
+      frequent: 3,
+      constant: 4,
+      whatever_feels_natural: 5, // Already handled above
+    };
+
+    const aNum = q26Order[aAnswer as string] ?? -1;
+    const bNum = q26Order[bAnswer as string] ?? -1;
+
+    // Check A's preference
+    let aSatisfied = 1.0;
+    if (aPreference === "same") {
+      aSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
+    } else if (aPreference === "similar") {
+      // Similar: score decreases with distance
+      if (aNum === -1 || bNum === -1) {
+        aSatisfied = 0.5; // Invalid option
+      } else {
+        const distance = Math.abs(aNum - bNum);
+        aSatisfied = Math.max(0, 1 - distance / 3); // Max distance is 3 (1 to 4)
+      }
+    } else if (aPreference === null || aPreference === undefined) {
+      aSatisfied = 1.0; // No preference
+    }
+
+    // Check B's preference
+    let bSatisfied = 1.0;
+    if (bPreference === "same") {
+      bSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
+    } else if (bPreference === "similar") {
+      // Similar: score decreases with distance
+      if (aNum === -1 || bNum === -1) {
+        bSatisfied = 0.5; // Invalid option
+      } else {
+        const distance = Math.abs(aNum - bNum);
+        bSatisfied = Math.max(0, 1 - distance / 3);
+      }
+    } else if (bPreference === null || bPreference === undefined) {
+      bSatisfied = 1.0; // No preference
+    }
+
+    return (aSatisfied + bSatisfied) / 2;
+  }
+
+  // For non-Q26 questions: expect array preferences
+  const aPreferenceArray = Array.isArray(aPreference) ? aPreference : [];
+  const bPreferenceArray = Array.isArray(bPreference) ? bPreference : [];
 
   // If no preferences specified, assume flexible (1.0)
   const aSatisfied =
-    aPreference.length === 0 ? 1.0 : aPreference.includes(bAnswer) ? 1.0 : 0.0;
+    aPreferenceArray.length === 0
+      ? 1.0
+      : aPreferenceArray.includes(bAnswer)
+        ? 1.0
+        : 0.0;
   const bSatisfied =
-    bPreference.length === 0 ? 1.0 : bPreference.includes(aAnswer) ? 1.0 : 0.0;
+    bPreferenceArray.length === 0
+      ? 1.0
+      : bPreferenceArray.includes(aAnswer)
+        ? 1.0
+        : 0.0;
 
   // Average of mutual satisfaction
   return (aSatisfied + bSatisfied) / 2;
@@ -275,7 +418,12 @@ function calculateTypeC_CategoricalMulti(
 
 /**
  * Type D: Multi-select (Multiple options)
- * Uses Jaccard similarity: |A ∩ B| / |A ∪ B|
+ * For questions with both answer AND preference arrays:
+ * - Check if B's answer appears in A's preference list (and vice versa)
+ * - Return average of mutual satisfaction
+ *
+ * For questions with only answer arrays (no preferences):
+ * - Uses Jaccard similarity: |A ∩ B| / |A ∪ B|
  *
  * Example: A=[1,2,3], B=[2,3,4]
  * Intersection = [2,3] (size 2)
@@ -284,15 +432,103 @@ function calculateTypeC_CategoricalMulti(
  */
 function calculateTypeD_MultiSelect(
   aResponse: ResponseValue,
-  bResponse: ResponseValue
+  bResponse: ResponseValue,
 ): number {
   const aAnswer = aResponse.answer || [];
   const bAnswer = bResponse.answer || [];
+  const aPreference = aResponse.preference || [];
+  const bPreference = bResponse.preference || [];
 
   if (!Array.isArray(aAnswer) || !Array.isArray(bAnswer)) return 0.5;
   if (aAnswer.length === 0 && bAnswer.length === 0) return 1.0;
 
-  // Calculate Jaccard similarity
+  // Check if preferences exist in the response object (even if null)
+  // If preference field exists but is null/empty, treat as "flexible" (neutral 0.5)
+  const hasPreferenceField =
+    aResponse.hasOwnProperty("preference") ||
+    bResponse.hasOwnProperty("preference");
+
+  // Check if BOTH preferences are null/empty AND the question type expects preferences
+  // NULL preference means "no preference" = "happy with anything" = 1.0 satisfaction
+  // [FIXED v2.3]: Changed from 0.5 to 1.0 to match null preference philosophy
+  if (
+    hasPreferenceField &&
+    aPreference.length === 0 &&
+    bPreference.length === 0
+  ) {
+    return 1.0;
+  }
+
+  // Check if this is a preference-based multi-select
+  // Preferences can be: array of acceptable values, "same", or "similar"
+  if (
+    aPreference.length > 0 ||
+    bPreference.length > 0 ||
+    aResponse.preference === "same" ||
+    aResponse.preference === "similar" ||
+    bResponse.preference === "same" ||
+    bResponse.preference === "similar"
+  ) {
+    const aSet = new Set(aAnswer);
+    const bSet = new Set(bAnswer);
+    const intersection = new Set([...aSet].filter((x) => bSet.has(x)));
+
+    // Check if A's preference is satisfied
+    let aSatisfied = 1.0; // Default for null/no preference
+    if (aResponse.preference === "same") {
+      // Exact match required
+      aSatisfied =
+        aSet.size === bSet.size && [...aSet].every((item) => bSet.has(item))
+          ? 1.0
+          : 0.0;
+    } else if (aResponse.preference === "similar") {
+      // "Similar" means: "Does their answer have ANY overlap with mine?"
+      // Use intersection / smaller_set to be more generous
+      // If B selected 2 items and both are in A's 5 items, A should be satisfied
+      if (intersection.size === 0) {
+        aSatisfied = 0.0; // No overlap at all
+      } else {
+        // Calculate proportional overlap: what % of B's answers overlap with A's?
+        const overlapRatio = bSet.size > 0 ? intersection.size / bSet.size : 0;
+        aSatisfied = overlapRatio;
+      }
+    } else if (aPreference.length > 0) {
+      // Array of acceptable values - check if B's answer overlaps
+      aSatisfied = bAnswer.some((item) => aPreference.includes(item))
+        ? 1.0
+        : 0.0;
+    }
+
+    // Check if B's preference is satisfied
+    let bSatisfied = 1.0; // Default for null/no preference
+    if (bResponse.preference === "same") {
+      // Exact match required
+      bSatisfied =
+        aSet.size === bSet.size && [...aSet].every((item) => bSet.has(item))
+          ? 1.0
+          : 0.0;
+    } else if (bResponse.preference === "similar") {
+      // "Similar" means: "Does their answer have ANY overlap with mine?"
+      // Use intersection / smaller_set to be more generous
+      if (intersection.size === 0) {
+        bSatisfied = 0.0; // No overlap at all
+      } else {
+        // Calculate proportional overlap: what % of A's answers overlap with B's?
+        const overlapRatio = aSet.size > 0 ? intersection.size / aSet.size : 0;
+        bSatisfied = overlapRatio;
+      }
+    } else if (bPreference.length > 0) {
+      // Array of acceptable values - check if A's answer overlaps
+      bSatisfied = aAnswer.some((item) => bPreference.includes(item))
+        ? 1.0
+        : 0.0;
+    }
+
+    return (aSatisfied + bSatisfied) / 2;
+  }
+
+  // Otherwise, use Jaccard similarity for answer similarity
+  // (for questions that truly don't have preferences, like q32 cheating boundaries)
   const aSet = new Set(aAnswer);
   const bSet = new Set(bAnswer);
   const intersection = new Set([...aSet].filter((x) => bSet.has(x)));
@@ -305,44 +541,24 @@ function calculateTypeD_MultiSelect(
 
 /**
  * Type E: Age (Special case)
- * Checks if userB's age falls within userA's preferred age range
  *
- * Structure:
- * - answer: { age: number }
- * - preference: { minAge: number, maxAge: number } OR { doesntMatter: true }
+ * NOTE: Age is a HARD FILTER - incompatible pairs are filtered out in Phase 1.
+ * This similarity function is only called for diagnostic purposes on pairs that already passed the filter.
  *
- * Similarity:
- * - 1.0 if userB's age is within userA's range (and vice versa)
- * - 0.0 if outside range
- * - Average of both directions
+ * Structure can be in three formats:
+ * 1. Separate object: answer: { age: number }, preference: { minAge: number, maxAge: number }
+ * 2. Combined format: answer: { userAge: number, minAge: number, maxAge: number }
+ * 3. Test format: answer: number, preference: { min: number, max: number }
+ *
+ * Since age is a hard filter, this always returns 0.0 for scoring purposes.
  */
 function calculateTypeE_Age(
   aResponse: ResponseValue,
-  bResponse: ResponseValue
+  bResponse: ResponseValue,
 ): number {
-  const aAge = aResponse.answer?.age;
-  const bAge = bResponse.answer?.age;
-
-  if (typeof aAge !== "number" || typeof bAge !== "number") return 0.5;
-
-  const aPreference = aResponse.preference || {};
-  const bPreference = bResponse.preference || {};
-
-  // Check if A's preference is satisfied by B's age
-  let aSatisfied = 1.0;
-  if (!aPreference.doesntMatter && aPreference.minAge && aPreference.maxAge) {
-    aSatisfied =
-      bAge >= aPreference.minAge && bAge <= aPreference.maxAge ? 1.0 : 0.0;
-  }
-
-  // Check if B's preference is satisfied by A's age
-  let bSatisfied = 1.0;
-  if (!bPreference.doesntMatter && bPreference.minAge && bPreference.maxAge) {
-    bSatisfied =
-      aAge >= bPreference.minAge && aAge <= bPreference.maxAge ? 1.0 : 0.0;
-  }
-
-  return (aSatisfied + bSatisfied) / 2;
+  // Age is a hard filter - pairs that don't satisfy age requirements are filtered out
+  // This function is only for diagnostics, so we return 0.0 to indicate it's not scored
+  return 0.0;
 }
 
 /**
@@ -362,7 +578,7 @@ function calculateTypeF_Ordinal(
   questionId: string,
   aResponse: ResponseValue,
   bResponse: ResponseValue,
-  config: typeof MATCHING_CONFIG
+  config: typeof MATCHING_CONFIG,
 ): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
@@ -390,20 +606,27 @@ function calculateTypeF_Ordinal(
     return config.PREFER_NOT_ANSWER_SIMILARITY;
   }
 
-  // Calculate raw numeric similarity
-  const maxRange = 3; // For Q12: range is 1-4, so max distance is 3
+  // Calculate raw numeric similarity with dynamic max range
+  // Q9b: 1-3 (never, occasionally, regularly) → maxRange = 2
+  // Q12: 1-4 (marriage, serious_commitment, connection, early_on) → maxRange = 3
+  const maxValue = Math.max(aNumeric, bNumeric);
+  const minValue = Math.min(aNumeric, bNumeric);
+
+  // For ordinal scales, max range is (max_possible - min_possible)
+  const maxRange = questionId === "q9b" ? 2 : 3; // q9b: 3-1=2, q12: 4-1=3
   const distance = Math.abs(aNumeric - bNumeric);
   const rawSimilarity = 1 - distance / maxRange;
 
   // Check preferences
-  let aSatisfied = 1.0;
+  // If preference is null/undefined, user has "no preference" = happy with anything (1.0)
+  let aSatisfied = 1.0; // Default to 1.0 for null preference
   if (aPreference === "same") {
     aSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
   } else if (aPreference === "similar") {
     aSatisfied = Math.max(0, rawSimilarity);
   }
 
-  let bSatisfied = 1.0;
+  let bSatisfied = 1.0; // Default to 1.0 for null preference
   if (bPreference === "same") {
     bSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
   } else if (bPreference === "similar") {
@@ -418,7 +641,7 @@ function calculateTypeF_Ordinal(
  * 3-tier preference system
  *
  * Structure:
- * - preference: "same" | "similar" | "different"
+ * - preference: "same" | "similar" | "different" | null
  *
  * Similarity calculation:
  * 1. Calculate raw answer similarity using Type A (numeric distance)
@@ -426,11 +649,12 @@ function calculateTypeF_Ordinal(
  *    - "same": High similarity (0.8-1.0) = satisfied
  *    - "similar": Medium similarity (0.4-0.8) = satisfied
  *    - "different": Low similarity (0.0-0.4) = satisfied
+ *    - null/undefined: Return neutral 0.5 (missing preference data)
  * 3. Return average of (A satisfied, B satisfied)
  */
 function calculateTypeF_SameSimilarDifferent(
   aResponse: ResponseValue,
-  bResponse: ResponseValue
+  bResponse: ResponseValue,
 ): number {
   // First, calculate raw numeric similarity
   const rawSimilarity = calculateTypeA_Numeric(aResponse, bResponse);
@@ -439,22 +663,33 @@ function calculateTypeF_SameSimilarDifferent(
   const bPreference = bResponse.preference;
 
   // Check if A's preference is satisfied
-  let aSatisfied = 0.0;
+  // If preference is null/undefined, user has "no preference" = happy with anything (1.0)
+  let aSatisfied = 1.0; // Default to 1.0 for null preference
   if (aPreference === "same") {
+    // "same": User wants exact match (high similarity needed)
+    // Only fully satisfied if very similar (0.8+), otherwise scales linearly
     aSatisfied = rawSimilarity >= 0.8 ? 1.0 : rawSimilarity / 0.8;
   } else if (aPreference === "similar") {
-    aSatisfied = rawSimilarity >= 0.4 && rawSimilarity <= 0.8 ? 1.0 : 0.5;
+    // "similar": User wants similarity to decrease gradually with distance
+    // Use raw similarity directly - no thresholding
+    aSatisfied = Math.max(0, rawSimilarity);
   } else if (aPreference === "different") {
+    // "different": User wants dissimilarity (low similarity is good)
     aSatisfied = rawSimilarity <= 0.4 ? 1.0 : (1 - rawSimilarity) / 0.6;
   }
 
   // Check if B's preference is satisfied
-  let bSatisfied = 0.0;
+  // If preference is null/undefined, user has "no preference" = happy with anything (1.0)
+  let bSatisfied = 1.0; // Default to 1.0 for null preference
   if (bPreference === "same") {
+    // "same": User wants exact match (high similarity needed)
     bSatisfied = rawSimilarity >= 0.8 ? 1.0 : rawSimilarity / 0.8;
   } else if (bPreference === "similar") {
-    bSatisfied = rawSimilarity >= 0.4 && rawSimilarity <= 0.8 ? 1.0 : 0.5;
+    // "similar": User wants similarity to decrease gradually with distance
+    // Use raw similarity directly - no thresholding
+    bSatisfied = Math.max(0, rawSimilarity);
   } else if (bPreference === "different") {
+    // "different": User wants dissimilarity
     bSatisfied = rawSimilarity <= 0.4 ? 1.0 : (1 - rawSimilarity) / 0.6;
   }
 
@@ -472,7 +707,7 @@ function calculateTypeF_SameSimilarDifferent(
  */
 function calculateTypeG_Directional(
   aResponse: ResponseValue,
-  bResponse: ResponseValue
+  bResponse: ResponseValue,
 ): number {
   // For Phase 2, just calculate raw numeric similarity
   // Phase 4 will apply α/β based on directional preference alignment
@@ -487,7 +722,7 @@ function calculateTypeG_Directional(
  */
 function calculateTypeH_Binary(
   aResponse: ResponseValue,
-  bResponse: ResponseValue
+  bResponse: ResponseValue,
 ): number {
   const aAnswer = aResponse.answer;
   const bAnswer = bResponse.answer;
@@ -502,17 +737,41 @@ function calculateTypeH_Binary(
 function calculateLoveLanguages(
   aResponse: ResponseValue,
   bResponse: ResponseValue,
-  config: typeof MATCHING_CONFIG
+  config: typeof MATCHING_CONFIG,
 ): number {
   // Defensive check for missing answer data
   if (!aResponse?.answer || !bResponse?.answer) {
     return config.PREFER_NOT_ANSWER_SIMILARITY;
   }
 
+  // Transform from questionnaire format to love language format
+  // answer = how user shows love, preference = how user wants to receive love
+  const aLoveLanguage = {
+    show: Array.isArray(aResponse.answer)
+      ? aResponse.answer
+      : [aResponse.answer],
+    receive: Array.isArray(aResponse.preference)
+      ? aResponse.preference
+      : aResponse.preference
+        ? [aResponse.preference]
+        : aResponse.answer,
+  };
+
+  const bLoveLanguage = {
+    show: Array.isArray(bResponse.answer)
+      ? bResponse.answer
+      : [bResponse.answer],
+    receive: Array.isArray(bResponse.preference)
+      ? bResponse.preference
+      : bResponse.preference
+        ? [bResponse.preference]
+        : bResponse.answer,
+  };
+
   const result = calculateLoveLanguageCompatibility(
-    aResponse.answer, // LoveLanguageResponse
-    bResponse.answer, // LoveLanguageResponse
-    config
+    aLoveLanguage,
+    bLoveLanguage,
+    config,
   );
   return result.weightedScore;
 }
@@ -524,7 +783,7 @@ function calculateLoveLanguages(
 function calculateConflictResolution(
   aResponse: ResponseValue,
   bResponse: ResponseValue,
-  config: typeof MATCHING_CONFIG
+  config: typeof MATCHING_CONFIG,
 ): number {
   // Defensive check for missing data
   if (!aResponse || !bResponse) {
@@ -544,7 +803,7 @@ function calculateConflictResolution(
   const result = calculateConflictResolutionCompatibility(
     aConflictResponse,
     bConflictResponse,
-    config
+    config,
   );
   return result.finalScore;
 }
@@ -556,7 +815,7 @@ function calculateConflictResolution(
 function calculateSleepSchedule(
   aResponse: ResponseValue,
   bResponse: ResponseValue,
-  config: typeof MATCHING_CONFIG
+  config: typeof MATCHING_CONFIG,
 ): number {
   // Defensive check for missing answer data
   if (!aResponse?.answer || !bResponse?.answer) {
@@ -566,7 +825,7 @@ function calculateSleepSchedule(
   const result = calculateSleepScheduleCompatibility(
     aResponse, // Full response with answer
     bResponse, // Full response with answer
-    config
+    config,
   );
   return result.finalScore;
 }

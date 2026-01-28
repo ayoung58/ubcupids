@@ -71,6 +71,15 @@ User A answers: "I drink socially" + preference: "I prefer my match to drink [ne
 User B answers: "I drink rarely"
 Similarity calculation: Compare B's "rarely" against A's acceptable set [never, rarely] → similarity = 1.0
 
+Null Preference Handling [NEW v2.3]
+When a user selects "No preference" for a question:
+This means the user is happy with ANY answer from their match
+Null/undefined preference is treated as satisfaction = 1.0 (completely satisfied)
+This applies consistently across ALL question types (categorical, ordinal, Likert, etc.)
+Rationale: "No preference" is an explicit user choice meaning "I don't care about this aspect"
+If both users have null preference: (1.0 + 1.0) / 2 = 1.0 (both are completely flexible)
+If one has null, one has specific: The specific person's satisfaction depends on match, the null person always has 1.0
+
 Question Type Classification [REORGANIZED v2.2]
 Type A: Categorical Single-Select (No Preference Specification)
 Used for: Gender Identity (Q1), Age (Q4)
@@ -105,11 +114,21 @@ If match's answer ∈ user's acceptable preference set:
 similarity = 1.0
 Else:
 similarity = 0.0
+If user has null preference (selected "No preference"):
+user's satisfaction = 1.0 (happy with any answer)
 Example (Q8 - Alcohol):
 User A answers: "Socially"
 User A preference: [Never, Rarely] (wants match who drinks less)
 User B answers: "Rarely"
 B's "Rarely" ∈ A's [Never, Rarely] → similarity = 1.0
+Example (Q15 - Living Situation with null preference):
+User A answers: "on_campus"
+User A preference: null (no preference)
+User B answers: "off_campus_roommates"
+User B preference: null (no preference)
+A's satisfaction: 1.0 (no preference = happy with anything)
+B's satisfaction: 1.0 (no preference = happy with anything)
+similarity = (1.0 + 1.0) / 2 = 1.0
 Note: This applies regardless of whether the user selected "same" or "similar" for multi-select preferences, as the user has already defined their acceptable set by selecting multiple options.
 
 Type E: Multi-Select (Own Answer) with Single Directional Preference [NEW v2.2]
@@ -150,7 +169,16 @@ similarity = 1 - |match_value - user_value| / (max - min)
 Optional sensitivity control:
 similarity = 1 - (|match_value - user_value| / (max - min))^EXPONENT
 where EXPONENT = 1.0 by default
-Example:
+F3: Null Preference (No Preference)
+If user has null preference:
+user's satisfaction = 1.0 (happy with any value)
+Example (Q22 - Social Energy with null preference):
+User A: answer = 3, preference = null
+User B: answer = 3, preference = null
+A's satisfaction: 1.0 (no preference = happy with anything)
+B's satisfaction: 1.0 (no preference = happy with anything)
+similarity = (1.0 + 1.0) / 2 = 1.0
+Example (Political leaning with specific preference):
 User A: Political leaning = 2 (somewhat progressive)
 User A preference: "similar"
 User B: Political leaning = 3 (centrist)

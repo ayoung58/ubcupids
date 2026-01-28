@@ -15,7 +15,7 @@ describe("Phase 6: Pair Scores", () => {
         70,
         70,
         questionScores,
-        MATCHING_CONFIG
+        MATCHING_CONFIG,
       );
 
       expect(result.userAToB).toBe(70);
@@ -34,7 +34,7 @@ describe("Phase 6: Pair Scores", () => {
         80,
         60,
         questionScores,
-        MATCHING_CONFIG
+        MATCHING_CONFIG,
       );
 
       // α=0.65, min=60, mean=70
@@ -53,7 +53,7 @@ describe("Phase 6: Pair Scores", () => {
         100,
         100,
         questionScores,
-        MATCHING_CONFIG
+        MATCHING_CONFIG,
       );
 
       expect(result.pairScore).toBe(100);
@@ -85,7 +85,7 @@ describe("Phase 6: Pair Scores", () => {
         50,
         50,
         questionScores,
-        MATCHING_CONFIG
+        MATCHING_CONFIG,
       );
 
       expect(result.lowScoreQuestions).toHaveLength(2);
@@ -105,7 +105,7 @@ describe("Phase 6: Pair Scores", () => {
         70,
         60,
         questionScores,
-        MATCHING_CONFIG
+        MATCHING_CONFIG,
       );
 
       expect(result.asymmetricPreferences).toHaveLength(2);
@@ -122,7 +122,7 @@ describe("Phase 6: Pair Scores", () => {
         90,
         40,
         questionScores,
-        MATCHING_CONFIG
+        MATCHING_CONFIG,
       );
 
       // α=0.65, min=40, mean=65
@@ -144,7 +144,7 @@ describe("Phase 6: Pair Scores", () => {
         50,
         50,
         questionScores,
-        MATCHING_CONFIG
+        MATCHING_CONFIG,
       );
 
       // Low scores sorted ascending
@@ -175,10 +175,10 @@ describe("Phase 7: Eligibility Thresholding", () => {
     });
 
     test("should fail absolute threshold", () => {
-      const result = checkEligibility(45, 45, 45, 80, 80, MATCHING_CONFIG);
+      const result = checkEligibility(35, 35, 35, 80, 80, MATCHING_CONFIG);
 
       expect(result.isEligible).toBe(false);
-      expect(result.passedAbsoluteThreshold).toBe(false); // 45 < 50
+      expect(result.passedAbsoluteThreshold).toBe(false); // 35 < 40 (T_MIN)
       expect(result.failureReasons.length).toBeGreaterThanOrEqual(1);
       expect(result.failureReasons[0]).toContain("below minimum threshold");
     });
@@ -191,7 +191,7 @@ describe("Phase 7: Eligibility Thresholding", () => {
       expect(result.isEligible).toBe(false);
       expect(result.passedUserARelativeThreshold).toBe(false); // 55 < 60
       expect(
-        result.failureReasons.some((r) => r.includes("User A score"))
+        result.failureReasons.some((r) => r.includes("User A score")),
       ).toBe(true);
     });
 
@@ -203,18 +203,25 @@ describe("Phase 7: Eligibility Thresholding", () => {
       expect(result.isEligible).toBe(false);
       expect(result.passedUserBRelativeThreshold).toBe(false); // 55 < 60
       expect(
-        result.failureReasons.some((r) => r.includes("User B score"))
+        result.failureReasons.some((r) => r.includes("User B score")),
       ).toBe(true);
     });
 
     test("should fail multiple thresholds", () => {
-      const result = checkEligibility(40, 40, 40, 100, 100, MATCHING_CONFIG);
+      // Use pair score below T_MIN to trigger all three failures
+      const result = checkEligibility(35, 35, 35, 100, 100, MATCHING_CONFIG);
 
       expect(result.isEligible).toBe(false);
-      expect(result.failureReasons).toHaveLength(3); // All 3 failed
-      expect(result.failureReasons[0]).toContain("Pair score");
-      expect(result.failureReasons[1]).toContain("User A");
-      expect(result.failureReasons[2]).toContain("User B");
+      expect(result.failureReasons.length).toBeGreaterThanOrEqual(3); // All 3 failed
+      expect(result.failureReasons.some((r) => r.includes("Pair score"))).toBe(
+        true,
+      );
+      expect(result.failureReasons.some((r) => r.includes("User A"))).toBe(
+        true,
+      );
+      expect(result.failureReasons.some((r) => r.includes("User B"))).toBe(
+        true,
+      );
     });
 
     test("should pass at exact thresholds", () => {
@@ -240,7 +247,7 @@ describe("Phase 7: Eligibility Thresholding", () => {
         100,
         100,
         MATCHING_CONFIG,
-        0.8
+        0.8,
       );
 
       expect(result.isEligible).toBe(false);

@@ -59,18 +59,17 @@ function normalizeGenderValue(gender: string): string {
  */
 function getImportanceWeight(
   importance: string | number | undefined,
-  config: MatchingConfig = DEFAULT_CONFIG
+  config: MatchingConfig = DEFAULT_CONFIG,
 ): number {
   if (typeof importance === "number") return importance;
   if (!importance) return config.IMPORTANCE_WEIGHTS.SOMEWHAT_IMPORTANT; // Default to somewhat important
 
   const weights = config.IMPORTANCE_WEIGHTS;
-  
+
   // Normalize to uppercase to handle both uppercase and lowercase values
-  const normalizedImportance = typeof importance === "string" 
-    ? importance.toUpperCase() 
-    : importance;
-  
+  const normalizedImportance =
+    typeof importance === "string" ? importance.toUpperCase() : importance;
+
   const importanceMap: Record<string, number> = {
     NOT_IMPORTANT: weights.NOT_IMPORTANT,
     SOMEWHAT_IMPORTANT: weights.SOMEWHAT_IMPORTANT,
@@ -137,7 +136,7 @@ export interface PipelineDiagnostics {
  */
 export function runMatchingPipeline(
   users: MatchingUser[],
-  config: MatchingConfig = DEFAULT_CONFIG
+  config: MatchingConfig = DEFAULT_CONFIG,
 ): MatchingPipelineResult {
   const startTime = Date.now();
 
@@ -217,7 +216,7 @@ export function runMatchingPipeline(
         scoreAtoB,
         scoreBtoA,
         {}, // questionScores - TODO: collect from similarity calculations
-        config
+        config,
       );
 
       pairScores.push({
@@ -270,7 +269,7 @@ export function runMatchingPipeline(
       scoreBtoA,
       userABestScore,
       userBBestScore,
-      config
+      config,
     );
 
     if (eligibility.isEligible) {
@@ -293,7 +292,7 @@ export function runMatchingPipeline(
   const perfectionists: string[] = [];
   for (const user of processedUsers) {
     const userEligiblePairs = eligiblePairs.filter(
-      (p) => p.userAId === user.id || p.userBId === user.id
+      (p) => p.userAId === user.id || p.userBId === user.id,
     );
     if (
       userEligiblePairs.length === 0 &&
@@ -308,7 +307,7 @@ export function runMatchingPipeline(
 
   // Calculate score distribution
   const scoreDistribution = calculateScoreDistribution(
-    pairScores.map((p) => p.score)
+    pairScores.map((p) => p.score),
   );
 
   // Calculate average raw score
@@ -316,6 +315,28 @@ export function runMatchingPipeline(
     pairScores.length > 0
       ? pairScores.reduce((sum, p) => sum + p.score, 0) / pairScores.length
       : 0;
+
+  // Calculate statistics from eligible pairs (Phase 7) instead of only final matches
+  // This gives a better view of overall compatibility in the pool
+  const eligiblePairScores = eligiblePairs
+    .map((p) => p.pairScore)
+    .sort((a, b) => a - b);
+  const eligiblePairStats =
+    eligiblePairScores.length > 0
+      ? {
+          average:
+            eligiblePairScores.reduce((sum, s) => sum + s, 0) /
+            eligiblePairScores.length,
+          median: eligiblePairScores[Math.floor(eligiblePairScores.length / 2)],
+          min: eligiblePairScores[0],
+          max: eligiblePairScores[eligiblePairScores.length - 1],
+        }
+      : {
+          average: 0,
+          median: 0,
+          min: 0,
+          max: 0,
+        };
 
   const executionTimeMs = Date.now() - startTime;
 
@@ -339,10 +360,11 @@ export function runMatchingPipeline(
 
       phase8_matchesCreated: matchingResult.stats.matchesCreated,
       phase8_unmatchedUsers: matchingResult.stats.unmatchedUsers,
-      phase8_averageMatchScore: matchingResult.stats.averagePairScore,
-      phase8_medianMatchScore: matchingResult.stats.medianPairScore,
-      phase8_minMatchScore: matchingResult.stats.minPairScore,
-      phase8_maxMatchScore: matchingResult.stats.maxPairScore,
+      // Use eligible pair statistics instead of final match statistics
+      phase8_averageMatchScore: eligiblePairStats.average,
+      phase8_medianMatchScore: eligiblePairStats.median,
+      phase8_minMatchScore: eligiblePairStats.min,
+      phase8_maxMatchScore: eligiblePairStats.max,
 
       executionTimeMs,
 
@@ -356,10 +378,10 @@ export function runMatchingPipeline(
  * This runs similarity, importance, directional scoring, and section weighting.
  * Returns a single score from 0-100.
  */
-function calculateDirectionalScoreComplete(
+export function calculateDirectionalScoreComplete(
   userA: MatchingUser,
   userB: MatchingUser,
-  config: MatchingConfig
+  config: MatchingConfig,
 ): number {
   // Phase 2: Calculate raw similarities for all questions
   const similarities = calculateSimilarity(userA, userB, config);
@@ -394,46 +416,61 @@ function calculateDirectionalScoreComplete(
   ];
 
   let lifestyleScore = 0;
-  let lifestyleCount = 0;
+  let lifestyleWeightSum = 0;
   let personalityScore = 0;
-  let personalityCount = 0;
+  let personalityWeightSum = 0;
+
+  // Hard filter questions that should be excluded from scoring
+  const HARD_FILTER_QUESTIONS = ["q1", "q2", "q4"];
 
   questionIds.forEach((qid) => {
+    // Skip hard filter questions - they're used for filtering, not scoring
+    if (HARD_FILTER_QUESTIONS.includes(qid)) {
+      return;
+    }
+
     const rawSim = similarities[qid];
     // Get importance from userA for this question and convert to numeric weight
     const importanceStr = userA.responses[qid]?.importance;
     const importance = getImportanceWeight(importanceStr, config);
-    // Apply importance weight directly (no normalization needed)
+
+    // Skip questions with zero importance
+    if (importance === 0) {
+      return;
+    }
+
+    // Apply importance weight: weighted score = similarity × importance
     const weighted = rawSim * importance;
 
     if (lifestyleQuestions.includes(qid)) {
       lifestyleScore += weighted;
-      lifestyleCount++;
+      lifestyleWeightSum += importance;
     } else {
       personalityScore += weighted;
-      personalityCount++;
+      personalityWeightSum += importance;
     }
   });
 
-  // Calculate average scores per section
-  const avgLifestyle = lifestyleCount > 0 ? lifestyleScore / lifestyleCount : 0;
+  // Calculate weighted average scores per section (divide by sum of weights, not count)
+  const avgLifestyle =
+    lifestyleWeightSum > 0 ? lifestyleScore / lifestyleWeightSum : 0;
   const avgPersonality =
-    personalityCount > 0 ? personalityScore / personalityCount : 0;
+    personalityWeightSum > 0 ? personalityScore / personalityWeightSum : 0;
 
   // Phase 5: Apply section weighting (65% lifestyle, 35% personality)
   const weightedTotal =
     avgLifestyle * config.SECTION_WEIGHTS.LIFESTYLE +
     avgPersonality * config.SECTION_WEIGHTS.PERSONALITY;
 
-  // Scale to 0-100 (max weighted score when importance=2.0 is 2.0, so divide by 2)
-  return (weightedTotal / config.IMPORTANCE_WEIGHTS.VERY_IMPORTANT) * 100;
+  // Scale to 0-100 (avgLifestyle and avgPersonality are already in [0,1] range)
+  return weightedTotal * 100;
 }
 
 /**
  * Calculate score distribution for diagnostics.
  */
 function calculateScoreDistribution(
-  scores: number[]
+  scores: number[],
 ): { range: string; count: number }[] {
   const ranges = [
     { range: "0-20", min: 0, max: 20, count: 0 },

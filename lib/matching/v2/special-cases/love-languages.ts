@@ -16,14 +16,14 @@
 import { MatchingConfig } from "../config";
 
 /**
- * Love language types
+ * Love language types (matching production data format with underscores)
  */
 export type LoveLanguage =
-  | "words-of-affirmation"
-  | "quality-time"
-  | "physical-touch"
-  | "acts-of-service"
-  | "receiving-gifts";
+  | "words_of_affirmation"
+  | "quality_time"
+  | "physical_touch"
+  | "acts_of_service"
+  | "receiving_gifts";
 
 /**
  * Q21 response structure

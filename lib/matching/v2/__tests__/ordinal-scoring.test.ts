@@ -36,7 +36,7 @@ describe("Q12: Sexual Activity Expectations (Ordinal)", () => {
         "q12",
         userA,
         userB,
-        "ordinal"
+        "ordinal",
       );
       expect(similarity).toBe(1.0);
     });
@@ -53,7 +53,7 @@ describe("Q12: Sexual Activity Expectations (Ordinal)", () => {
         "q12",
         userA,
         userB,
-        "ordinal"
+        "ordinal",
       );
       expect(similarity).toBe(0.0);
     });
@@ -70,7 +70,7 @@ describe("Q12: Sexual Activity Expectations (Ordinal)", () => {
         "q12",
         userA,
         userB,
-        "ordinal"
+        "ordinal",
       );
       // A wants same but doesn't get it: 0.0
       // B wants similar and gets distance 1 (connection=3, serious_commitment=2): 1 - 1/3 = 0.67
@@ -92,7 +92,7 @@ describe("Q12: Sexual Activity Expectations (Ordinal)", () => {
         "q12",
         userA,
         userB,
-        "ordinal"
+        "ordinal",
       );
       // Both want similar
       // Distance: |2-3| = 1, max range = 3
@@ -112,7 +112,7 @@ describe("Q12: Sexual Activity Expectations (Ordinal)", () => {
         "q12",
         userA,
         userB,
-        "ordinal"
+        "ordinal",
       );
       // Distance: |1-3| = 2, max range = 3
       // Similarity: 1 - 2/3 = 0.33
@@ -131,7 +131,7 @@ describe("Q12: Sexual Activity Expectations (Ordinal)", () => {
         "q12",
         userA,
         userB,
-        "ordinal"
+        "ordinal",
       );
       // Distance: |1-4| = 3, max range = 3
       // Similarity: 1 - 3/3 = 0.0
@@ -150,7 +150,7 @@ describe("Q12: Sexual Activity Expectations (Ordinal)", () => {
         "q12",
         userA,
         userB,
-        "ordinal"
+        "ordinal",
       );
       // Distance: 0, Similarity: 1.0
       expect(similarity).toBe(1.0);
@@ -170,10 +170,10 @@ describe("Q12: Sexual Activity Expectations (Ordinal)", () => {
         "q12",
         userA,
         userB,
-        "ordinal"
+        "ordinal",
       );
-      // Should return neutral score for prefer_not_to_answer
-      expect(similarity).toBe(0.5);
+      // Should return penalty score (0.3) for prefer_not_to_answer
+      expect(similarity).toBe(0.3);
     });
   });
 });
@@ -191,7 +191,7 @@ describe("Q14: Faculty (Multi-select)", () => {
       "q14",
       userA,
       userB,
-      "multi-select"
+      "multi-select",
     );
     expect(similarity).toBe(1.0);
   });
@@ -208,7 +208,7 @@ describe("Q14: Faculty (Multi-select)", () => {
       "q14",
       userA,
       userB,
-      "multi-select"
+      "multi-select",
     );
     // Intersection: [science] = 1
     // Union: [science, engineering, arts] = 3
@@ -228,7 +228,7 @@ describe("Q14: Faculty (Multi-select)", () => {
       "q14",
       userA,
       userB,
-      "multi-select"
+      "multi-select",
     );
     expect(similarity).toBe(0.0);
   });
@@ -245,7 +245,7 @@ describe("Q14: Faculty (Multi-select)", () => {
       "q14",
       userA,
       userB,
-      "multi-select"
+      "multi-select",
     );
     expect(similarity).toBe(1.0);
   });

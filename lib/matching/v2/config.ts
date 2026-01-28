@@ -70,10 +70,12 @@ export const MATCHING_CONFIG = {
 
   /**
    * Importance Weights - Maps importance levels to numeric multipliers
-   * Per V2.2 spec: NOT=0, SOMEWHAT=0.5, IMPORTANT=1.0, VERY=2.0
+   * FIXED: Changed NOT_IMPORTANT from 0 to 0.25
+   * With 0, questions contribute nothing even with perfect similarity,
+   * causing artificially low scores (30/100 instead of expected 50+)
    */
   IMPORTANCE_WEIGHTS: {
-    NOT_IMPORTANT: 0,
+    NOT_IMPORTANT: 0.25,
     SOMEWHAT_IMPORTANT: 0.5,
     IMPORTANT: 1.0,
     VERY_IMPORTANT: 2.0,

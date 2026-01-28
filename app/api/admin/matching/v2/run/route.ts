@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
-import { runMatchingPipeline, MatchingUser } from "@/lib/matching/v2";
+import {
+  runMatchingPipeline,
+  MatchingUser,
+  calculateDirectionalScoreComplete,
+  MATCHING_CONFIG,
+  calculatePairScore,
+} from "@/lib/matching/v2";
+import { calculateSimilarity } from "@/lib/matching/v2/similarity";
 
 /**
  * Run Matching Algorithm V2.2
@@ -106,17 +113,17 @@ export async function POST(request: NextRequest) {
     if (users.length === 0) {
       return NextResponse.json(
         { error: "No eligible users found with completed questionnaires" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Run matching algorithm
     console.log(
-      `[Matching] Running pipeline for ${users.length} users (isTestUser: ${isTestUser})`
+      `[Matching] Running pipeline for ${users.length} users (isTestUser: ${isTestUser})`,
     );
     const result = runMatchingPipeline(users);
     console.log(
-      `[Matching] Pipeline complete: ${result.matches.length} matches, ${result.unmatched.length} unmatched`
+      `[Matching] Pipeline complete: ${result.matches.length} matches, ${result.unmatched.length} unmatched`,
     );
 
     // Generate run ID
@@ -195,8 +202,110 @@ export async function POST(request: NextRequest) {
           acc[range] = count;
           return acc;
         },
-        {} as Record<string, number>
+        {} as Record<string, number>,
       );
+
+      // Generate detailed question-by-question breakdown for multiple random pairs
+      const samplePairBreakdowns = [];
+      const numSamples = Math.min(5, Math.floor(users.length / 2)); // Up to 5 pairs
+
+      if (users.length >= 2 && numSamples > 0) {
+        const usedUserIds = new Set<string>();
+
+        for (let i = 0; i < numSamples; i++) {
+          // Pick two random users that haven't been used yet
+          const availableUsers = users.filter((u) => !usedUserIds.has(u.id));
+          if (availableUsers.length < 2) break;
+
+          const userA =
+            availableUsers[Math.floor(Math.random() * availableUsers.length)];
+          usedUserIds.add(userA.id);
+
+          const remainingUsers = availableUsers.filter(
+            (u) => u.id !== userA.id,
+          );
+          const userB =
+            remainingUsers[Math.floor(Math.random() * remainingUsers.length)];
+          usedUserIds.add(userB.id);
+
+          // Calculate similarity scores for all questions
+          const similarities = calculateSimilarity(
+            userA,
+            userB,
+            MATCHING_CONFIG,
+          );
+
+          // Calculate the directional scores
+          const scoreAtoB = calculateDirectionalScoreComplete(
+            userA,
+            userB,
+            MATCHING_CONFIG,
+          );
+          const scoreBtoA = calculateDirectionalScoreComplete(
+            userB,
+            userA,
+            MATCHING_CONFIG,
+          );
+
+          // Calculate final pair score using the pair score calculation
+          const pairScoreResult = calculatePairScore(
+            scoreAtoB,
+            scoreBtoA,
+            {},
+            MATCHING_CONFIG,
+          );
+
+          // Build question breakdown
+          const questionBreakdown = Object.entries(similarities)
+            .sort((a, b) => {
+              // Natural sort for question IDs (q1, q2, q3... q9a, q9b, q10...)
+              const extractNum = (qid: string) => {
+                const match = qid.match(/\d+/);
+                return match ? parseInt(match[0], 10) : 0;
+              };
+              const numA = extractNum(a[0]);
+              const numB = extractNum(b[0]);
+              if (numA !== numB) return numA - numB;
+              return a[0].localeCompare(b[0]); // For q9a vs q9b
+            })
+            .map(([questionId, score]) => {
+              const userAResp = userA.responses[questionId];
+              const userBResp = userB.responses[questionId];
+
+              return {
+                questionId,
+                userA: {
+                  answer: userAResp?.answer,
+                  preference: userAResp?.preference,
+                  importance: userAResp?.importance,
+                },
+                userB: {
+                  answer: userBResp?.answer,
+                  preference: userBResp?.preference,
+                  importance: userBResp?.importance,
+                },
+                similarityScore: Math.round(score * 1000) / 1000,
+              };
+            });
+
+          const avgSimilarity =
+            questionBreakdown.reduce((sum, q) => sum + q.similarityScore, 0) /
+            questionBreakdown.length;
+
+          samplePairBreakdowns.push({
+            userAId: userA.id,
+            userAEmail: userA.email,
+            userBId: userB.id,
+            userBEmail: userB.email,
+            averageSimilarity: Math.round(avgSimilarity * 1000) / 1000,
+            finalPairScore: Math.round(pairScoreResult.pairScore * 100) / 100,
+            scoreAtoB: Math.round(scoreAtoB * 100) / 100,
+            scoreBtoA: Math.round(scoreBtoA * 100) / 100,
+            questionCount: questionBreakdown.length,
+            questions: questionBreakdown,
+          });
+        }
+      }
 
       response.diagnostics = {
         executionTimeMs: result.diagnostics.executionTimeMs,
@@ -236,6 +345,96 @@ export async function POST(request: NextRequest) {
             : undefined,
           bestPossibleMatchId: u.bestPossibleMatchId,
         })),
+
+        // Sample pair breakdowns for manual verification
+        samplePairBreakdowns,
+
+        // Actual matches created with detailed breakdowns
+        actualMatches: result.matches.map((match) => {
+          const userA = users.find((u) => u.id === match.userAId);
+          const userB = users.find((u) => u.id === match.userBId);
+
+          if (!userA || !userB) {
+            return {
+              userAId: match.userAId,
+              userAEmail: "unknown",
+              userBId: match.userBId,
+              userBEmail: "unknown",
+              pairScore: Math.round(match.pairScore * 100) / 100,
+              scoreAtoB: 0,
+              scoreBtoA: 0,
+              averageSimilarity: 0,
+              questionCount: 0,
+              questions: [],
+            };
+          }
+
+          // Calculate similarities and scores for this match
+          const similarities = calculateSimilarity(
+            userA,
+            userB,
+            MATCHING_CONFIG,
+          );
+          const scoreAtoB = calculateDirectionalScoreComplete(
+            userA,
+            userB,
+            MATCHING_CONFIG,
+          );
+          const scoreBtoA = calculateDirectionalScoreComplete(
+            userB,
+            userA,
+            MATCHING_CONFIG,
+          );
+
+          // Build question breakdown for this match
+          const questionBreakdown = Object.entries(similarities)
+            .sort((a, b) => {
+              const extractNum = (qid: string) => {
+                const match = qid.match(/\d+/);
+                return match ? parseInt(match[0], 10) : 0;
+              };
+              const numA = extractNum(a[0]);
+              const numB = extractNum(b[0]);
+              if (numA !== numB) return numA - numB;
+              return a[0].localeCompare(b[0]);
+            })
+            .map(([questionId, score]) => {
+              const userAResp = userA.responses[questionId];
+              const userBResp = userB.responses[questionId];
+
+              return {
+                questionId,
+                userA: {
+                  answer: userAResp?.answer,
+                  preference: userAResp?.preference,
+                  importance: userAResp?.importance,
+                },
+                userB: {
+                  answer: userBResp?.answer,
+                  preference: userBResp?.preference,
+                  importance: userBResp?.importance,
+                },
+                similarityScore: Math.round(score * 1000) / 1000,
+              };
+            });
+
+          const avgSimilarity =
+            questionBreakdown.reduce((sum, q) => sum + q.similarityScore, 0) /
+            questionBreakdown.length;
+
+          return {
+            userAId: userA.id,
+            userAEmail: userA.email,
+            userBId: userB.id,
+            userBEmail: userB.email,
+            pairScore: Math.round(match.pairScore * 100) / 100,
+            scoreAtoB: Math.round(scoreAtoB * 100) / 100,
+            scoreBtoA: Math.round(scoreBtoA * 100) / 100,
+            averageSimilarity: Math.round(avgSimilarity * 1000) / 1000,
+            questionCount: questionBreakdown.length,
+            questions: questionBreakdown,
+          };
+        }),
       };
     }
 
@@ -251,7 +450,7 @@ export async function POST(request: NextRequest) {
         details: error instanceof Error ? error.message : "Unknown error",
         stack: error instanceof Error ? error.stack : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
