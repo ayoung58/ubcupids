@@ -8,27 +8,39 @@ import { calculateQuestionSimilarity } from "../similarity";
 import { MatchingUser } from "../types";
 import { MATCHING_CONFIG } from "../config";
 
+/**
+ * Helper to create a minimal mock user
+ */
+function createMockUser(
+  id: string,
+  responses: Record<string, any>,
+): MatchingUser {
+  return {
+    id,
+    email: `${id}@test.com`,
+    name: `User ${id.toUpperCase()}`,
+    gender: "woman",
+    interestedInGenders: ["men"],
+    campus: "UBCV",
+    okMatchingDifferentCampus: true,
+    responses,
+    responseRecord: {} as any,
+  };
+}
+
 describe("Null Preference Handling - Consistency Across Question Types", () => {
   describe("Type C: Categorical Multi (Q15 - Living Situation)", () => {
     it("should score 1.0 when both users have null preference", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q15: { answer: "on_campus", preference: null, importance: 1.0 },
+      const userA = createMockUser("a", {
+        q15: { answer: "on_campus", preference: null, importance: 1.0 },
+      });
+      const userB = createMockUser("b", {
+        q15: {
+          answer: "off_campus_roommates",
+          preference: null,
+          importance: 1.0,
         },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q15: {
-            answer: "off_campus_roommates",
-            preference: null,
-            importance: 1.0,
-          },
-        },
-      };
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q15",
@@ -43,24 +55,16 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
     });
 
     it("should score 1.0 when one has null preference and other has compatible specific", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q15: {
-            answer: "on_campus",
-            preference: ["on_campus", "off_campus_roommates"],
-            importance: 1.0,
-          },
+      const userA = createMockUser("a", {
+        q15: {
+          answer: "on_campus",
+          preference: ["on_campus", "off_campus_roommates"],
+          importance: 1.0,
         },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q15: { answer: "on_campus", preference: null, importance: 1.0 },
-        },
-      };
+      });
+      const userB = createMockUser("b", {
+        q15: { answer: "on_campus", preference: null, importance: 1.0 },
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q15",
@@ -77,24 +81,16 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
     });
 
     it("should score 0.5 when one has null preference and other has incompatible specific", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q15: {
-            answer: "on_campus",
-            preference: ["off_campus_alone"],
-            importance: 1.0,
-          },
+      const userA = createMockUser("a", {
+        q15: {
+          answer: "on_campus",
+          preference: ["off_campus_alone"],
+          importance: 1.0,
         },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q15: { answer: "on_campus", preference: null, importance: 1.0 },
-        },
-      };
+      });
+      const userB = createMockUser("b", {
+        q15: { answer: "on_campus", preference: null, importance: 1.0 },
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q15",
@@ -113,20 +109,12 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
 
   describe("Type F1: Ordinal (Q9b - Drug Frequency)", () => {
     it("should score 1.0 when both users have null preference", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q9b: { answer: "never", preference: null, importance: 1.0 },
-        },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q9b: { answer: "regularly", preference: null, importance: 1.0 },
-        },
-      };
+      const userA = createMockUser("a", {
+        q9b: { answer: "never", preference: null, importance: 1.0 },
+      });
+      const userB = createMockUser("b", {
+        q9b: { answer: "regularly", preference: null, importance: 1.0 },
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q9b",
@@ -141,20 +129,12 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
     });
 
     it("should score 1.0 when one has null preference and other has compatible specific", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q9b: { answer: "never", preference: "same", importance: 1.0 },
-        },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q9b: { answer: "never", preference: null, importance: 1.0 },
-        },
-      };
+      const userA = createMockUser("a", {
+        q9b: { answer: "never", preference: "same", importance: 1.0 },
+      });
+      const userB = createMockUser("b", {
+        q9b: { answer: "never", preference: null, importance: 1.0 },
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q9b",
@@ -171,20 +151,12 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
     });
 
     it("should score 0.5 when one has null preference and other has incompatible specific", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q9b: { answer: "never", preference: "same", importance: 1.0 },
-        },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q9b: { answer: "regularly", preference: null, importance: 1.0 },
-        },
-      };
+      const userA = createMockUser("a", {
+        q9b: { answer: "never", preference: "same", importance: 1.0 },
+      });
+      const userB = createMockUser("b", {
+        q9b: { answer: "regularly", preference: null, importance: 1.0 },
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q9b",
@@ -203,20 +175,12 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
 
   describe("Type F2: Same/Similar/Different (Q22 - Social Energy)", () => {
     it("should score 1.0 when both users have null preference", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q22: { answer: 1, preference: null, importance: 1.0 },
-        },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q22: { answer: 5, preference: null, importance: 1.0 },
-        },
-      };
+      const userA = createMockUser("a", {
+        q22: { answer: 1, preference: null, importance: 1.0 },
+      });
+      const userB = createMockUser("b", {
+        q22: { answer: 5, preference: null, importance: 1.0 },
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q22",
@@ -231,20 +195,12 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
     });
 
     it("should score 1.0 when one has null preference and other has compatible specific", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q22: { answer: 3, preference: "same", importance: 1.0 },
-        },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q22: { answer: 3, preference: null, importance: 1.0 },
-        },
-      };
+      const userA = createMockUser("a", {
+        q22: { answer: 3, preference: "same", importance: 1.0 },
+      });
+      const userB = createMockUser("b", {
+        q22: { answer: 3, preference: null, importance: 1.0 },
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q22",
@@ -261,20 +217,12 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
     });
 
     it("should score 0.5 when one has null preference and other has very incompatible specific", () => {
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q22: { answer: 1, preference: "same", importance: 1.0 },
-        },
-      };
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q22: { answer: 5, preference: null, importance: 1.0 },
-        },
-      };
+      const userA = createMockUser("a", {
+        q22: { answer: 1, preference: "same", importance: 1.0 },
+      });
+      const userB = createMockUser("b", {
+        q22: { answer: 5, preference: null, importance: 1.0 },
+      });
 
       const similarity = calculateQuestionSimilarity(
         "q22",
@@ -296,33 +244,25 @@ describe("Null Preference Handling - Consistency Across Question Types", () => {
       // Two users who don't care about anything except Q15 (living situation)
       // and they both match perfectly on that one question
 
-      const userA: MatchingUser = {
-        id: "a",
-        email: "a@test.com",
-        responses: {
-          q15: {
-            answer: "on_campus",
-            preference: ["on_campus"],
-            importance: 2.0,
-          }, // Only this matters
-          q7: { answer: 3, preference: null, importance: 0.0 }, // Don't care
-          q22: { answer: 2, preference: null, importance: 0.0 }, // Don't care
-        },
-      };
+      const userA = createMockUser("a", {
+        q15: {
+          answer: "on_campus",
+          preference: ["on_campus"],
+          importance: 2.0,
+        }, // Only this matters
+        q7: { answer: 3, preference: null, importance: 0.0 }, // Don't care
+        q22: { answer: 2, preference: null, importance: 0.0 }, // Don't care
+      });
 
-      const userB: MatchingUser = {
-        id: "b",
-        email: "b@test.com",
-        responses: {
-          q15: {
-            answer: "on_campus",
-            preference: ["on_campus"],
-            importance: 2.0,
-          }, // Only this matters
-          q7: { answer: 5, preference: null, importance: 0.0 }, // Don't care
-          q22: { answer: 4, preference: null, importance: 0.0 }, // Don't care
-        },
-      };
+      const userB = createMockUser("b", {
+        q15: {
+          answer: "on_campus",
+          preference: ["on_campus"],
+          importance: 2.0,
+        }, // Only this matters
+        q7: { answer: 5, preference: null, importance: 0.0 }, // Don't care
+        q22: { answer: 4, preference: null, importance: 0.0 }, // Don't care
+      });
 
       // Q15: Both want on_campus, both have it → 1.0
       const q15Similarity = calculateQuestionSimilarity(

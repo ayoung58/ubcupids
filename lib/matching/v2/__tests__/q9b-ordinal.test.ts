@@ -18,9 +18,15 @@ describe("Q9b Ordinal Scoring", () => {
   ): MatchingUser => ({
     id,
     email,
+    name: `User ${id.toUpperCase()}`,
+    gender: "woman",
+    interestedInGenders: ["men"],
+    campus: "UBCV",
+    okMatchingDifferentCampus: true,
     responses: {
       q9b: { answer, preference, importance },
     },
+    responseRecord: {} as any,
   });
 
   describe("Identical answers with 'similar' preference", () => {
@@ -167,16 +173,28 @@ describe("Q9b Ordinal Scoring", () => {
       const userA: MatchingUser = {
         id: "a",
         email: "a@test.com",
+        name: "User A",
+        gender: "woman",
+        interestedInGenders: ["men"],
+        campus: "UBCV",
+        okMatchingDifferentCampus: true,
         responses: {
           q9b: { answer: "never", preference: null, importance: 1.0 },
         },
+        responseRecord: {} as any,
       };
       const userB: MatchingUser = {
         id: "b",
         email: "b@test.com",
+        name: "User B",
+        gender: "woman",
+        interestedInGenders: ["men"],
+        campus: "UBCV",
+        okMatchingDifferentCampus: true,
         responses: {
           q9b: { answer: "occasionally", preference: null, importance: 1.0 },
         },
+        responseRecord: {} as any,
       };
 
       const similarity = calculateQuestionSimilarity(

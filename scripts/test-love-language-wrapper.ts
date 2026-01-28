@@ -18,6 +18,11 @@ async function testLoveLanguageWrapper() {
     const userA = users[0];
     const userB = users[1];
 
+    if (!userA?.questionnaireResponseV2 || !userB?.questionnaireResponseV2) {
+      console.error("One or both users missing questionnaireResponseV2");
+      return;
+    }
+
     const aResponse = (userA.questionnaireResponseV2.responses as any).q21;
     const bResponse = (userB.questionnaireResponseV2.responses as any).q21;
 
