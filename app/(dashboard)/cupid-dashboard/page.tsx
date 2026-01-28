@@ -49,12 +49,7 @@ export default async function CupidDashboardPage() {
   const totalAssignments = await prisma.cupidAssignment.count({
     where: {
       batchNumber: 1,
-      cupid: {
-        isTestUser: profile?.isTestUser ?? false,
-      },
-    },
-  });
-
+      cupidUser: {
   const isProductionCupid = !profile?.isTestUser;
   const currentDate = new Date();
   const launchDate = new Date("2026-02-01T00:00:00.000Z");
