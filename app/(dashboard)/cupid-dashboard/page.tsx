@@ -27,6 +27,7 @@ export default async function CupidDashboardPage() {
       cupidDisplayName: true,
       isCupid: true,
       isBeingMatched: true,
+      isTestUser: true,
     },
   });
 
@@ -44,11 +45,26 @@ export default async function CupidDashboardPage() {
   });
 
   // Check if cupids have been assigned candidates (admin has run "pair cupids")
+  // For production users: also check if date is >= Feb 1, 2026
   const totalAssignments = await prisma.cupidAssignment.count({
-    where: { batchNumber: 1 },
+    where: {
+      batchNumber: 1,
+      cupid: {
+        isTestUser: profile?.isTestUser ?? false,
+      },
+    },
   });
 
-  const cupidsAssigned = totalAssignments > 0;
+  const isProductionCupid = !profile?.isTestUser;
+  const currentDate = new Date();
+  const launchDate = new Date("2026-02-01T00:00:00.000Z");
+
+  // Production cupids can only access portal if:
+  // 1. Date is >= Feb 1, 2026 AND
+  // 2. They have assignments in the database
+  const cupidsAssigned = isProductionCupid
+    ? currentDate >= launchDate && totalAssignments > 0
+    : totalAssignments > 0; // Test users can access anytime if assigned
 
   // Check if matches have been revealed (use batch.revealedAt for consistency)
   const matchesRevealed = batch?.revealedAt !== null;
