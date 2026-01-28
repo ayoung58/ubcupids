@@ -83,6 +83,7 @@ function getImportanceWeight(
 export interface MatchingPipelineResult {
   matches: MatchingResult["matched"];
   unmatched: MatchingResult["unmatched"];
+  eligiblePairs: EligiblePair[];
   diagnostics: PipelineDiagnostics;
 }
 
@@ -145,6 +146,7 @@ export function runMatchingPipeline(
     return {
       matches: [],
       unmatched: [],
+      eligiblePairs: [],
       diagnostics: createEmptyDiagnostics(0),
     };
   }
@@ -343,6 +345,7 @@ export function runMatchingPipeline(
   return {
     matches: matchingResult.matched,
     unmatched: matchingResult.unmatched,
+    eligiblePairs, // Include eligible pairs for compatibility score saving
     diagnostics: {
       totalUsers: processedUsers.length,
 
