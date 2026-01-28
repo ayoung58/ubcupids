@@ -1,13 +1,16 @@
-import { calculateLoveLanguageCompatibility } from "../lib/matching/v2/special-cases/love-languages";
+import {
+  calculateLoveLanguageCompatibility,
+  LoveLanguageResponse,
+} from "../lib/matching/v2/special-cases/love-languages";
 import { MATCHING_CONFIG } from "../lib/matching/v2/config";
 
 // Test with identical arrays (what we see in production)
-const userA = {
+const userA: LoveLanguageResponse = {
   show: ["quality_time", "physical_touch"],
   receive: ["quality_time", "physical_touch"],
 };
 
-const userB = {
+const userB: LoveLanguageResponse = {
   show: ["quality_time", "physical_touch"],
   receive: ["quality_time", "physical_touch"],
 };
@@ -20,7 +23,7 @@ console.log();
 const result = calculateLoveLanguageCompatibility(
   userA,
   userB,
-  MATCHING_CONFIG
+  MATCHING_CONFIG,
 );
 
 console.log("Result:");
