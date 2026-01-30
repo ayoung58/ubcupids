@@ -311,7 +311,8 @@ export function FreeResponseDisplay({
       {FREE_RESPONSE_QUESTIONS.map((question) => {
         const response = responses[question.id];
 
-        if (!response) return null;
+        // Skip if no response or no answer text
+        if (!response || !response.answer) return null;
 
         return (
           <div
@@ -328,9 +329,7 @@ export function FreeResponseDisplay({
             </div>
             <div className="mt-3">
               <p className="text-sm text-slate-900 whitespace-pre-wrap">
-                {response || (
-                  <span className="text-slate-400 italic">Not answered</span>
-                )}
+                {response.answer}
               </p>
             </div>
           </div>
