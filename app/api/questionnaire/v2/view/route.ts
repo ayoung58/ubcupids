@@ -95,6 +95,11 @@ export async function GET(request: NextRequest) {
         questionnaireResponseV2: {
           select: {
             responses: true,
+            freeResponse1: true,
+            freeResponse2: true,
+            freeResponse3: true,
+            freeResponse4: true,
+            freeResponse5: true,
             isSubmitted: true,
           },
         },
@@ -147,6 +152,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       responses,
+      freeResponse1: user.questionnaireResponseV2.freeResponse1,
+      freeResponse2: user.questionnaireResponseV2.freeResponse2,
+      freeResponse3: user.questionnaireResponseV2.freeResponse3,
+      freeResponse4: user.questionnaireResponseV2.freeResponse4,
+      freeResponse5: user.questionnaireResponseV2.freeResponse5,
       showFreeResponseToMatches: user.showFreeResponseToMatches ?? true,
     });
   } catch (error) {

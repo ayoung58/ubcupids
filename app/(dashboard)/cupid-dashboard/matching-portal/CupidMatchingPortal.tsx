@@ -113,9 +113,15 @@ export function CupidMatchingPortal({
   const [candidateResponses, setCandidateResponses] = useState<any | null>(
     null,
   );
+  const [candidateFreeResponses, setCandidateFreeResponses] = useState<
+    any | null
+  >(null);
   const [candidateShowFreeResponse, setCandidateShowFreeResponse] =
     useState(true);
   const [matchResponses, setMatchResponses] = useState<any | null>(null);
+  const [matchFreeResponses, setMatchFreeResponses] = useState<any | null>(
+    null,
+  );
   const [matchShowFreeResponse, setMatchShowFreeResponse] = useState(true);
   const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(false);
 
@@ -187,6 +193,11 @@ export function CupidMatchingPortal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAssignmentIndex, currentMatchIndex, dashboard]);
 
+  // Reset match index to 0 when switching between match candidates
+  useEffect(() => {
+    setCurrentMatchIndex(0);
+  }, [currentAssignmentIndex]);
+
   const loadQuestionnaireData = async () => {
     if (!currentAssignment) return;
 
@@ -199,6 +210,13 @@ export function CupidMatchingPortal({
       if (candidateRes.ok) {
         const candidateData = await candidateRes.json();
         setCandidateResponses(candidateData.responses);
+        setCandidateFreeResponses({
+          freeResponse1: candidateData.freeResponse1,
+          freeResponse2: candidateData.freeResponse2,
+          freeResponse3: candidateData.freeResponse3,
+          freeResponse4: candidateData.freeResponse4,
+          freeResponse5: candidateData.freeResponse5,
+        });
         setCandidateShowFreeResponse(
           candidateData.showFreeResponseToMatches ?? true,
         );
@@ -208,6 +226,7 @@ export function CupidMatchingPortal({
           await candidateRes.text(),
         );
         setCandidateResponses(null);
+        setCandidateFreeResponses(null);
       }
 
       // Load match questionnaire V2
@@ -220,6 +239,13 @@ export function CupidMatchingPortal({
         if (matchRes.ok) {
           const matchData = await matchRes.json();
           setMatchResponses(matchData.responses);
+          setMatchFreeResponses({
+            freeResponse1: matchData.freeResponse1,
+            freeResponse2: matchData.freeResponse2,
+            freeResponse3: matchData.freeResponse3,
+            freeResponse4: matchData.freeResponse4,
+            freeResponse5: matchData.freeResponse5,
+          });
           setMatchShowFreeResponse(matchData.showFreeResponseToMatches ?? true);
         } else {
           console.error(
@@ -227,6 +253,7 @@ export function CupidMatchingPortal({
             await matchRes.text(),
           );
           setMatchResponses(null);
+          setMatchFreeResponses(null);
         }
       }
     } catch (err) {
@@ -297,9 +324,41 @@ export function CupidMatchingPortal({
     const visibleCount = visibleMatches.length;
     if (direction === "prev" && currentMatchIndex > 0) {
       setCurrentMatchIndex(currentMatchIndex - 1);
+      // Clear previous match data and start loading immediately
+      setMatchResponses(null);
+      setMatchFreeResponses(null);
+      setLoadingQuestionnaires(true);
     } else if (direction === "next" && currentMatchIndex < visibleCount - 1) {
       setCurrentMatchIndex(currentMatchIndex + 1);
+      // Clear previous match data and start loading immediately
+      setMatchResponses(null);
+      setMatchFreeResponses(null);
+      setLoadingQuestionnaires(true);
     }
+  };
+
+  const navigateAssignment = (direction: "prev" | "next") => {
+    if (direction === "prev") {
+      setCurrentAssignmentIndex((i) => Math.max(0, i - 1));
+    } else if (direction === "next") {
+      setCurrentAssignmentIndex((i) =>
+        Math.min((dashboard?.pendingAssignments?.length || 1) - 1, i + 1),
+      );
+    }
+    // Reset matches and tabs after assignment changes
+    setCurrentMatchIndex(0);
+    setCandidateTab("profile");
+    setCandidateSection1Collapsed(true);
+    setCandidateSection2Collapsed(true);
+    setMatchTab("profile");
+    setMatchSection1Collapsed(true);
+    setMatchSection2Collapsed(true);
+    // Clear previous data and start loading immediately
+    setCandidateResponses(null);
+    setCandidateFreeResponses(null);
+    setMatchResponses(null);
+    setMatchFreeResponses(null);
+    setLoadingQuestionnaires(true);
   };
 
   const handleRejectMatch = async () => {
@@ -345,41 +404,8 @@ export function CupidMatchingPortal({
         setSelectedMatchId(null);
       }
 
-      // Navigate to next non-rejected match, or loop to beginning
-      const visibleMatches = currentAssignment.potentialMatches.filter(
-        (m) => !rejectedMatches.has(m.userId) && m.userId !== matchToReject,
-      );
-
-      if (visibleMatches.length === 0) {
-        // All matches rejected - stay on current but show empty state
-        return;
-      }
-
-      // Find next match that isn't rejected
-      let nextIndex = currentMatchIndex + 1;
-      while (nextIndex < currentAssignment.potentialMatches.length) {
-        const match = currentAssignment.potentialMatches[nextIndex];
-        if (
-          !rejectedMatches.has(match.userId) &&
-          match.userId !== matchToReject
-        ) {
-          setCurrentMatchIndex(nextIndex);
-          return;
-        }
-        nextIndex++;
-      }
-
-      // If no next match, go to first non-rejected match
-      for (let i = 0; i < currentAssignment.potentialMatches.length; i++) {
-        const match = currentAssignment.potentialMatches[i];
-        if (
-          !rejectedMatches.has(match.userId) &&
-          match.userId !== matchToReject
-        ) {
-          setCurrentMatchIndex(i);
-          return;
-        }
-      }
+      // Always go to the first available match after rejecting
+      setCurrentMatchIndex(0);
     } catch (err) {
       console.error("Failed to reject match:", err);
       setError(err instanceof Error ? err.message : "Failed to reject match");
@@ -452,10 +478,49 @@ export function CupidMatchingPortal({
     revealedMatchCount,
   ]);
 
-  const handleRevealMore = () => {
-    setRevealedMatchCount((prev) =>
-      Math.min(prev + 5, allAvailableMatches.length),
+  const handleRevealMore = async () => {
+    if (!currentAssignment) return;
+
+    const newCount = Math.min(
+      revealedMatchCount + 5,
+      allAvailableMatches.length,
     );
+
+    try {
+      // Update backend first
+      const response = await fetch("/api/cupid/update-revealed-count", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          assignmentId: currentAssignment.assignmentId,
+          revealedCount: newCount,
+        }),
+      });
+
+      if (response.ok) {
+        // Update local state only if backend update succeeds
+        setRevealedMatchCount(newCount);
+        // Update the current assignment in the dashboard state
+        setDashboard((prev) =>
+          prev
+            ? {
+                ...prev,
+                pendingAssignments: prev.pendingAssignments.map((assignment) =>
+                  assignment.assignmentId === currentAssignment.assignmentId
+                    ? { ...assignment, revealedCount: newCount }
+                    : assignment,
+                ),
+              }
+            : null,
+        );
+      } else {
+        console.error("Failed to update revealed count");
+      }
+    } catch (error) {
+      console.error("Error updating revealed count:", error);
+    }
   };
 
   if (isLoading) {
@@ -480,8 +545,9 @@ export function CupidMatchingPortal({
     );
   }
 
-  if (!dashboard || dashboard.totalAssigned === 0) {
-    const isAllDone = dashboard && dashboard.pending === 0;
+  if (!dashboard || dashboard.totalAssigned === 0 || dashboard.pending === 0) {
+    const isAllDone =
+      dashboard && dashboard.pending === 0 && dashboard.totalAssigned > 0;
 
     return (
       <div className="min-h-screen bg-slate-50 p-8">
@@ -547,10 +613,8 @@ export function CupidMatchingPortal({
               >
                 <Button
                   variant="outline"
-                  onClick={() =>
-                    setCurrentAssignmentIndex((i) => Math.max(0, i - 1))
-                  }
-                  disabled={currentAssignmentIndex === 0}
+                  onClick={() => navigateAssignment("prev")}
+                  disabled={currentAssignmentIndex === 0 || !!selectedMatchId}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Previous Match Candidate
@@ -561,17 +625,11 @@ export function CupidMatchingPortal({
                 </span>
                 <Button
                   variant="outline"
-                  onClick={() =>
-                    setCurrentAssignmentIndex((i) =>
-                      Math.min(
-                        (dashboard?.pendingAssignments?.length || 1) - 1,
-                        i + 1,
-                      ),
-                    )
-                  }
+                  onClick={() => navigateAssignment("next")}
                   disabled={
                     currentAssignmentIndex ===
-                    (dashboard?.pendingAssignments?.length || 1) - 1
+                      (dashboard?.pendingAssignments?.length || 1) - 1 ||
+                    !!selectedMatchId
                   }
                 >
                   Next Match Candidate
@@ -666,6 +724,55 @@ export function CupidMatchingPortal({
                   <span className="ml-2 text-green-600">• Match selected</span>
                 )}
               </span>
+              <div className="flex items-center gap-2">
+                {/* Confirm Selection Button */}
+                {selectedMatchId && (
+                  <Button
+                    size="sm"
+                    onClick={() => setShowConfirmDialog(true)}
+                    className="h-7 px-2 text-xs"
+                    disabled={isSubmitting}
+                  >
+                    <Check className="h-3 w-3 mr-1" />
+                    Confirm
+                  </Button>
+                )}
+                {/* Reveal More Button */}
+                {visibleMatches.length < allAvailableMatches.length && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRevealMore}
+                    className="h-7 px-2 text-xs"
+                  >
+                    +{Math.min(remainingMatches, 5)}
+                  </Button>
+                )}
+                {/* Previous Match Candidate */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigateAssignment("prev")}
+                  disabled={currentAssignmentIndex === 0 || !!selectedMatchId}
+                  className="h-7 px-2"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                {/* Next Match Candidate */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigateAssignment("next")}
+                  disabled={
+                    currentAssignmentIndex ===
+                      (dashboard?.pendingAssignments?.length || 1) - 1 ||
+                    !!selectedMatchId
+                  }
+                  className="h-7 px-2"
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           )}
 
@@ -706,13 +813,20 @@ export function CupidMatchingPortal({
           >
             {/* Left: Candidate */}
             <Card className="border-2 border-blue-400 overflow-hidden flex flex-col">
-              <CardHeader className="bg-blue-50 border-b border-blue-200 flex-shrink-0">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Target className="h-5 w-5 text-blue-600" />
-                  Your Match Candidate: {currentAssignment.candidate.firstName}
-                </CardTitle>
+              <CardHeader className="bg-blue-50 border-b border-blue-200 flex-shrink-0 py-2.5 px-4">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <Target className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium text-slate-600">
+                      Your Match Candidate
+                    </div>
+                    <div className="text-sm font-semibold text-slate-900">
+                      {currentAssignment.candidate.firstName}
+                    </div>
+                  </div>
+                </div>
                 {/* Tabs */}
-                <div className="flex gap-2 mt-3" data-tutorial="view-tabs">
+                <div className="flex gap-2" data-tutorial="view-tabs">
                   <Button
                     variant={candidateTab === "profile" ? "default" : "outline"}
                     size="sm"
@@ -752,7 +866,7 @@ export function CupidMatchingPortal({
                     <LoadingQuestionnairesSkeleton />
                   ) : (
                     <FreeResponseDisplay
-                      responses={candidateResponses}
+                      responses={candidateFreeResponses}
                       showFreeResponse={candidateShowFreeResponse}
                     />
                   )
@@ -780,27 +894,27 @@ export function CupidMatchingPortal({
               }`}
             >
               <CardHeader
-                className={`border-b flex-shrink-0 ${
+                className={`border-b flex-shrink-0 py-2.5 px-4 ${
                   selectedMatchId === currentMatch.userId
                     ? "bg-pink-100 border-pink-300"
                     : "bg-slate-50 border-slate-200"
                 }`}
               >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <Heart className="h-5 w-5 text-pink-500" />
-                    <div>
-                      <div className="text-sm font-medium text-slate-600">
+                <div className="flex items-start justify-between gap-3 mb-2.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Heart className="h-4 w-4 text-pink-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium text-slate-600">
                         Match {currentMatchIndex + 1} of {visibleMatches.length}
                       </div>
-                      <div className="text-lg font-semibold text-slate-900">
+                      <div className="text-sm font-semibold text-slate-900">
                         {currentMatch.profile.firstName}
                       </div>
                     </div>
                   </div>
 
                   <div
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 flex-shrink-0"
                     data-tutorial="match-nav"
                   >
                     {/* Compatibility score hidden in production */}
@@ -863,7 +977,7 @@ export function CupidMatchingPortal({
                   </div>
                 </div>
                 {/* Tabs */}
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2">
                   <Button
                     variant={matchTab === "profile" ? "default" : "outline"}
                     size="sm"
@@ -903,7 +1017,7 @@ export function CupidMatchingPortal({
                     <LoadingQuestionnairesSkeleton />
                   ) : (
                     <FreeResponseDisplay
-                      responses={matchResponses}
+                      responses={matchFreeResponses}
                       showFreeResponse={matchShowFreeResponse}
                     />
                   )
@@ -1114,42 +1228,6 @@ function ProfileDisplay({ profile }: { profile: CupidProfileView }) {
         </div>
       )}
 
-      {/* AI Summary */}
-      <div className="bg-blue-50 p-4 rounded-lg space-y-3 border border-blue-200">
-        <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-          <span>🤖</span>
-          AI-Generated Summary
-        </h4>
-        <p className="text-sm text-blue-800">{profile.summary}</p>
-
-        {profile.keyTraits && profile.keyTraits.length > 0 && (
-          <div>
-            <p className="text-xs font-medium text-blue-700 mb-2">
-              Key Traits:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {profile.keyTraits.map((trait, idx) => (
-                <span
-                  key={idx}
-                  className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
-                >
-                  {trait}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {profile.lookingFor && (
-          <div>
-            <p className="text-xs font-medium text-blue-700 mb-1">
-              Looking For:
-            </p>
-            <p className="text-sm text-blue-800">{profile.lookingFor}</p>
-          </div>
-        )}
-      </div>
-
       {/* Question Highlights */}
       {profile.highlights && profile.highlights.length > 0 && (
         <div className="space-y-3">
@@ -1172,7 +1250,7 @@ function QuestionnaireDisplay({
   responses,
   importance,
 }: {
-  responses: Responses | null;
+  responses: Record<string, any> | null;
   importance: ImportanceRatings | null;
 }) {
   if (!responses) {
@@ -1227,24 +1305,44 @@ function QuestionnaireDisplay({
 
 function formatResponse(
   response:
-    | string
-    | string[]
-    | number
-    | { value: string; text: string }
-    | { minAge: number; maxAge: number }
+    | {
+        answer?:
+          | string
+          | string[]
+          | number
+          | { value: string; text: string }
+          | { minAge: number; maxAge: number; userAge?: number }
+          | { min: number; max: number; userAge?: number }
+          | undefined;
+        preference?: any;
+        importance?: string;
+        dealbreaker?: boolean;
+      }
     | undefined,
 ): string {
   if (response === undefined || response === null) return "No answer";
-  if (Array.isArray(response)) {
-    return response.join(", ");
+
+  const answer = response.answer;
+  if (answer === undefined || answer === null) return "No answer";
+
+  if (Array.isArray(answer)) {
+    return answer.join(", ");
   }
-  if (typeof response === "object" && response !== null) {
-    if ("minAge" in response && "maxAge" in response) {
-      return `${response.minAge} - ${response.maxAge} years old`;
+  if (typeof answer === "object" && answer !== null) {
+    if (
+      ("minAge" in answer && "maxAge" in answer) ||
+      ("min" in answer && "max" in answer)
+    ) {
+      const min = (answer as any).minAge || (answer as any).min;
+      const max = (answer as any).maxAge || (answer as any).max;
+      return `${min} - ${max} years old`;
     }
-    return JSON.stringify(response);
+    if ("value" in answer && "text" in answer) {
+      return (answer as any).text;
+    }
+    return "No preference";
   }
-  return String(response);
+  return String(answer);
 }
 
 function LoadingSkeleton() {

@@ -155,10 +155,25 @@ function QuestionResponseDisplay({
       return value.join(", ");
     }
     if (typeof value === "object") {
-      if ("minAge" in value && "maxAge" in value) {
-        return `${value.minAge} - ${value.maxAge} years`;
+      if (
+        ("minAge" in value && "maxAge" in value) ||
+        ("min" in value && "max" in value)
+      ) {
+        const min = value.minAge || value.min;
+        const max = value.maxAge || value.max;
+        return `${min} - ${max} years`;
       }
-      return JSON.stringify(value);
+      // Handle age range objects that might be null/doesn't matter
+      if (
+        "userAge" in value &&
+        (("minAge" in value && "maxAge" in value) ||
+          ("min" in value && "max" in value))
+      ) {
+        const min = value.minAge || value.min;
+        const max = value.maxAge || value.max;
+        return `${min} - ${max} years`;
+      }
+      return "No preference";
     }
     return String(value);
   };
@@ -166,8 +181,14 @@ function QuestionResponseDisplay({
   // Format preference for display (handles age range objects)
   const formatPreference = (value: any): string => {
     if (value === undefined || value === null) return "No preference";
-    if (typeof value === "object" && "minAge" in value && "maxAge" in value) {
-      return `${value.minAge} - ${value.maxAge} years`;
+    if (
+      typeof value === "object" &&
+      (("minAge" in value && "maxAge" in value) ||
+        ("min" in value && "max" in value))
+    ) {
+      const min = value.minAge || value.min;
+      const max = value.maxAge || value.max;
+      return `${min} - ${max} years`;
     }
     if (Array.isArray(value)) {
       if (value.length === 0) return "No preference";
@@ -183,7 +204,7 @@ function QuestionResponseDisplay({
       question.likertConfig.minLabel &&
       question.likertConfig.maxLabel
     ) {
-      return ` (${question.likertConfig.min} - ${question.likertConfig.minLabel}; ${question.likertConfig.max} - ${question.likertConfig.maxLabel})`;
+      return `${question.likertConfig.min} - ${question.likertConfig.minLabel}; ${question.likertConfig.max} - ${question.likertConfig.maxLabel}`;
     }
     return "";
   };
@@ -240,8 +261,10 @@ function QuestionResponseDisplay({
       <div className="mb-2">
         <p className="text-sm font-medium text-slate-700">
           {question.questionText}
-          {getLikertLabel()}
         </p>
+        {getLikertLabel() && (
+          <p className="text-xs text-slate-500 mt-1">{getLikertLabel()}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -257,12 +280,12 @@ function QuestionResponseDisplay({
         <div className="space-y-2 md:border-l md:pl-4 border-slate-200">
           <div className="space-y-1">
             <p className="text-xs font-medium text-slate-500 uppercase">
-              What They're Looking For
+              What They&apos;re Looking For
             </p>
             {isNoPreference ? (
               <p className="text-sm text-slate-400 italic flex items-center gap-1">
                 <X className="h-3 w-3" />
-                Doesn't matter / No preference
+                Doesn&apos;t matter / No preference
               </p>
             ) : (
               <p className="text-sm text-slate-900">
@@ -279,9 +302,6 @@ function QuestionResponseDisplay({
   );
 }
 
-/**
- * Free Response Display Component
- */
 export function FreeResponseDisplay({
   responses,
   showFreeResponse,
@@ -309,10 +329,10 @@ export function FreeResponseDisplay({
   return (
     <div className="p-4 space-y-6">
       {FREE_RESPONSE_QUESTIONS.map((question) => {
-        const response = responses[question.id];
+        const answer = responses[question.id];
 
-        // Skip if no response or no answer text
-        if (!response || !response.answer) return null;
+        // Skip if no answer or empty answer (for optional questions)
+        if (!answer || answer.trim() === "") return null;
 
         return (
           <div
@@ -329,7 +349,7 @@ export function FreeResponseDisplay({
             </div>
             <div className="mt-3">
               <p className="text-sm text-slate-900 whitespace-pre-wrap">
-                {response.answer}
+                {answer}
               </p>
             </div>
           </div>
