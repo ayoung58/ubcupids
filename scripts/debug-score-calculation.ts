@@ -14,8 +14,11 @@ function normalizeGenderValue(gender: string): string {
 
 function calculateDirectionalScoreComplete(
   userA: MatchingUser,
-  userB: MatchingUser
+  userB: MatchingUser,
 ): number {
+  // NOTE: This is a simplified debug version that only implements basic similarity + importance weighting
+  // It does NOT include directional scoring (Phase 4) like the full V2 algorithm in lib/matching/v2/index.ts
+  // Use the full algorithm for production matching
   const similarities = calculateSimilarity(userA, userB);
   const questionIds = Object.keys(similarities);
 
@@ -39,7 +42,7 @@ function calculateDirectionalScoreComplete(
     }
     if (isNaN(weighted)) {
       console.log(
-        `    ⚠️ ${qid}: weighted is NaN (sim=${rawSim}, imp=${importance})`
+        `    ⚠️ ${qid}: weighted is NaN (sim=${rawSim}, imp=${importance})`,
       );
     }
 
@@ -124,7 +127,7 @@ async function main() {
       console.log(`    Final: ${pairScore.toFixed(2)}`);
       console.log(`    Threshold: ${MATCHING_CONFIG.T_MIN}`);
       console.log(
-        `    Status: ${pairScore >= MATCHING_CONFIG.T_MIN ? "✅ PASS" : "❌ FAIL"}`
+        `    Status: ${pairScore >= MATCHING_CONFIG.T_MIN ? "✅ PASS" : "❌ FAIL"}`,
       );
     }
   }

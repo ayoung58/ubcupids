@@ -80,6 +80,30 @@ function getImportanceWeight(
   return importanceMap[normalizedImportance] ?? weights.SOMEWHAT_IMPORTANT;
 }
 
+/**
+ * Determines the similarity calculation type for a question
+ * Used to identify directional questions for Phase 4 scoring
+ */
+function determineQuestionType(
+  questionId: string,
+):
+  | "numeric"
+  | "ordinal"
+  | "categorical-same"
+  | "categorical-multi"
+  | "multi-select"
+  | "age"
+  | "same-similar-different"
+  | "directional"
+  | "binary" {
+  // Map question IDs to their types (only need directional for now)
+  const typeMap: Record<string, any> = {
+    q10: "directional", // Exercise - directional preference
+  };
+
+  return typeMap[questionId] || "numeric"; // Default fallback
+}
+
 export interface MatchingPipelineResult {
   matches: MatchingResult["matched"];
   unmatched: MatchingResult["unmatched"];
@@ -392,7 +416,8 @@ export function calculateDirectionalScoreComplete(
   const questionIds = Object.keys(similarities);
   if (questionIds.length === 0) return 0;
 
-  // Phase 3-4: Apply importance weighting
+  // Phase 3: Apply importance weighting (average both users' importance)
+  // Phase 4: Apply directional scoring for directional questions (e.g., Q10 exercise)
   // Separate questions by section
   const lifestyleQuestions = [
     "q1",
@@ -433,24 +458,68 @@ export function calculateDirectionalScoreComplete(
     }
 
     const rawSim = similarities[qid];
-    // Get importance from userA for this question and convert to numeric weight
-    const importanceStr = userA.responses[qid]?.importance;
-    const importance = getImportanceWeight(importanceStr, config);
 
-    // Skip questions with zero importance
-    if (importance === 0) {
+    // Get importance from both users (Phase 3)
+    const importanceAStr = userA.responses[qid]?.importance;
+    const importanceBStr = userB.responses[qid]?.importance;
+    const importanceA = getImportanceWeight(importanceAStr, config);
+    const importanceB = getImportanceWeight(importanceBStr, config);
+
+    // Apply importance weighting: each user weights the similarity by their importance
+    // Then average the weighted scores (same pattern as applyImportanceWeighting)
+    const userAWeighted = rawSim * importanceA;
+    const userBWeighted = rawSim * importanceB;
+    const importanceWeightedSim = (userAWeighted + userBWeighted) / 2;
+
+    // Calculate average importance for section weighting
+    const avgImportance = (importanceA + importanceB) / 2;
+
+    // Skip questions with zero weighted similarity
+    if (importanceWeightedSim === 0) {
       return;
     }
 
-    // Apply importance weight: weighted score = similarity × importance
-    const weighted = rawSim * importance;
+    // Phase 4: Apply directional scoring if this is a directional question
+    let finalQuestionScore = importanceWeightedSim;
+
+    // Check if this question has directional preferences (currently only Q10)
+    const questionType = determineQuestionType(qid);
+    if (questionType === "directional") {
+      // Get answers and preferences for directional scoring
+      const userAAnswer = userA.responses[qid]?.answer;
+      const userBAnswer = userB.responses[qid]?.answer;
+      const userAPreference = userA.responses[qid]?.preference as
+        | "more"
+        | "less"
+        | "similar"
+        | "same"
+        | undefined;
+      const userBPreference = userB.responses[qid]?.preference as
+        | "more"
+        | "less"
+        | "similar"
+        | "same"
+        | undefined;
+
+      // Only apply directional scoring if we have numeric answers
+      if (typeof userAAnswer === "number" && typeof userBAnswer === "number") {
+        finalQuestionScore = calculateDirectionalScore(
+          userAAnswer,
+          userBAnswer,
+          userAPreference,
+          userBPreference,
+          importanceWeightedSim,
+          config,
+        );
+      }
+    }
 
     if (lifestyleQuestions.includes(qid)) {
-      lifestyleScore += weighted;
-      lifestyleWeightSum += importance;
+      lifestyleScore += finalQuestionScore;
+      lifestyleWeightSum += avgImportance;
     } else {
-      personalityScore += weighted;
-      personalityWeightSum += importance;
+      personalityScore += finalQuestionScore;
+      personalityWeightSum += avgImportance;
     }
   });
 
