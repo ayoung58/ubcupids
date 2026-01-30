@@ -5,10 +5,111 @@ import {
   runMatchingPipeline,
   MatchingUser,
   calculateDirectionalScoreComplete,
-  MATCHING_CONFIG,
   calculatePairScore,
 } from "@/lib/matching/v2";
+import { MATCHING_CONFIG, type MatchingConfig } from "@/lib/matching/v2/config";
 import { calculateSimilarity } from "@/lib/matching/v2/similarity";
+
+/**
+ * Calculate detailed section scores for saving to CompatibilityScore table
+ */
+function calculateSectionScoresDetailed(
+  userA: MatchingUser,
+  userB: MatchingUser,
+  config: MatchingConfig,
+): { section1: number; section2: number } {
+  const similarities = calculateSimilarity(userA, userB, config);
+  const questionIds = Object.keys(similarities);
+
+  // Section 1: Lifestyle (q1-q20)
+  const lifestyleQuestions = [
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "q6",
+    "q7",
+    "q8",
+    "q9a",
+    "q9b",
+    "q10",
+    "q11",
+    "q12",
+    "q13",
+    "q14",
+    "q15",
+    "q16",
+    "q17",
+    "q18",
+    "q19",
+    "q20",
+  ];
+
+  // Hard filter questions excluded from scoring
+  const HARD_FILTER_QUESTIONS = ["q1", "q2", "q4"];
+
+  let lifestyleScore = 0;
+  let lifestyleWeightSum = 0;
+  let personalityScore = 0;
+  let personalityWeightSum = 0;
+
+  questionIds.forEach((qid) => {
+    if (HARD_FILTER_QUESTIONS.includes(qid)) {
+      return;
+    }
+
+    const rawSim = similarities[qid];
+    const importanceStr = userA.responses[qid]?.importance;
+    const importance = getImportanceWeight(importanceStr, config);
+
+    if (importance === 0) {
+      return;
+    }
+
+    const weighted = rawSim * importance;
+
+    if (lifestyleQuestions.includes(qid)) {
+      lifestyleScore += weighted;
+      lifestyleWeightSum += importance;
+    } else {
+      personalityScore += weighted;
+      personalityWeightSum += importance;
+    }
+  });
+
+  const avgLifestyle =
+    lifestyleWeightSum > 0 ? lifestyleScore / lifestyleWeightSum : 0;
+  const avgPersonality =
+    personalityWeightSum > 0 ? personalityScore / personalityWeightSum : 0;
+
+  // Return section scores on 0-100 scale
+  return {
+    section1: avgLifestyle * 100,
+    section2: avgPersonality * 100,
+  };
+}
+
+/**
+ * Convert importance string to numeric weight
+ */
+function getImportanceWeight(
+  importance: string | undefined,
+  config: MatchingConfig,
+): number {
+  if (!importance) return config.IMPORTANCE_WEIGHTS.NOT_IMPORTANT;
+
+  const normalized = importance.toUpperCase();
+  if (normalized === "NOT_IMPORTANT")
+    return config.IMPORTANCE_WEIGHTS.NOT_IMPORTANT;
+  if (normalized === "SOMEWHAT_IMPORTANT")
+    return config.IMPORTANCE_WEIGHTS.SOMEWHAT_IMPORTANT;
+  if (normalized === "IMPORTANT") return config.IMPORTANCE_WEIGHTS.IMPORTANT;
+  if (normalized === "VERY_IMPORTANT")
+    return config.IMPORTANCE_WEIGHTS.VERY_IMPORTANT;
+
+  return config.IMPORTANCE_WEIGHTS.NOT_IMPORTANT;
+}
 
 /**
  * Run Matching Algorithm V2.2
@@ -179,6 +280,90 @@ export async function POST(request: NextRequest) {
       await prisma.match.createMany({
         data: matchRecords,
       });
+
+      // Save CompatibilityScore records for all eligible pairs
+      console.log(
+        `[Matching] Saving compatibility scores for ${result.eligiblePairs.length} eligible pairs...`,
+      );
+
+      // Delete existing compatibility scores for these users
+      const allUserIds = new Set<string>();
+      users.forEach((u) => allUserIds.add(u.id));
+
+      await prisma.compatibilityScore.deleteMany({
+        where: {
+          batchNumber,
+          userId: { in: Array.from(allUserIds) },
+        },
+      });
+
+      // Create CompatibilityScore records (bidirectional - one record per direction)
+      const scoreRecords = [];
+      for (const pair of result.eligiblePairs) {
+        const userA = users.find((u) => u.id === pair.userAId)!;
+        const userB = users.find((u) => u.id === pair.userBId)!;
+
+        // Calculate section scores for A→B direction
+        const scoreAtoB = calculateDirectionalScoreComplete(
+          userA,
+          userB,
+          MATCHING_CONFIG,
+        );
+        const sectionScoresAtoB = calculateSectionScoresDetailed(
+          userA,
+          userB,
+          MATCHING_CONFIG,
+        );
+
+        // Calculate section scores for B→A direction
+        const scoreBtoA = calculateDirectionalScoreComplete(
+          userB,
+          userA,
+          MATCHING_CONFIG,
+        );
+        const sectionScoresBtoA = calculateSectionScoresDetailed(
+          userB,
+          userA,
+          MATCHING_CONFIG,
+        );
+
+        // Bidirectional score (average of both directions)
+        const bidirectionalScore = (scoreAtoB + scoreBtoA) / 2;
+
+        // Create record for userA → userB
+        scoreRecords.push({
+          userId: pair.userAId,
+          targetUserId: pair.userBId,
+          section1Score: sectionScoresAtoB.section1,
+          section2Score: sectionScoresAtoB.section2,
+          section3Score: 0, // Not calculated in V2
+          section5Score: 0, // Not calculated in V2
+          totalScore: scoreAtoB,
+          bidirectionalScore,
+          batchNumber,
+        });
+
+        // Create record for userB → userA
+        scoreRecords.push({
+          userId: pair.userBId,
+          targetUserId: pair.userAId,
+          section1Score: sectionScoresBtoA.section1,
+          section2Score: sectionScoresBtoA.section2,
+          section3Score: 0, // Not calculated in V2
+          section5Score: 0, // Not calculated in V2
+          totalScore: scoreBtoA,
+          bidirectionalScore,
+          batchNumber,
+        });
+      }
+
+      await prisma.compatibilityScore.createMany({
+        data: scoreRecords,
+      });
+
+      console.log(
+        `[Matching] Saved ${scoreRecords.length} compatibility score records`,
+      );
     }
 
     // Prepare response

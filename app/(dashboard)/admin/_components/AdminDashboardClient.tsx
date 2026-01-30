@@ -137,7 +137,7 @@ export function AdminDashboardClient({
   const handleClearTestUsers = async () => {
     if (
       !confirm(
-        "Are you sure you want to delete ALL test users? This cannot be undone."
+        "Are you sure you want to delete ALL test users? This cannot be undone.",
       )
     ) {
       return;
@@ -301,12 +301,22 @@ export function AdminDashboardClient({
               Run Matching Algorithm V2.2
             </Button>
           </Link>
-          <Link href="/admin/questionnaire-config">
-            <Button className="w-full h-16" variant="outline">
-              <Settings className="mr-2 h-5 w-5" />
-              Edit Questionnaire Configuration
-            </Button>
-          </Link>
+          <div className="mt-3">
+            <Link href="/admin/cupid-assignment">
+              <Button className="w-full h-16" variant="default">
+                <UsersRound className="mr-2 h-5 w-5" />
+                Cupid Assignment System
+              </Button>
+            </Link>
+          </div>
+          <div className="mt-3">
+            <Link href="/admin/questionnaire-config">
+              <Button className="w-full h-16" variant="outline">
+                <Settings className="mr-2 h-5 w-5" />
+                Edit Questionnaire Configuration
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
 

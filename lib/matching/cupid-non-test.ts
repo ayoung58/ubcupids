@@ -6,7 +6,7 @@ import { prisma } from "../prisma";
 import { CURRENT_BATCH } from "./config";
 
 export async function assignCandidatesToCupidsForNonTestUsers(
-  batchNumber: number = CURRENT_BATCH
+  batchNumber: number = CURRENT_BATCH,
 ): Promise<{
   totalCandidates: number;
   assignedCandidates: number;
@@ -16,7 +16,7 @@ export async function assignCandidatesToCupidsForNonTestUsers(
   preferredAssignments: number;
 }> {
   console.log(
-    `Assigning PRODUCTION candidates to cupids for batch ${batchNumber}...`
+    `Assigning PRODUCTION candidates to cupids for batch ${batchNumber}...`,
   );
 
   // Clear existing assignments for non-test users
@@ -27,12 +27,13 @@ export async function assignCandidatesToCupidsForNonTestUsers(
     },
   });
   console.log(
-    `Cleared ${deletedCount.count} existing PRODUCTION user assignments`
+    `Cleared ${deletedCount.count} existing PRODUCTION user assignments`,
   );
 
-  // Get cupids (can be test or non-test)
+  // Get PRODUCTION cupids only
   const cupids = await prisma.user.findMany({
     where: {
+      isTestUser: false, // ONLY production cupids
       OR: [{ isCupid: true }, { cupidProfile: { isNot: null } }],
       emailVerified: { not: null },
     },
@@ -59,7 +60,7 @@ export async function assignCandidatesToCupidsForNonTestUsers(
     where: {
       isBeingMatched: true,
       isTestUser: false, // ONLY non-test users
-      questionnaireResponse: {
+      questionnaireResponseV2: {
         isSubmitted: true,
       },
     },
@@ -82,7 +83,7 @@ export async function assignCandidatesToCupidsForNonTestUsers(
     if (!preferredEmail) continue;
 
     const preferredCandidate = candidates.find(
-      (c) => c.email.toLowerCase() === preferredEmail.toLowerCase()
+      (c) => c.email.toLowerCase() === preferredEmail.toLowerCase(),
     );
 
     if (
@@ -93,6 +94,7 @@ export async function assignCandidatesToCupidsForNonTestUsers(
     }
 
     // Get top matches (only among non-test users)
+    // Sort by candidate→match directional score
     const topMatches = await prisma.compatibilityScore.findMany({
       where: {
         userId: preferredCandidate.id,
@@ -100,18 +102,20 @@ export async function assignCandidatesToCupidsForNonTestUsers(
         bidirectionalScore: { not: null },
         targetUser: {
           isTestUser: false, // Match only with non-test users
-          questionnaireResponse: {
+          questionnaireResponseV2: {
             isSubmitted: true,
           },
         },
       },
-      orderBy: {
-        bidirectionalScore: "desc",
-      },
+      orderBy: [
+        { totalScore: "desc" }, // Sort by user→target score (candidate's preference)
+        { bidirectionalScore: "desc" },
+      ],
       take: 25,
       select: {
         targetUserId: true,
         bidirectionalScore: true,
+        totalScore: true,
       },
     });
 
@@ -146,6 +150,7 @@ export async function assignCandidatesToCupidsForNonTestUsers(
     if (assignedCandidateIds.has(candidate.id)) continue;
 
     // Get top matches (only among non-test users)
+    // Sort by candidate→match directional score
     const topMatches = await prisma.compatibilityScore.findMany({
       where: {
         userId: candidate.id,
@@ -153,18 +158,20 @@ export async function assignCandidatesToCupidsForNonTestUsers(
         bidirectionalScore: { not: null },
         targetUser: {
           isTestUser: false, // Match only with non-test users
-          questionnaireResponse: {
+          questionnaireResponseV2: {
             isSubmitted: true,
           },
         },
       },
-      orderBy: {
-        bidirectionalScore: "desc",
-      },
+      orderBy: [
+        { totalScore: "desc" }, // Sort by user→target score (candidate's preference)
+        { bidirectionalScore: "desc" },
+      ],
       take: 25,
       select: {
         targetUserId: true,
         bidirectionalScore: true,
+        totalScore: true,
       },
     });
 
@@ -197,7 +204,7 @@ export async function assignCandidatesToCupidsForNonTestUsers(
     cupids.length > 0 ? Math.ceil(assignedCount / cupids.length) : 0;
 
   console.log(
-    `PRODUCTION Assignment Summary: ${assignedCount} candidates assigned`
+    `PRODUCTION Assignment Summary: ${assignedCount} candidates assigned`,
   );
 
   return {
