@@ -56,7 +56,7 @@ As a cupid, you can be a cupid for someone of your choosing! Make sure that they
 
 ### Important Notes
 
-- Only **UBC student or alumni email addresses** (@alumni.ubc.ca, @student.ubc.ca) are accepted.
+- Only **UBC student, alumni, or math department email addresses** (@alumni.ubc.ca, @student.ubc.ca, @math.ubc.ca) are accepted.
 - Your email must be verified before you can fill out the questionnaire
 - All of your information is kept confidential, and revealed to matches only if you want to reveal them (other than your name and student email).
 
@@ -271,7 +271,7 @@ There are cases (ex. based on hard filters and dealbreakers) where you may not h
 A: Yes! UBCupids is completely free for all UBC students.
 
 **Q: Who can participate?**  
-A: Any UBC student with the following valid UBC email addresses (@alumni.ubc.ca, @student.ubc.ca).
+A: Any UBC student, alumni, or math department member with the following valid UBC email addresses (@alumni.ubc.ca, @student.ubc.ca, @math.ubc.ca).
 
 **Q: Is this just for finding romantic partners?**  
 A: UBCupids focuses on compatibility for potential romantic connections, but how you use your matches is up to you! There is a question where you can specify what sort of relationship you're looking for.

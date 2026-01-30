@@ -10,7 +10,7 @@ describe("Preferred Candidate Email Validation Logic", () => {
   // Helper function to simulate the validation logic from the API routes
   function validatePreferredCandidateEmail(
     candidateEmail: string,
-    userEmail: string
+    userEmail: string,
   ): { valid: boolean; error?: string } {
     const normalizedCandidate = candidateEmail.trim().toLowerCase();
     const normalizedUser = userEmail.trim().toLowerCase();
@@ -29,7 +29,7 @@ describe("Preferred Candidate Email Validation Logic", () => {
   function validateEmailExists(
     candidateEmail: string,
     isRegistered: boolean,
-    isMatchUser: boolean
+    isMatchUser: boolean,
   ): { valid: boolean; error?: string } {
     if (!isRegistered) {
       return {
@@ -57,7 +57,7 @@ describe("Preferred Candidate Email Validation Logic", () => {
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain(
-        "You cannot set yourself as your preferred candidate"
+        "You cannot set yourself as your preferred candidate",
       );
     });
 
@@ -69,7 +69,7 @@ describe("Preferred Candidate Email Validation Logic", () => {
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain(
-        "You cannot set yourself as your preferred candidate"
+        "You cannot set yourself as your preferred candidate",
       );
     });
 
@@ -81,7 +81,7 @@ describe("Preferred Candidate Email Validation Logic", () => {
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain(
-        "You cannot set yourself as your preferred candidate"
+        "You cannot set yourself as your preferred candidate",
       );
     });
 
@@ -93,7 +93,7 @@ describe("Preferred Candidate Email Validation Logic", () => {
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain(
-        "You cannot set yourself as your preferred candidate"
+        "You cannot set yourself as your preferred candidate",
       );
     });
 
@@ -110,6 +110,16 @@ describe("Preferred Candidate Email Validation Logic", () => {
     it("should accept valid preferred candidate email (different domain)", () => {
       const userEmail = "test@student.ubc.ca";
       const candidateEmail = "test@alumni.ubc.ca";
+
+      const result = validatePreferredCandidateEmail(candidateEmail, userEmail);
+
+      expect(result.valid).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+
+    it("should accept valid preferred candidate email (math domain)", () => {
+      const userEmail = "test@student.ubc.ca";
+      const candidateEmail = "test@math.ubc.ca";
 
       const result = validatePreferredCandidateEmail(candidateEmail, userEmail);
 
@@ -137,7 +147,7 @@ describe("Preferred Candidate Email Validation Logic", () => {
       const result = validateEmailExists(
         candidateEmail,
         isRegistered,
-        isMatchUser
+        isMatchUser,
       );
 
       expect(result.valid).toBe(false);
@@ -152,12 +162,12 @@ describe("Preferred Candidate Email Validation Logic", () => {
       const result = validateEmailExists(
         candidateEmail,
         isRegistered,
-        isMatchUser
+        isMatchUser,
       );
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain(
-        "This user is not participating in matching"
+        "This user is not participating in matching",
       );
     });
 
@@ -169,7 +179,7 @@ describe("Preferred Candidate Email Validation Logic", () => {
       const result = validateEmailExists(
         candidateEmail,
         isRegistered,
-        isMatchUser
+        isMatchUser,
       );
 
       expect(result.valid).toBe(true);

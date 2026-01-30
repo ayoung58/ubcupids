@@ -103,6 +103,7 @@
 - alice@gmail.com → ❌ "Must use UBC email"
 - alice@student.ubc.ca → ✅ Should work
 - alice@alumni.ubc.ca → ✅ Should work
+- alice@math.ubc.ca → ✅ Should work
 
 **Test weak passwords:**
 

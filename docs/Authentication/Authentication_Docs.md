@@ -122,7 +122,7 @@ expiresAt DateTime
 
 User fills form → Client validates → POST /api/auth/register
 ↓
-Server validates (@student.ubc.ca or @alumni.ubc.ca)
+Server validates (@student.ubc.ca, @alumni.ubc.ca, or @math.ubc.ca)
 ↓
 Password hashed (bcrypt, 12 rounds)
 ↓
@@ -381,15 +381,15 @@ No Redis/caching layer needed (simpler architecture)
 Performance: Negligible overhead for 500-5000 users
 
 4. UBC Email Restriction
-   Decision: Only @student.ubc.ca and @alumni.ubc.ca
+   Decision: Only @student.ubc.ca, @alumni.ubc.ca, and @math.ubc.ca
    Rationale:
 
 Excludes faculty/staff (@ubc.ca)
-Targets student demographic
+Targets student demographic and math department
 Easier to verify legitimacy
 
 Regex:
-typescript/^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i
+typescript/^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca|math\.ubc\.ca)$/i
 
 5. Custom Sign-Out Flow
    Decision: Custom confirmation page (/signout) instead of NextAuth default
