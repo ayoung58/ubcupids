@@ -11,10 +11,10 @@ import { AlertCircle, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface ResetPasswordFormProps {
-  token: string;
+  code: string;
 }
 
-export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+export function ResetPasswordForm({ code }: ResetPasswordFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +58,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token,
+          code,
           password: formData.password,
         }),
       });

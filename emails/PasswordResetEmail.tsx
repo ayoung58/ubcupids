@@ -14,17 +14,17 @@ import * as React from "react";
 
 interface PasswordResetEmailProps {
   firstName: string | null;
-  resetUrl: string;
+  resetCode: string;
 }
 
 export default function PasswordResetEmail({
   firstName = "there",
-  resetUrl,
+  resetCode,
 }: PasswordResetEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>Reset your UBCupids password</Preview>
+      <Preview>Your password reset code: {resetCode}</Preview>
       <Body style={main}>
         <Container style={container}>
           <Heading style={h1}>💘 UBCupids</Heading>
@@ -32,25 +32,16 @@ export default function PasswordResetEmail({
           <Text style={text}>Hi {firstName},</Text>
 
           <Text style={text}>
-            We received a request to reset your password. Click the button below
-            to create a new password:
+            We received a request to reset your password. Use the code below to
+            reset your password:
           </Text>
 
-          <Section style={buttonContainer}>
-            <Button style={button} href={resetUrl}>
-              Reset Password
-            </Button>
+          <Section style={codeContainer}>
+            <Text style={codeText}>{resetCode}</Text>
           </Section>
-          {/* 
-          <Text style={text}>
-            Or copy and paste this link into your browser:
-          </Text>
-          <Link href={resetUrl} style={link}>
-            {resetUrl}
-          </Link> */}
 
           <Text style={text}>
-            This link will expire in 1 hour. If you didn&apos;t request a
+            This code will expire in 1 hour. If you didn&apos;t request a
             password reset, you can safely ignore this email.
           </Text>
 
@@ -63,7 +54,7 @@ export default function PasswordResetEmail({
   );
 }
 
-// Styles (same as VerificationEmail)
+// Styles
 const main = {
   backgroundColor: "#f6f9fc",
   fontFamily:
@@ -73,9 +64,10 @@ const main = {
 const container = {
   backgroundColor: "#ffffff",
   margin: "0 auto",
-  padding: "20px 0 48px",
+  padding: "20px 24px 48px",
   marginBottom: "64px",
   maxWidth: "600px",
+  boxSizing: "border-box" as const,
 };
 
 const h1 = {
@@ -93,35 +85,29 @@ const text = {
   margin: "16px 24px",
 };
 
-const buttonContainer = {
-  textAlign: "center" as const,
-  margin: "32px 0",
-};
-
-const button = {
-  backgroundColor: "#e63946",
+const codeContainer = {
+  backgroundColor: "#f4f4f5",
   borderRadius: "8px",
-  color: "#fff",
-  fontSize: "16px",
-  fontWeight: "bold",
-  textDecoration: "none",
+  margin: "32px 0",
+  padding: "24px",
   textAlign: "center" as const,
-  display: "inline-block",
-  padding: "14px 32px",
+  width: "100%",
+  boxSizing: "border-box" as const,
+  maxWidth: "100%",
 };
 
-const link = {
+const codeText = {
   color: "#e63946",
-  fontSize: "14px",
-  textDecoration: "underline",
-  wordBreak: "break-all" as const,
-  margin: "0 24px",
+  fontSize: "32px",
+  fontWeight: "bold",
+  letterSpacing: "8px",
+  fontFamily: "monospace",
 };
 
 const footer = {
   color: "#8898aa",
   fontSize: "12px",
   lineHeight: "16px",
-  margin: "32px 24px 0",
+  margin: "32px 0 0",
   textAlign: "center" as const,
 };

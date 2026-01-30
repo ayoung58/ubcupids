@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 interface ResetPasswordPageProps {
   searchParams: Promise<{
-    token?: string;
+    code?: string;
   }>;
 }
 
@@ -24,10 +24,10 @@ export default async function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {
   const params = await searchParams;
-  const { token: rawToken } = params;
-  const token = rawToken ? decodeURIComponent(rawToken) : undefined;
+  const { code: rawCode } = params;
+  const code = rawCode ? decodeURIComponent(rawCode) : undefined;
 
-  if (!token) {
+  if (!code) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
         <div className="w-full max-w-md">
@@ -36,12 +36,12 @@ export default async function ResetPasswordPage({
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Invalid reset link. Please request a new password reset.
+                  Invalid reset code. Please request a new password reset.
                 </AlertDescription>
               </Alert>
               <div className="mt-4 text-center">
                 <Link href="/forgot-password">
-                  <Button variant="outline">Request New Link</Button>
+                  <Button variant="outline">Request New Code</Button>
                 </Link>
               </div>
             </CardContent>
@@ -52,10 +52,10 @@ export default async function ResetPasswordPage({
   }
 
   // ============================================
-  // VALIDATE TOKEN STATUS
+  // VALIDATE CODE STATUS
   // ============================================
   const resetToken = await prisma.passwordResetToken.findUnique({
-    where: { token },
+    where: { token: code },
   });
 
   if (!resetToken) {
@@ -67,12 +67,12 @@ export default async function ResetPasswordPage({
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Invalid reset link. Please request a new password reset.
+                  Invalid reset code. Please request a new password reset.
                 </AlertDescription>
               </Alert>
               <div className="mt-4 text-center">
                 <Link href="/forgot-password">
-                  <Button variant="outline">Request New Link</Button>
+                  <Button variant="outline">Request New Code</Button>
                 </Link>
               </div>
             </CardContent>
@@ -82,11 +82,11 @@ export default async function ResetPasswordPage({
     );
   }
 
-  // Check if token expired
+  // Check if code expired
   if (resetToken.expires < new Date()) {
-    // Delete expired token
+    // Delete expired code
     await prisma.passwordResetToken.delete({
-      where: { token },
+      where: { token: code },
     });
 
     return (
@@ -97,12 +97,12 @@ export default async function ResetPasswordPage({
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Reset link has expired. Please request a new one.
+                  Reset code has expired. Please request a new one.
                 </AlertDescription>
               </Alert>
               <div className="mt-4 text-center">
                 <Link href="/forgot-password">
-                  <Button variant="outline">Request New Link</Button>
+                  <Button variant="outline">Request New Code</Button>
                 </Link>
               </div>
             </CardContent>
@@ -112,7 +112,7 @@ export default async function ResetPasswordPage({
     );
   }
 
-  // Check if token already used
+  // Check if code already used
   if (resetToken.used) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
@@ -122,7 +122,7 @@ export default async function ResetPasswordPage({
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  The reset link has already been used. Please request a new
+                  The reset code has already been used. Please request a new
                   one.
                 </AlertDescription>
               </Alert>
@@ -150,7 +150,7 @@ export default async function ResetPasswordPage({
           <p className="mt-2 text-sm text-slate-600">Create a new password</p>
         </div>
 
-        <ResetPasswordForm token={token} />
+        <ResetPasswordForm code={code} />
       </div>
     </div>
   );
