@@ -38,7 +38,7 @@ const resend = new Resend(RESEND_API_KEY);
 export async function sendVerificationEmail(
   email: string,
   firstName: string | null,
-  code: string
+  code: string,
 ): Promise<void> {
   try {
     // Send email using React Email component
@@ -58,12 +58,12 @@ export async function sendVerificationEmail(
     }
 
     console.log(
-      `[Email] Verification email sent successfully. Email ID: ${data?.id}`
+      `[Email] Verification email sent successfully. Email ID: ${data?.id}`,
     );
   } catch (error) {
     console.error(
       "[Email] Unexpected error sending verification email:",
-      error
+      error,
     );
     throw error;
   }
@@ -130,23 +130,21 @@ export async function resendVerificationEmail(email: string): Promise<void> {
  *
  * @param email - User's email address
  * @param firstName - User's first name
- * @param token - Password reset token
+ * @param code - 6-digit password reset code
  */
 export async function sendPasswordResetEmail(
   email: string,
   firstName: string | null,
-  token: string
+  code: string,
 ): Promise<void> {
-  const resetUrl = `${NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
-
   try {
     const { data, error } = await resend.emails.send({
-      from: RESEND_FROM_EMAIL || "UBCupids <onboarding@resend.dev>",
+      from: RESEND_FROM_EMAIL || "UBCupids <support@ubcupids.org>",
       to: email,
       subject: "Reset your UBCupids password",
       react: PasswordResetEmail({
         firstName,
-        resetUrl,
+        resetCode: code,
       }),
     });
 
@@ -156,12 +154,12 @@ export async function sendPasswordResetEmail(
     }
 
     console.log(
-      `[Email] Password reset email sent successfully. Email ID: ${data?.id}`
+      `[Email] Password reset email sent successfully. Email ID: ${data?.id}`,
     );
   } catch (error) {
     console.error(
       "[Email] Unexpected error sending password reset email:",
-      error
+      error,
     );
     throw error;
   }

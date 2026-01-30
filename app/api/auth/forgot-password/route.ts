@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendPasswordResetEmail } from "@/lib/email";
 
@@ -32,13 +31,13 @@ export async function POST(request: NextRequest) {
       {
         maxAttempts: 3,
         windowMinutes: 60,
-      }
+      },
     );
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         { error: rateLimitResult.message },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -54,16 +53,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Security: Always return success (don't reveal if email exists)
     if (!user) {
       console.log(`[ForgotPassword] User not found: ${normalizedEmail}`);
       return NextResponse.json(
-        {
-          success: true,
-          message:
-            "If an account exists with this email, a password reset link has been sent. Please check your inbox and spam folder! In order to receive emails more easily, please whitelist support@ubcupids.org",
-        },
-        { status: 200 }
+        { error: "No user found with that email address" },
+        { status: 404 },
       );
     }
 
@@ -75,9 +69,9 @@ export async function POST(request: NextRequest) {
     });
 
     // ============================================
-    // GENERATE RESET TOKEN
+    // GENERATE 6-DIGIT RESET CODE
     // ============================================
-    const token = crypto.randomBytes(32).toString("hex");
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     const expires = new Date();
     expires.setHours(expires.getHours() + 1); // 1-hour expiry
@@ -85,18 +79,18 @@ export async function POST(request: NextRequest) {
     await prisma.passwordResetToken.create({
       data: {
         email: normalizedEmail,
-        token,
+        token: code,
         expires,
       },
     });
 
-    console.log(`[ForgotPassword] Reset token created for: ${normalizedEmail}`);
+    console.log(`[ForgotPassword] Reset code created for: ${normalizedEmail}`);
 
     // ============================================
-    // SEND RESET EMAIL
+    // SEND RESET EMAIL WITH CODE
     // ============================================
     try {
-      await sendPasswordResetEmail(user.email, user.firstName, token);
+      await sendPasswordResetEmail(user.email, user.firstName, code);
       console.log(`[ForgotPassword] Reset email sent to: ${normalizedEmail}`);
     } catch (emailError) {
       console.error("[ForgotPassword] Failed to send email:", emailError);
@@ -105,7 +99,7 @@ export async function POST(request: NextRequest) {
         {
           error: "Failed to send password reset email. Please try again later.",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -115,14 +109,14 @@ export async function POST(request: NextRequest) {
         message:
           "If an account exists with this email, a password reset link has been sent. Please check your inbox and spam folder! In order to receive emails more easily, please whitelist support@ubcupids.org",
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("[ForgotPassword] Unexpected error:", error);
 
     return NextResponse.json(
       { error: "An unexpected error occurred. Please try again later." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
