@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           error: "Sign-ups have closed for 2026",
           hint: "Registration is no longer available. Please check back next year.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       if (isNaN(ageNum) || ageNum < 16 || ageNum > 100) {
         return NextResponse.json(
           { error: "Age must be between 16 and 100" },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     if (!acceptedTerms) {
       return NextResponse.json(
         { error: "Please accept the Terms and Conditions" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
           error: `Maximum number of ${accountTypeName.toLowerCase()} reached`,
           hint: `We've reached the maximum capacity of ${maxUsers} ${accountTypeName.toLowerCase()} for 2026. Registration is currently closed for this account type.`,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
             "Invalid email. Only @student.ubc.ca and @alumni.ubc.ca emails are accepted.",
           hint: "Make sure you're using your UBC student or alumni email address.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
           hint: "At least 8 characters long and includes uppercase letters, lowercase letters, and numbers.",
           details: passwordValidation.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
             error: "There is already a Cupid account with that email",
             hint: "Please log in to access your existing Cupid account.",
           },
-          { status: 409 }
+          { status: 409 },
         );
       }
 
@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
             error: "There is already a Match account with that email",
             hint: "Please log in to access your existing Match account.",
           },
-          { status: 409 }
+          { status: 409 },
         );
       }
 
@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
             error: "An account with this email already exists",
             hint: "If you already have a Match account and would like a Cupid account, please log in and create a Cupid account through your profile.",
           },
-          { status: 409 }
+          { status: 409 },
         );
       }
 
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
             error: "An account with this email already exists",
             hint: "If you already have a Cupid account and would like a Match account, please log in and create a Match account through your profile.",
           },
-          { status: 409 }
+          { status: 409 },
         );
       }
 
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
           error: "An account with this email already exists",
           hint: 'Try logging in or use the "Forgot Password" option if needed.',
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -265,7 +265,7 @@ export async function POST(request: NextRequest) {
     let validatedPreferredEmail: string | null = null;
     if (isCupid && preferredCandidateEmail && preferredCandidateEmail.trim()) {
       const normalizedPreferredEmail = normalizeEmail(
-        preferredCandidateEmail.trim()
+        preferredCandidateEmail.trim(),
       );
 
       // Check if it's a valid UBC email
@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
             error: "Preferred candidate email must be a valid UBC email",
             hint: "Please use a @student.ubc.ca or @alumni.ubc.ca email address.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -291,7 +291,7 @@ export async function POST(request: NextRequest) {
             error: "Preferred candidate email not found",
             hint: "Please make sure the user has registered an account.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -301,7 +301,7 @@ export async function POST(request: NextRequest) {
             error: "This user is not participating in matching",
             hint: "The preferred candidate must have a Match account.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -319,7 +319,7 @@ export async function POST(request: NextRequest) {
             error:
               "There is already a cupid that prefers to match this candidate!",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -388,7 +388,7 @@ export async function POST(request: NextRequest) {
     } catch (emailError) {
       console.error(
         "[Register] Failed to send verification email:",
-        emailError
+        emailError,
       );
 
       // User created but email failed - this is recoverable
@@ -402,7 +402,7 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           emailSent: false,
         },
-        { status: 201 }
+        { status: 201 },
       );
     }
 
@@ -417,7 +417,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         emailSent: true,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("[Register] Unexpected error:", error);
@@ -431,7 +431,7 @@ export async function POST(request: NextRequest) {
           debug: error instanceof Error ? error.message : "Unknown error",
         }),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

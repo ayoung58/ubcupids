@@ -27,7 +27,7 @@ export async function hashPassword(password: string): Promise<string> {
  */
 export async function verifyPassword(
   password: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): Promise<boolean> {
   return await bcrypt.compare(password, hashedPassword);
 }
@@ -41,6 +41,7 @@ export async function verifyPassword(
  * Accepted domains:
  * - @student.ubc.ca (current students)
  * - @alumni.ubc.ca (alumni)
+ * - @math.ubc.ca (math department)
  *
  * NOT accepted for now:
  * - @ubc.ca (faculty/staff - not targeted for MVP)
@@ -48,13 +49,13 @@ export async function verifyPassword(
  * Regex breakdown:
  * - ^[a-zA-Z0-9._%+-]+ : Standard email username characters
  * - @ : Literal @ symbol
- * - (student\.ubc\.ca|alumni\.ubc\.ca) : Only these two domains
+ * - (student\.ubc\.ca|alumni\.ubc\.ca|math\.ubc\.ca) : Only these three domains
  * - $ : End of string (prevents @student.ubc.ca.malicious.com)
  * - i flag: Case-insensitive (Student.UBC.CA also valid)
  */
 export function isValidUBCEmail(email: string): boolean {
   const ubcEmailRegex =
-    /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i;
+    /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca|math\.ubc\.ca)$/i;
   return ubcEmailRegex.test(email);
 }
 
@@ -103,7 +104,7 @@ export function validatePassword(password: string): {
  *
  * @param email - Email to normalize
  * @returns string - Normalized email
- * 
+ *
  * 1. Convert to lowercase
  * 2. Trim whitespace
  */

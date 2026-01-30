@@ -133,7 +133,7 @@ export function RegisterForm({
     // UBC email validation (only for new accounts)
     if (!isLinking) {
       const ubcEmailRegex =
-        /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i;
+        /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca|math\.ubc\.ca)$/i;
       if (!ubcEmailRegex.test(formData.email)) {
         setError("Please use your @student.ubc.ca or @alumni.ubc.ca email");
         setIsLoading(false);

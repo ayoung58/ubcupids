@@ -55,7 +55,7 @@ export function ProfileForm() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAccountTypeDialog, setShowAccountTypeDialog] = useState(false);
   const [selectedAccountTypes, setSelectedAccountTypes] = useState<string[]>(
-    []
+    [],
   );
   const [isDeleting, setIsDeleting] = useState(false);
   const initialProfileData = useRef<ProfileFormData | null>(null);
@@ -185,7 +185,7 @@ export function ProfileForm() {
     // Validate file type
     if (
       !["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
-        file.type
+        file.type,
       )
     ) {
       setShowError("Only JPEG, PNG, and WebP images are allowed");
@@ -276,14 +276,14 @@ export function ProfileForm() {
         displayNameField.classList.add(
           "ring-2",
           "ring-red-500",
-          "border-red-500"
+          "border-red-500",
         );
         // Remove highlight after 3 seconds
         setTimeout(() => {
           displayNameField.classList.remove(
             "ring-2",
             "ring-red-500",
-            "border-red-500"
+            "border-red-500",
           );
         }, 3000);
       }
@@ -320,14 +320,14 @@ export function ProfileForm() {
         cupidDisplayNameField.classList.add(
           "ring-2",
           "ring-red-500",
-          "border-red-500"
+          "border-red-500",
         );
         // Remove highlight after 3 seconds
         setTimeout(() => {
           cupidDisplayNameField.classList.remove(
             "ring-2",
             "ring-red-500",
-            "border-red-500"
+            "border-red-500",
           );
         }, 3000);
       }
@@ -392,10 +392,10 @@ export function ProfileForm() {
 
       // Check if it's a valid UBC email
       const ubcEmailRegex =
-        /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca)$/i;
+        /^[a-zA-Z0-9._%+-]+@(student\.ubc\.ca|alumni\.ubc\.ca|math\.ubc\.ca)$/i;
       if (!ubcEmailRegex.test(normalizedPreferred)) {
         setShowError(
-          "Preferred candidate email must be a valid UBC email (@student.ubc.ca or @alumni.ubc.ca)"
+          "Preferred candidate email must be a valid UBC email (@student.ubc.ca or @alumni.ubc.ca)",
         );
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -552,7 +552,7 @@ export function ProfileForm() {
   const handleBackClick = (e: React.MouseEvent) => {
     if (hasUnsavedChanges) {
       const confirmed = window.confirm(
-        "You have unsaved changes. Are you sure you want to leave this page?"
+        "You have unsaved changes. Are you sure you want to leave this page?",
       );
       if (!confirmed) {
         e.preventDefault();
@@ -1206,7 +1206,7 @@ export function ProfileForm() {
                     setSelectedAccountTypes([...selectedAccountTypes, "match"]);
                   } else {
                     setSelectedAccountTypes(
-                      selectedAccountTypes.filter((t) => t !== "match")
+                      selectedAccountTypes.filter((t) => t !== "match"),
                     );
                   }
                 }}
@@ -1225,7 +1225,7 @@ export function ProfileForm() {
                     setSelectedAccountTypes([...selectedAccountTypes, "cupid"]);
                   } else {
                     setSelectedAccountTypes(
-                      selectedAccountTypes.filter((t) => t !== "cupid")
+                      selectedAccountTypes.filter((t) => t !== "cupid"),
                     );
                   }
                 }}
