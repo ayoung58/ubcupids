@@ -127,6 +127,14 @@ export function CupidMatchingPortal({
     "profile" | "questionnaire" | "freeResponse"
   >("profile");
 
+  // Questionnaire section collapse state (persists across tab switches)
+  const [candidateSection1Collapsed, setCandidateSection1Collapsed] =
+    useState(true);
+  const [candidateSection2Collapsed, setCandidateSection2Collapsed] =
+    useState(true);
+  const [matchSection1Collapsed, setMatchSection1Collapsed] = useState(true);
+  const [matchSection2Collapsed, setMatchSection2Collapsed] = useState(true);
+
   const [isInfoCollapsed, setIsInfoCollapsed] = useState(false);
   const [rejectedMatches, setRejectedMatches] = useState<Set<string>>(
     new Set(),
@@ -383,6 +391,26 @@ export function CupidMatchingPortal({
   const currentAssignment =
     dashboard?.pendingAssignments[currentAssignmentIndex];
 
+  // Debug logging
+  useEffect(() => {
+    if (dashboard) {
+      console.log("[CupidMatchingPortal] Dashboard data:", {
+        totalAssigned: dashboard.totalAssigned,
+        pending: dashboard.pending,
+        reviewed: dashboard.reviewed,
+        pendingAssignmentsLength: dashboard.pendingAssignments?.length,
+        currentAssignmentIndex,
+        currentAssignment: currentAssignment
+          ? {
+              assignmentId: currentAssignment.assignmentId,
+              candidateName: currentAssignment.candidate?.firstName,
+              potentialMatchesCount: currentAssignment.potentialMatches?.length,
+            }
+          : null,
+      });
+    }
+  }, [dashboard, currentAssignmentIndex, currentAssignment]);
+
   // Load rejected matches from current assignment and load revealed count from backend
   useEffect(() => {
     if (currentAssignment) {
@@ -401,6 +429,28 @@ export function CupidMatchingPortal({
   const remainingMatches = allAvailableMatches.length - visibleMatches.length;
 
   const currentMatch = visibleMatches[currentMatchIndex];
+
+  // Debug logging for matches
+  useEffect(() => {
+    console.log("[CupidMatchingPortal] Match data:", {
+      allAvailableMatchesCount: allAvailableMatches.length,
+      visibleMatchesCount: visibleMatches.length,
+      currentMatchIndex,
+      currentMatch: currentMatch
+        ? {
+            userId: currentMatch.userId,
+            name: currentMatch.profile?.firstName,
+          }
+        : null,
+      revealedMatchCount,
+    });
+  }, [
+    allAvailableMatches.length,
+    visibleMatches.length,
+    currentMatchIndex,
+    currentMatch,
+    revealedMatchCount,
+  ]);
 
   const handleRevealMore = () => {
     setRevealedMatchCount((prev) =>
@@ -482,46 +532,6 @@ export function CupidMatchingPortal({
       <div className="max-w-[1800px] mx-auto space-y-2 sm:space-y-3">
         <BackButton />
 
-        {/* Feedback Card */}
-        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-lg font-bold text-purple-700 mb-2">
-                  📝 Help Us Improve!
-                </h3>
-                <p className="text-purple-600 text-sm">
-                  {matchesRevealed
-                    ? "Help us improve the experience by providing feedback! You'll have a chance to win 1 of 2 $20 Amazon gift cards!"
-                    : "Feedback forms open when matches are revealed on Feb 8th"}
-                </p>
-              </div>
-              {matchesRevealed ? (
-                <Button
-                  asChild
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                >
-                  <a
-                    href="https://syk3gprmktl.typeform.com/to/GhBJoEjn"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Provide Feedback
-                  </a>
-                </Button>
-              ) : (
-                <Button
-                  disabled
-                  variant="outline"
-                  className="border-purple-300 bg-white text-purple-400 cursor-not-allowed opacity-60"
-                >
-                  Provide Feedback
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Collapsible Info Panel */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {!isInfoCollapsed && (
@@ -547,18 +557,21 @@ export function CupidMatchingPortal({
                 </Button>
                 <span className="text-slate-700 font-semibold">
                   Match Candidate {currentAssignmentIndex + 1} of{" "}
-                  {dashboard.pendingAssignments.length}
+                  {dashboard?.pendingAssignments?.length || 0}
                 </span>
                 <Button
                   variant="outline"
                   onClick={() =>
                     setCurrentAssignmentIndex((i) =>
-                      Math.min(dashboard.pendingAssignments.length - 1, i + 1),
+                      Math.min(
+                        (dashboard?.pendingAssignments?.length || 1) - 1,
+                        i + 1,
+                      ),
                     )
                   }
                   disabled={
                     currentAssignmentIndex ===
-                    dashboard.pendingAssignments.length - 1
+                    (dashboard?.pendingAssignments?.length || 1) - 1
                   }
                 >
                   Next Match Candidate
@@ -648,7 +661,7 @@ export function CupidMatchingPortal({
             <div className="p-3 flex items-center justify-between">
               <span className="text-sm text-slate-600">
                 Match Candidate {currentAssignmentIndex + 1} of{" "}
-                {dashboard.pendingAssignments.length}
+                {dashboard?.pendingAssignments?.length || 0}
                 {selectedMatchId && (
                   <span className="ml-2 text-green-600">• Match selected</span>
                 )}
@@ -696,9 +709,7 @@ export function CupidMatchingPortal({
               <CardHeader className="bg-blue-50 border-b border-blue-200 flex-shrink-0">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Target className="h-5 w-5 text-blue-600" />
-                  Your Match Candidate: {
-                    currentAssignment.candidate.firstName
-                  }, {currentAssignment.candidate.age}
+                  Your Match Candidate: {currentAssignment.candidate.firstName}
                 </CardTitle>
                 {/* Tabs */}
                 <div className="flex gap-2 mt-3" data-tutorial="view-tabs">
@@ -751,6 +762,10 @@ export function CupidMatchingPortal({
                   <QuestionnaireV2Display
                     responses={candidateResponses}
                     showFreeResponse={candidateShowFreeResponse}
+                    section1Collapsed={candidateSection1Collapsed}
+                    setSection1Collapsed={setCandidateSection1Collapsed}
+                    section2Collapsed={candidateSection2Collapsed}
+                    setSection2Collapsed={setCandidateSection2Collapsed}
                   />
                 )}
               </CardContent>
@@ -779,8 +794,7 @@ export function CupidMatchingPortal({
                         Match {currentMatchIndex + 1} of {visibleMatches.length}
                       </div>
                       <div className="text-lg font-semibold text-slate-900">
-                        {currentMatch.profile.firstName},{" "}
-                        {currentMatch.profile.age}
+                        {currentMatch.profile.firstName}
                       </div>
                     </div>
                   </div>
@@ -899,6 +913,10 @@ export function CupidMatchingPortal({
                   <QuestionnaireV2Display
                     responses={matchResponses}
                     showFreeResponse={matchShowFreeResponse}
+                    section1Collapsed={matchSection1Collapsed}
+                    setSection1Collapsed={setMatchSection1Collapsed}
+                    section2Collapsed={matchSection2Collapsed}
+                    setSection2Collapsed={setMatchSection2Collapsed}
                   />
                 )}
               </CardContent>
@@ -1063,7 +1081,7 @@ function ProfileDisplay({ profile }: { profile: CupidProfileView }) {
       {/* Basic Info */}
       <div className="space-y-2">
         <h3 className="font-bold text-lg text-slate-900">
-          {profile.firstName}, {profile.age}
+          {profile.firstName}
         </h3>
         {profile.major && (
           <p className="text-sm text-slate-600">📚 {profile.major}</p>

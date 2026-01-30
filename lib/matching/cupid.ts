@@ -621,7 +621,19 @@ async function getUserProfileForCupid(
     },
   });
 
+  console.log(`[getUserProfileForCupid] User ${userId}:`, {
+    found: !!user,
+    hasV2Response: !!user?.questionnaireResponseV2,
+    age: user?.age,
+    displayName: user?.displayName,
+  });
+
   if (!user || !user.questionnaireResponseV2 || !user.age) {
+    console.error(`[getUserProfileForCupid] Missing data for user ${userId}:`, {
+      hasUser: !!user,
+      hasV2Response: !!user?.questionnaireResponseV2,
+      hasAge: !!user?.age,
+    });
     return null;
   }
 
@@ -629,13 +641,22 @@ async function getUserProfileForCupid(
   let responses: Record<string, any>;
   try {
     const responsesData = user.questionnaireResponseV2.responses;
-    if (!responsesData || typeof responsesData !== "string") {
-      console.error(`Invalid responses data type for user ${userId}`);
+
+    // Handle both encrypted strings and plain JSON objects
+    if (typeof responsesData === "string") {
+      // Encrypted string - decrypt it
+      responses = decryptJSON<Record<string, any>>(responsesData);
+    } else if (typeof responsesData === "object" && responsesData !== null) {
+      // Plain JSON object - use directly
+      responses = responsesData as Record<string, any>;
+    } else {
+      console.error(
+        `Invalid responses data type for user ${userId}: ${typeof responsesData}`,
+      );
       return null;
     }
-    responses = decryptJSON<Record<string, any>>(responsesData);
   } catch (error) {
-    console.error(`Error decrypting responses for user ${userId}:`, error);
+    console.error(`Error processing responses for user ${userId}:`, error);
     return null;
   }
 

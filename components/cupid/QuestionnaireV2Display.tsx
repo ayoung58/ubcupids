@@ -18,14 +18,31 @@ import { Section } from "@/types/questionnaire-v2";
 interface QuestionnaireV2DisplayProps {
   responses: any; // V2 responses object
   showFreeResponse?: boolean; // Whether to show free response (based on user preference)
+  section1Collapsed?: boolean;
+  setSection1Collapsed?: (collapsed: boolean) => void;
+  section2Collapsed?: boolean;
+  setSection2Collapsed?: (collapsed: boolean) => void;
 }
 
 export function QuestionnaireV2Display({
   responses,
   showFreeResponse = true,
+  section1Collapsed: section1CollapsedProp,
+  setSection1Collapsed: setSection1CollapsedProp,
+  section2Collapsed: section2CollapsedProp,
+  setSection2Collapsed: setSection2CollapsedProp,
 }: QuestionnaireV2DisplayProps) {
-  const [section1Collapsed, setSection1Collapsed] = useState(false);
-  const [section2Collapsed, setSection2Collapsed] = useState(false);
+  // Use local state as fallback if props not provided
+  const [localSection1Collapsed, setLocalSection1Collapsed] = useState(true);
+  const [localSection2Collapsed, setLocalSection2Collapsed] = useState(true);
+
+  // Use controlled state if provided, otherwise use local state
+  const section1Collapsed = section1CollapsedProp ?? localSection1Collapsed;
+  const setSection1Collapsed =
+    setSection1CollapsedProp ?? setLocalSection1Collapsed;
+  const section2Collapsed = section2CollapsedProp ?? localSection2Collapsed;
+  const setSection2Collapsed =
+    setSection2CollapsedProp ?? setLocalSection2Collapsed;
 
   if (!responses) {
     return (
@@ -146,14 +163,29 @@ function QuestionResponseDisplay({
     return String(value);
   };
 
-  // Format preference for display
+  // Format preference for display (handles age range objects)
   const formatPreference = (value: any): string => {
     if (value === undefined || value === null) return "No preference";
+    if (typeof value === "object" && "minAge" in value && "maxAge" in value) {
+      return `${value.minAge} - ${value.maxAge} years`;
+    }
     if (Array.isArray(value)) {
       if (value.length === 0) return "No preference";
       return value.join(", ");
     }
     return String(value);
+  };
+
+  // Get likert scale label if question has likert config
+  const getLikertLabel = (): string => {
+    if (
+      question.likertConfig &&
+      question.likertConfig.minLabel &&
+      question.likertConfig.maxLabel
+    ) {
+      return ` (${question.likertConfig.min} - ${question.likertConfig.minLabel}; ${question.likertConfig.max} - ${question.likertConfig.maxLabel})`;
+    }
+    return "";
   };
 
   // Get importance badge
@@ -208,6 +240,7 @@ function QuestionResponseDisplay({
       <div className="mb-2">
         <p className="text-sm font-medium text-slate-700">
           {question.questionText}
+          {getLikertLabel()}
         </p>
       </div>
 

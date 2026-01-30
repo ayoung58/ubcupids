@@ -58,22 +58,24 @@ export async function GET(request: NextRequest) {
       // Check if this cupid has an assignment where:
       // 1. The userId is their assigned candidate
       // 2. The userId is one of the potential matches
-      const assignment = await prisma.cupidAssignment.findFirst({
+      const assignments = await prisma.cupidAssignment.findMany({
         where: {
           cupidUserId: session.user.id,
-          OR: [
-            { candidateId: userId },
-            {
-              potentialMatches: {
-                path: ["$"],
-                array_contains: [{ userId: userId }],
-              },
-            },
-          ],
         },
       });
 
-      hasAccess = !!assignment;
+      // Check if userId matches candidate or is in potentialMatches array
+      hasAccess = assignments.some((assignment) => {
+        if (assignment.candidateId === userId) {
+          return true;
+        }
+        // Check potentialMatches JSON array
+        const matches = assignment.potentialMatches as any;
+        if (Array.isArray(matches)) {
+          return matches.some((m: any) => m.userId === userId);
+        }
+        return false;
+      });
     }
 
     if (!hasAccess) {
@@ -118,18 +120,27 @@ export async function GET(request: NextRequest) {
     let responses: Record<string, any>;
     try {
       const responsesData = user.questionnaireResponseV2.responses;
-      if (!responsesData || typeof responsesData !== "string") {
-        console.error(`Invalid responses data type for user ${userId}`);
+
+      // Handle both encrypted strings and plain JSON objects
+      if (typeof responsesData === "string") {
+        // Encrypted string - decrypt it
+        responses = decryptJSON<Record<string, any>>(responsesData);
+      } else if (typeof responsesData === "object" && responsesData !== null) {
+        // Plain JSON object - use directly
+        responses = responsesData as Record<string, any>;
+      } else {
+        console.error(
+          `Invalid responses data type for user ${userId}: ${typeof responsesData}`,
+        );
         return NextResponse.json(
           { error: "Invalid questionnaire data format" },
           { status: 500 },
         );
       }
-      responses = decryptJSON<Record<string, any>>(responsesData);
     } catch (error) {
-      console.error(`Failed to decrypt responses for user ${userId}:`, error);
+      console.error(`Failed to process responses for user ${userId}:`, error);
       return NextResponse.json(
-        { error: "Failed to decrypt questionnaire data" },
+        { error: "Failed to process questionnaire data" },
         { status: 500 },
       );
     }
