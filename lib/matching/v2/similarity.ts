@@ -337,13 +337,14 @@ function calculateTypeC_CategoricalMulti(
   const aPreference = aResponse.preference;
   const bPreference = bResponse.preference;
 
-  // Q26 special case: "whatever_feels_natural" is compatible with everything
+  // Q26 special case: "whatever_feels_natural" is flexible but not perfect
   if (questionId === "q26") {
     if (
       aAnswer === "whatever_feels_natural" ||
       bAnswer === "whatever_feels_natural"
     ) {
-      return 1.0;
+      // Return 0.5: flexible but not a guaranteed match (random shot)
+      return 0.5;
     }
 
     // Q26 has string preferences ("similar" or "same"), not array preferences

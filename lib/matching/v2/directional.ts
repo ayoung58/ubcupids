@@ -35,7 +35,7 @@ export function calculateDirectionalScore(
   userAPreference: "more" | "less" | "similar" | "same" | undefined,
   userBPreference: "more" | "less" | "similar" | "same" | undefined,
   weightedSimilarity: number,
-  config: MatchingConfig = MATCHING_CONFIG
+  config: MatchingConfig = MATCHING_CONFIG,
 ): number {
   const result = applyDirectionalScoring(
     weightedSimilarity,
@@ -43,7 +43,7 @@ export function calculateDirectionalScore(
     userBAnswer,
     userAPreference,
     userBPreference,
-    config
+    config,
   );
   return result.averageFinal;
 }
@@ -65,7 +65,7 @@ export function applyDirectionalScoring(
   userBAnswer: number,
   userAPreference: "more" | "less" | "similar" | "same" | undefined,
   userBPreference: "more" | "less" | "similar" | "same" | undefined,
-  config: MatchingConfig = MATCHING_CONFIG
+  config: MatchingConfig = MATCHING_CONFIG,
 ): {
   userAMultiplier: number;
   userBMultiplier: number;
@@ -82,7 +82,7 @@ export function applyDirectionalScoring(
     userBAnswer,
     userAPreference,
     alpha,
-    beta
+    beta,
   );
 
   const userBMultiplier = calculateDirectionalMultiplier(
@@ -90,7 +90,7 @@ export function applyDirectionalScoring(
     userAAnswer,
     userBPreference,
     alpha,
-    beta
+    beta,
   );
 
   // Apply multipliers
@@ -122,7 +122,7 @@ function calculateDirectionalMultiplier(
   partnerAnswer: number,
   preference: "more" | "less" | "similar" | "same" | undefined,
   alpha: number,
-  beta: number
+  beta: number,
 ): number {
   // No preference → neutral multiplier
   if (!preference) return 1.0;
@@ -133,15 +133,13 @@ function calculateDirectionalMultiplier(
   switch (preference) {
     case "more":
       // Partner should have higher value
-      if (difference > 0) return alpha; // Aligned
-      if (difference === 0) return 1.0; // Neutral (same is okay)
-      return beta; // Conflict (partner has less)
+      if (difference > 0) return alpha; // Aligned: partner has more
+      return beta; // Conflict: partner has equal or less (preference not met)
 
     case "less":
       // Partner should have lower value
-      if (difference < 0) return alpha; // Aligned
-      if (difference === 0) return 1.0; // Neutral (same is okay)
-      return beta; // Conflict (partner has more)
+      if (difference < 0) return alpha; // Aligned: partner has less
+      return beta; // Conflict: partner has equal or more (preference not met)
 
     case "similar":
       // Partner should be close (±1 on scale)

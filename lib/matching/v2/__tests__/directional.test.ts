@@ -20,7 +20,7 @@ describe("Phase 4: Directional Scoring", () => {
         2, // userA answer
         4, // userB answer (higher)
         "more", // userA preference
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(alpha);
@@ -33,24 +33,24 @@ describe("Phase 4: Directional Scoring", () => {
         4, // userA answer
         2, // userB answer (lower)
         "more", // userA preference
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(beta);
       expect(result.userAFinal).toBeCloseTo(0.56, 2); // 0.8 × 0.7
     });
 
-    test("should apply 1.0 when partner has same", () => {
+    test("should apply β when partner has same", () => {
       const result = applyDirectionalScoring(
         baseWeightedSimilarity,
         3,
         3,
         "more",
-        undefined
+        undefined,
       );
 
-      expect(result.userAMultiplier).toBe(1.0);
-      expect(result.userAFinal).toBe(0.8);
+      expect(result.userAMultiplier).toBe(beta); // Equal doesn't satisfy 'more' preference
+      expect(result.userAFinal).toBeCloseTo(0.56, 2); // 0.8 × 0.7
     });
   });
 
@@ -61,7 +61,7 @@ describe("Phase 4: Directional Scoring", () => {
         4, // userA answer
         2, // userB answer (lower)
         "less", // userA preference
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(alpha);
@@ -74,24 +74,24 @@ describe("Phase 4: Directional Scoring", () => {
         2, // userA answer
         4, // userB answer (higher)
         "less", // userA preference
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(beta);
       expect(result.userAFinal).toBeCloseTo(0.56, 2);
     });
 
-    test("should apply 1.0 when partner has same", () => {
+    test("should apply β when partner has same", () => {
       const result = applyDirectionalScoring(
         baseWeightedSimilarity,
         3,
         3,
         "less",
-        undefined
+        undefined,
       );
 
-      expect(result.userAMultiplier).toBe(1.0);
-      expect(result.userAFinal).toBe(0.8);
+      expect(result.userAMultiplier).toBe(beta); // Equal doesn't satisfy 'less' preference
+      expect(result.userAFinal).toBeCloseTo(0.56, 2); // 0.8 × 0.7
     });
   });
 
@@ -102,7 +102,7 @@ describe("Phase 4: Directional Scoring", () => {
         3,
         4, // Difference of 1
         "similar",
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(alpha);
@@ -115,7 +115,7 @@ describe("Phase 4: Directional Scoring", () => {
         3,
         3, // Exact match
         "similar",
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(alpha);
@@ -128,7 +128,7 @@ describe("Phase 4: Directional Scoring", () => {
         2,
         4, // Difference of 2
         "similar",
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(1.0);
@@ -141,7 +141,7 @@ describe("Phase 4: Directional Scoring", () => {
         1,
         5, // Difference of 4
         "similar",
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(beta);
@@ -156,7 +156,7 @@ describe("Phase 4: Directional Scoring", () => {
         3,
         3,
         "same",
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(alpha);
@@ -169,7 +169,7 @@ describe("Phase 4: Directional Scoring", () => {
         3,
         4,
         "same",
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(1.0);
@@ -182,7 +182,7 @@ describe("Phase 4: Directional Scoring", () => {
         2,
         5,
         "same",
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(beta);
@@ -197,7 +197,7 @@ describe("Phase 4: Directional Scoring", () => {
         2,
         5,
         undefined,
-        undefined
+        undefined,
       );
 
       expect(result.userAMultiplier).toBe(1.0);
@@ -213,7 +213,7 @@ describe("Phase 4: Directional Scoring", () => {
         2, // userA answer
         4, // userB answer
         "more", // userA wants more (aligned: B > A)
-        "less" // userB wants less (aligned: A < B)
+        "less", // userB wants less (aligned: A < B)
       );
 
       expect(result.userAMultiplier).toBe(alpha); // A gets boost (B has more)
@@ -227,7 +227,7 @@ describe("Phase 4: Directional Scoring", () => {
         4, // userA answer
         2, // userB answer
         "more", // userA wants more (conflict: B < A)
-        "more" // userB wants more (aligned: A > B)
+        "more", // userB wants more (aligned: A > B)
       );
 
       expect(result.userAMultiplier).toBe(beta); // A gets penalty (B has less)
@@ -250,7 +250,7 @@ describe("Phase 4: Directional Scoring", () => {
         4,
         "more",
         undefined,
-        customConfig
+        customConfig,
       );
 
       expect(result.userAMultiplier).toBe(1.2); // Custom α

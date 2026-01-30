@@ -77,7 +77,7 @@ describe("Bug Fixes v2.3", () => {
   });
 
   describe("Q26: Texting frequency with 'whatever_feels_natural'", () => {
-    it("should return 1.0 when one user selects 'whatever_feels_natural'", () => {
+    it("should return 0.5 when one user selects 'whatever_feels_natural'", () => {
       const userA = createMockUser("a", {
         q26: {
           answer: "frequent",
@@ -95,10 +95,10 @@ describe("Bug Fixes v2.3", () => {
       });
 
       const similarities = calculateSimilarity(userA, userB);
-      expect(similarities.q26).toBe(1.0);
+      expect(similarities.q26).toBe(0.5);
     });
 
-    it("should return 1.0 when both users select 'whatever_feels_natural'", () => {
+    it("should return 0.5 when both users select 'whatever_feels_natural'", () => {
       const userA = createMockUser("a", {
         q26: {
           answer: "whatever_feels_natural",
@@ -116,7 +116,7 @@ describe("Bug Fixes v2.3", () => {
       });
 
       const similarities = calculateSimilarity(userA, userB);
-      expect(similarities.q26).toBe(1.0);
+      expect(similarities.q26).toBe(0.5);
     });
 
     it("should work normally when neither selects 'whatever_feels_natural'", () => {

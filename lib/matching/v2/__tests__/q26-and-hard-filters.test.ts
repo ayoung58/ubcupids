@@ -113,7 +113,7 @@ describe("Q26: String Preferences (same/similar)", () => {
     expect(similarities.q26).toBe(0.0);
   });
 
-  it("should return 1.0 with whatever_feels_natural regardless of other answer", () => {
+  it("should return 0.5 with whatever_feels_natural (flexible but not guaranteed match)", () => {
     const userA = createMockUser("a", {
       q26: {
         answer: "minimal",
@@ -131,7 +131,7 @@ describe("Q26: String Preferences (same/similar)", () => {
     });
 
     const similarities = calculateSimilarity(userA, userB);
-    expect(similarities.q26).toBe(1.0);
+    expect(similarities.q26).toBe(0.5);
   });
 });
 
