@@ -212,7 +212,7 @@ export function QuestionnaireV2({
         setLoadError(
           error instanceof Error
             ? error.message
-            : "Failed to load questionnaire"
+            : "Failed to load questionnaire",
         );
         setIsLoading(false);
       }
@@ -295,6 +295,9 @@ export function QuestionnaireV2({
       if (Array.isArray(response.answer) && response.answer.length === 0)
         return;
 
+      // Check "doesn't matter" flag early
+      const doesntMatter = response.doesntMatter === true;
+
       // Q21 Love Languages - special check for array answer and preference
       if (question.id === "q21") {
         const answerArray = Array.isArray(response.answer)
@@ -303,7 +306,6 @@ export function QuestionnaireV2({
         const preferenceArray = Array.isArray(response.preference)
           ? response.preference
           : [];
-        const doesntMatter = response.doesntMatter === true;
 
         // Need exactly 2 on left (answer)
         if (answerArray.length !== 2) return;
@@ -323,17 +325,19 @@ export function QuestionnaireV2({
       }
 
       // 2. Must have (preference OR doesn't matter)
-      const hasPreference =
-        response.preference !== null && response.preference !== undefined;
-      const doesntMatter = response.doesntMatter === true;
-      if (!hasPreference && !doesntMatter) return;
+      // Skip preference validation if doesntMatter is true
+      if (!doesntMatter) {
+        const hasPreference =
+          response.preference !== null && response.preference !== undefined;
+        if (!hasPreference) return;
 
-      // 2b. For multi-select preferences, check if preference is an empty array
-      if (
-        Array.isArray(response.preference) &&
-        response.preference.length === 0
-      )
-        return;
+        // 2b. For multi-select preferences, check if preference is an empty array (only when doesn't matter is false)
+        if (
+          Array.isArray(response.preference) &&
+          response.preference.length === 0
+        )
+          return;
+      }
 
       // 3. Must have (importance OR doesn't matter OR dealbreaker)
       const hasImportance =
@@ -820,7 +824,7 @@ export function QuestionnaireV2({
     const confirmed = window.confirm(
       "Are you sure you want to submit your questionnaire?\n\n" +
         "Once submitted, you will NOT be able to edit your responses.\n\n" +
-        "Click OK to submit, or Cancel to review your answers."
+        "Click OK to submit, or Cancel to review your answers.",
     );
 
     if (!confirmed) {
@@ -848,7 +852,7 @@ export function QuestionnaireV2({
             return error.message;
           });
           throw new Error(
-            `Questionnaire validation failed:\n\n${errorMessages.join("\n")}\n\nCompletion: ${data.completionPercentage || 0}%`
+            `Questionnaire validation failed:\n\n${errorMessages.join("\n")}\n\nCompletion: ${data.completionPercentage || 0}%`,
           );
         }
         throw new Error(data.error || "Failed to submit questionnaire");
@@ -862,10 +866,10 @@ export function QuestionnaireV2({
       setSubmitError(
         error instanceof Error
           ? error.message
-          : "Failed to submit questionnaire"
+          : "Failed to submit questionnaire",
       );
       alert(
-        `Submission failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Submission failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     } finally {
       setIsSubmitting(false);
@@ -1043,7 +1047,7 @@ export function QuestionnaireV2({
       <div
         className={cn(
           "flex-1 py-8 px-4",
-          submittedState && "opacity-70 pointer-events-none"
+          submittedState && "opacity-70 pointer-events-none",
         )}
       >
         {getCurrentContent()}
@@ -1063,7 +1067,7 @@ export function QuestionnaireV2({
               "border-2 focus:outline-none focus:ring-2 focus:ring-offset-2",
               canGoPrev
                 ? "border-slate-300 text-slate-700 hover:bg-slate-50 focus:ring-slate-400"
-                : "border-slate-200 text-slate-400 cursor-not-allowed"
+                : "border-slate-200 text-slate-400 cursor-not-allowed",
             )}
           >
             ← Previous
@@ -1091,7 +1095,7 @@ export function QuestionnaireV2({
                   completedCount === totalQuestions &&
                   !submittedState)
                 ? "bg-pink-600 text-white hover:bg-pink-700 focus:ring-pink-500"
-                : "bg-pink-300 text-white cursor-not-allowed"
+                : "bg-pink-300 text-white cursor-not-allowed",
             )}
           >
             {isSubmitting ? (
