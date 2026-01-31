@@ -1256,8 +1256,8 @@ export function AdminMatchingClient({
           <div className="text-xs text-slate-500 pt-4 border-t">
             <p>
               <strong>Note:</strong> This action is irreversible. Once revealed,
-              candidates can see their matches. Use the admin dashboard's "Clear
-              Matches" button if you need to remove matches and start over.
+              candidates can see their matches. Use the admin dashboard&apos;s &quot;Clear
+              Matches&quot; button if you need to remove matches and start over.
             </p>
           </div>
         </CardContent>
