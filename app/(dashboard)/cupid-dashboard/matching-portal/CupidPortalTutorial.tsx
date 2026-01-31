@@ -1,13 +1,24 @@
 "use client";
 
-import { Tutorial, TutorialStep } from "@/components/tutorial/Tutorial";
+import {
+  TutorialV2,
+  type TutorialStep,
+} from "@/components/tutorial/TutorialV2";
 
 const cupidPortalSteps: TutorialStep[] = [
   {
     id: "welcome",
     title: "Welcome to the Matching Portal! 💘",
     content:
-      "As a Cupid, you'll help match candidates with their perfect partners. This tutorial will guide you through the matching process.",
+      "As a Cupid, you'll help match candidates with their perfect partners. This tutorial will guide you through the entire matching process step by step!",
+    target: "[data-tutorial='stats-header']",
+    position: "bottom",
+  },
+  {
+    id: "stats",
+    title: "Your Progress Dashboard",
+    content:
+      "This header shows your overall progress: total assigned candidates, pending decisions, and completed matches. Keep track of your matchmaking journey!",
     target: "[data-tutorial='stats-header']",
     position: "bottom",
   },
@@ -15,71 +26,79 @@ const cupidPortalSteps: TutorialStep[] = [
     id: "candidate-nav",
     title: "Navigate Between Candidates",
     content:
-      "Use these buttons to move between assigned candidates if you have more than one. Each candidate needs you to find them a match!",
+      "If you have multiple assigned candidates, use 'Previous' and 'Next' buttons here to move between them. The counter shows which candidate you're currently reviewing (e.g., 'Match Candidate 1 of 3').",
     target: "[data-tutorial='candidate-nav']",
     position: "bottom",
   },
   {
     id: "info-collapse",
-    title: "Collapsible Info Panel",
+    title: "Maximize Your Workspace",
     content:
-      "Click the ^ arrow to collapse or expand this info panel. Collapsing it gives you more screen space to compare questionnaires.",
+      "Click the collapse arrow (↑) to hide the info panel above and give yourself more screen space for comparing profiles and questionnaires. Click again (↓) to expand it back.",
     target: "[data-tutorial='collapse-button']",
     position: "top",
   },
   {
     id: "split-view",
-    title: "Split View Comparison",
+    title: "Side-by-Side Comparison View",
     content:
-      "The left panel shows your candidate's profile/questionnaire. The right panel shows potential matches. Compare them side-by-side!",
+      "The interface is split into two panels: LEFT shows your assigned candidate, RIGHT shows their potential matches. This layout lets you easily compare compatibility!",
     target: "[data-tutorial='split-view']",
     position: "top",
   },
   {
     id: "profile-questionnaire-tabs",
-    title: "Profile vs Questionnaire",
+    title: "View Profile, Questionnaire & Free Response",
     content:
-      "Switch between viewing the profile (bio, interests) and questionnaire responses. This helps you understand compatibility beyond just scores.",
+      "Toggle between three tabs: 'Profile' (bio, interests, photo), 'Questionnaire' (their compatibility answers), and 'Free Response' (personal essays). Review all three to understand each person deeply!",
     target: "[data-tutorial='view-tabs']",
     position: "bottom",
   },
   {
     id: "match-navigation",
-    title: "Browse Potential Matches",
+    title: "Browse Through Potential Matches",
     content:
-      "Use the Previous < and Next > buttons to browse through potential matches for your candidate.",
+      "Use the < Previous and Next > buttons in the right panel to browse through potential matches for your candidate. The counter shows which match you're viewing (e.g., 'Match 2 of 5').",
     target: "[data-tutorial='match-nav']",
     position: "top",
   },
   {
-    id: "generate-more",
-    title: "Need More Options?",
+    id: "reveal-more",
+    title: "Load Additional Matches",
     content:
-      "If you don't find a good match, click 'Generate 5 More' to load additional potential matches (up to 25 total).",
+      "You start with 5 potential matches. If none feel right, click 'Reveal 5 More Matches' to load additional options. You can reveal up to 25 total matches per candidate.",
     target: "[data-tutorial='generate-more']",
     position: "bottom",
   },
   {
     id: "not-a-match",
-    title: "Removing a Match",
+    title: "Remove Incompatible Matches",
     content:
-      "Click the 'Not a Match' button (X icon) to remove someone from the candidate pool if you don't think they're compatible.",
+      "If you determine someone isn't a good match, click the 'Not a Match' button (with X icon) to remove them from consideration. This helps narrow down to the best options. Note: You cannot reject the last remaining match.",
     target: "[data-tutorial='reject-button']",
     position: "left",
   },
   {
     id: "select-match",
-    title: "Selecting a Match",
+    title: "Select Your Top Choice",
     content:
-      "Found the perfect match? Click 'Select as Match' to choose them for your candidate. You can undo this before confirming.",
+      "Found the perfect match? Click the 'Select' button (with heart icon) to choose them for your candidate. The card will highlight in pink, and you can undo this selection anytime before confirming.",
     target: "[data-tutorial='select-button']",
     position: "left",
   },
   {
-    id: "confirm",
-    title: "Confirm Your Selection",
+    id: "confirm-selection",
+    title: "Provide Your Rationale",
     content:
-      "Once you've selected a match and provided rationale, click 'Confirm Selection'. You'll need to provide a rationale for your match, and then it can be submitted! The match will then be sent to the candidate for acceptance!",
+      "After selecting a match, the confirmation area at the bottom appears. Write a brief rationale explaining why you think they're compatible—the candidate will see this! Be thoughtful and constructive.",
+    target: "[data-tutorial='confirm-button']",
+    position: "left",
+  },
+  {
+    id: "final-submit",
+    title: "Submit Your Match Selection",
+    content:
+      "Once you've written your rationale, click 'Confirm Selection' to finalize your choice. This completes your assignment for this candidate! Your thoughtful match will be combined with algorithm results and revealed on February 8, 2026. ✨",
     target: "[data-tutorial='confirm-button']",
     position: "left",
   },
@@ -93,7 +112,7 @@ export function CupidPortalTutorial({
   initialCompleted,
 }: CupidPortalTutorialProps) {
   return (
-    <Tutorial
+    <TutorialV2
       steps={cupidPortalSteps}
       tutorialId="cupid-portal"
       initialCompleted={initialCompleted}

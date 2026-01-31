@@ -26,8 +26,14 @@
 import { MATCHING_CONFIG, type MatchingConfig } from "./config";
 
 /**
- * Calculates directional score for a question pair
- * Wrapper for applyDirectionalScoring with simplified interface
+ * Calculates directional score for a question pair from User A's perspective
+ *
+ * IMPORTANT: Returns USER A's individual score, not an average!
+ * This ensures asymmetric scoring when preferences differ:
+ * - When called as calculateDirectionalScore(A, B, ...) → returns A's score
+ * - When called as calculateDirectionalScore(B, A, ...) → returns B's score (which is A in this call)
+ *
+ * This allows proper directional preference application where preferences matter differently for each user
  */
 export function calculateDirectionalScore(
   userAAnswer: number,
@@ -45,7 +51,8 @@ export function calculateDirectionalScore(
     userBPreference,
     config,
   );
-  return result.averageFinal;
+  // Return USER A's individual score (not the average) for asymmetric directional preferences
+  return result.userAFinal;
 }
 
 /**

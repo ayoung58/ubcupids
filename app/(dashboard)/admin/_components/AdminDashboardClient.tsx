@@ -440,32 +440,66 @@ export function AdminDashboardClient({
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
-          {actionMessages["clear-matches"] && (
+          {actionMessages["clear-test-matches"] && (
             <p
               className={`text-sm px-3 py-2 rounded ${
-                actionMessages["clear-matches"].type === "success"
+                actionMessages["clear-test-matches"].type === "success"
                   ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-red-50 text-red-700 border border-red-200"
               }`}
             >
-              {actionMessages["clear-matches"].message}
+              {actionMessages["clear-test-matches"].message}
             </p>
           )}
           <Button
             onClick={() =>
-              handleAction("clear-matches", "/api/admin/clear-matches")
+              handleAction(
+                "clear-test-matches",
+                "/api/admin/clear-matches-test",
+              )
             }
             disabled={loadingAction !== null}
             className="w-full h-12"
             variant="destructive"
           >
-            {loadingAction === "clear-matches" ? (
+            {loadingAction === "clear-test-matches" ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             ) : (
               <Trash2 className="mr-2 h-5 w-5" />
             )}
-            Clear All Matches & Reset
+            Clear Test User Matches Only
           </Button>
+
+          {actionMessages["clear-production-matches"] && (
+            <p
+              className={`text-sm px-3 py-2 rounded ${
+                actionMessages["clear-production-matches"].type === "success"
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : "bg-red-50 text-red-700 border border-red-200"
+              }`}
+            >
+              {actionMessages["clear-production-matches"].message}
+            </p>
+          )}
+          <Button
+            onClick={() =>
+              handleAction(
+                "clear-production-matches",
+                "/api/admin/clear-matches-production",
+              )
+            }
+            disabled={loadingAction !== null}
+            className="w-full h-12 bg-red-700 hover:bg-red-800"
+            variant="destructive"
+          >
+            {loadingAction === "clear-production-matches" ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <Trash2 className="mr-2 h-5 w-5" />
+            )}
+            Clear Production User Matches Only
+          </Button>
+
           {actionMessages["clear-test-users"] && (
             <p
               className={`text-sm px-3 py-2 rounded ${

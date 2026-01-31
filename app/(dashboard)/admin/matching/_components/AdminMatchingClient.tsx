@@ -120,6 +120,11 @@ export function AdminMatchingClient({
   const [error, setError] = useState<string | null>(null);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [currentPairIndex, setCurrentPairIndex] = useState(0);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [revealMessage, setRevealMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // Get the current stats based on selected user type
   const currentStats = userType === "test" ? testStats : productionStats;
@@ -167,6 +172,47 @@ export function AdminMatchingClient({
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setIsRunning(false);
+    }
+  };
+
+  const handleRevealMatches = async () => {
+    const endpoint =
+      userType === "test"
+        ? "/api/admin/reveal-matches-test"
+        : "/api/admin/reveal-matches-production";
+
+    setIsRevealing(true);
+    setRevealMessage(null);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setRevealMessage({
+          type: "success",
+          message:
+            data.message ||
+            `Revealed ${data.revealed} matches to ${userType} candidates`,
+        });
+      } else {
+        setRevealMessage({
+          type: "error",
+          message: data.error || "Failed to reveal matches",
+        });
+      }
+    } catch (err) {
+      console.error("Error revealing matches:", err);
+      setRevealMessage({
+        type: "error",
+        message: "Failed to reveal matches",
+      });
+    } finally {
+      setIsRevealing(false);
     }
   };
 
@@ -1101,6 +1147,121 @@ export function AdminMatchingClient({
           </CardContent>
         </Card>
       )}
+
+      {/* Reveal Matches */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-rose-600" />
+            Reveal Matches to Candidates
+            {userType === "test" && (
+              <span className="text-sm font-normal text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-auto">
+                Test Mode
+              </span>
+            )}
+            {userType === "production" && (
+              <span className="text-sm font-normal text-purple-600 bg-purple-100 px-2 py-0.5 rounded ml-auto">
+                Production Mode
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {revealMessage && (
+            <Alert
+              className={
+                revealMessage.type === "success"
+                  ? "border-green-200 bg-green-50"
+                  : "border-red-200 bg-red-50"
+              }
+            >
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription
+                className={
+                  revealMessage.type === "success"
+                    ? "text-green-800"
+                    : "text-red-800"
+                }
+              >
+                {revealMessage.message}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <p className="text-sm text-slate-600">
+            This will set the{" "}
+            <code className="bg-slate-100 px-1 rounded">revealedAt</code>{" "}
+            timestamp for all {userType} matches, making them visible to
+            candidates. This action is typically done on the reveal date (Feb 8,
+            2026) after all matches have been created.
+          </p>
+
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-sm font-medium mb-2">Current Statistics:</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-slate-600 text-sm">
+                  Users ({userType}):
+                </span>
+                <div className="text-2xl font-bold">
+                  {currentStats.totalUsers}
+                </div>
+              </div>
+              <div>
+                <span className="text-slate-600 text-sm">
+                  Matches ({userType}):
+                </span>
+                <div className="text-2xl font-bold text-rose-600">
+                  {currentStats.totalMatches}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleRevealMatches}
+            disabled={isRevealing || currentStats.totalMatches === 0}
+            className="w-full bg-rose-600 hover:bg-rose-700"
+          >
+            {isRevealing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Revealing Matches...
+              </>
+            ) : (
+              <>
+                <Heart className="mr-2 h-4 w-4" />
+                Reveal {currentStats.totalMatches} Matches for{" "}
+                {userType === "test" ? "Test" : "Production"} Users
+              </>
+            )}
+          </Button>
+
+          {currentStats.totalMatches === 0 && (
+            <Alert
+              className={
+                userType === "test"
+                  ? "border-blue-200 bg-blue-50"
+                  : "border-purple-200 bg-purple-50"
+              }
+            >
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                No matches available to reveal for {userType} users. Run
+                matching first.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="text-xs text-slate-500 pt-4 border-t">
+            <p>
+              <strong>Note:</strong> This action is irreversible. Once revealed,
+              candidates can see their matches. Use the admin dashboard's "Clear
+              Matches" button if you need to remove matches and start over.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Algorithm Info */}
       <Card>

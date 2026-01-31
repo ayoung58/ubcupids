@@ -141,7 +141,7 @@ function determineQuestionType(
     // Section 2: Personality
     q21: "love-languages", // SPECIAL CASE
     q22: "same-similar-different", // Social energy - can be different
-    q23: "same-similar-different", // Battery recharge - ordinal with different option
+    q23: "ordinal", // Battery recharge - ordinal with "same" preference (not "different")
     q24: "same-similar-different", // Party interest - Likert same/similar
     q25: "conflict-resolution", // SPECIAL CASE
     q26: "categorical-multi", // Texting frequency - special flexible handling
@@ -244,7 +244,7 @@ export function calculateQuestionSimilarity(
 
 /**
  * Helper: Map ordinal string values to numeric for ordinal questions
- * Supports Q9b (drug frequency) and Q12 (sexual activity expectations)
+ * Supports Q9b (drug frequency), Q12 (sexual activity expectations), and Q23 (battery recharge)
  */
 function mapOrdinalToNumeric(questionId: string, value: string): number | null {
   if (questionId === "q9b") {
@@ -269,6 +269,19 @@ function mapOrdinalToNumeric(questionId: string, value: string): number | null {
     };
     return ordinalMap[value] ?? null;
   }
+
+  if (questionId === "q23") {
+    // RECHARGE_STYLE_OPTIONS in order: alone → balanced → people
+    const ordinalMap: Record<string, number> = {
+      lots_of_alone_time: 1,
+      some_alone_time: 2,
+      balanced: 3,
+      energized_by_people: 4,
+      always_want_company: 5,
+    };
+    return ordinalMap[value] ?? null;
+  }
+
   return null;
 }
 
@@ -478,29 +491,12 @@ function calculateQ6_ReligionWithSemantics(
   const bIsSubsetOfA = [...bSet].every((x) => aSet.has(x));
   const isSubset = aIsSubsetOfB || bIsSubsetOfA;
 
-  // Handle null/flexible preferences
-  if (!aPreference || !bPreference) {
-    // If no preferences specified, use semantic-aware Jaccard
-    if (intersection.size > 0) {
-      // Has overlap
-      if (aIsSecular && bIsSecular && intersection.size > 0) {
-        return 0.8; // Both secular, some overlap
-      }
-      // Different groups but has overlap
-      return 0.6;
-    } else {
-      // No overlap
-      if ((aIsSecular && bIsSecular) || aHasFlexible || bHasFlexible) {
-        return 0.5; // Semantic similarity or flexible
-      }
-      return 0.0; // Completely different
-    }
-  }
-
   // Handle preference-based matching
-  let aSatisfied = 1.0;
-  let bSatisfied = 1.0;
+  // Note: We need to check preferences even if one is null, to get asymmetric scoring
+  let aSatisfied = 1.0; // Default: no preference = satisfied with anything
+  let bSatisfied = 1.0; // Default: no preference = satisfied with anything
 
+  // Check A's preference satisfaction
   if (aPreference === "same") {
     // Exact match check
     if (aSet.size === bSet.size && [...aSet].every((item) => bSet.has(item))) {
@@ -811,11 +807,17 @@ function calculateTypeF_Ordinal(
   // Calculate raw numeric similarity with dynamic max range
   // Q9b: 1-3 (never, occasionally, regularly) → maxRange = 2
   // Q12: 1-4 (marriage, serious_commitment, connection, early_on) → maxRange = 3
+  // Q23: 1-5 (lots_alone → balanced → always_company) → maxRange = 4
   const maxValue = Math.max(aNumeric, bNumeric);
   const minValue = Math.min(aNumeric, bNumeric);
 
   // For ordinal scales, max range is (max_possible - min_possible)
-  const maxRange = questionId === "q9b" ? 2 : 3; // q9b: 3-1=2, q12: 4-1=3
+  const maxRangeMap: Record<string, number> = {
+    q9b: 2, // 3-1=2
+    q12: 3, // 4-1=3
+    q23: 4, // 5-1=4
+  };
+  const maxRange = maxRangeMap[questionId] ?? 3;
   const distance = Math.abs(aNumeric - bNumeric);
   const rawSimilarity = 1 - distance / maxRange;
 

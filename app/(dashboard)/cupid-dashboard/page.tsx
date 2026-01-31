@@ -46,11 +46,15 @@ export default async function CupidDashboardPage() {
 
   // Check if cupids have been assigned candidates (admin has run "pair cupids")
   // For production users: also check if date is >= Feb 1, 2026
+  // CRITICAL: Must filter by PRODUCTION assignments only for production cupids
   const totalAssignments = await prisma.cupidAssignment.count({
     where: {
       batchNumber: 1,
       cupidUser: {
         isTestUser: profile?.isTestUser ?? false,
+      },
+      candidate: {
+        isTestUser: profile?.isTestUser ?? false, // Match candidate type to cupid type
       },
     },
   });
@@ -61,7 +65,7 @@ export default async function CupidDashboardPage() {
 
   // Production cupids can only access portal if:
   // 1. Date is >= Feb 1, 2026 AND
-  // 2. They have assignments in the database
+  // 2. They have PRODUCTION assignments in the database (not test assignments)
   const cupidsAssigned = isProductionCupid
     ? currentDate >= launchDate && totalAssignments > 0
     : totalAssignments > 0; // Test users can access anytime if assigned
