@@ -918,22 +918,29 @@ export function CupidMatchingPortal({
                     data-tutorial="match-nav"
                   >
                     {/* Compatibility score hidden in production */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigateMatch("prev")}
-                      disabled={currentMatchIndex === 0}
+                    <div
+                      data-tutorial="match-nav-arrows"
+                      className="flex items-center gap-2"
                     >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigateMatch("next")}
-                      disabled={currentMatchIndex === visibleMatches.length - 1}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateMatch("prev")}
+                        disabled={currentMatchIndex === 0}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateMatch("next")}
+                        disabled={
+                          currentMatchIndex === visibleMatches.length - 1
+                        }
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                     {selectedMatchId === currentMatch.userId ? (
                       <Button
                         variant="outline"
@@ -1164,7 +1171,10 @@ function StatsHeader({ dashboard }: { dashboard: CupidDashboard | null }) {
           candidate.
         </p>
       </div>
-      <div className="flex gap-3 text-sm">
+      <div
+        className="flex gap-3 text-sm"
+        data-tutorial="stats-pending-reviewed"
+      >
         <div className="bg-slate-50 px-3 py-2 rounded-lg">
           <span className="text-slate-500">Pending: </span>
           <span className="font-bold text-orange-600">{dashboard.pending}</span>

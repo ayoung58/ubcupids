@@ -18,8 +18,8 @@ const cupidPortalSteps: TutorialStep[] = [
     id: "stats",
     title: "Your Progress Dashboard",
     content:
-      "This header shows your overall progress: total assigned candidates, pending decisions, and completed matches. Keep track of your matchmaking journey!",
-    target: "[data-tutorial='stats-header']",
+      "This shows your overall progress: total assigned candidates, pending decisions, and completed matches. Keep track of your matchmaking journey!",
+    target: "[data-tutorial='stats-pending-reviewed']",
     position: "bottom",
   },
   {
@@ -52,14 +52,14 @@ const cupidPortalSteps: TutorialStep[] = [
     content:
       "Toggle between three tabs: 'Profile' (bio, interests, photo), 'Questionnaire' (their compatibility answers), and 'Free Response' (personal essays). Review all three to understand each person deeply!",
     target: "[data-tutorial='view-tabs']",
-    position: "bottom",
+    position: "top",
   },
   {
     id: "match-navigation",
     title: "Browse Through Potential Matches",
     content:
-      "Use the < Previous and Next > buttons in the right panel to browse through potential matches for your candidate. The counter shows which match you're viewing (e.g., 'Match 2 of 5').",
-    target: "[data-tutorial='match-nav']",
+      "Use the < Previous and Next > buttons to browse through potential matches for your candidate. The counter shows which match you're viewing (e.g., 'Match 2 of 5').",
+    target: "[data-tutorial='match-nav-arrows']",
     position: "top",
   },
   {
