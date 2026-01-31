@@ -217,6 +217,10 @@ export function calculateQuestionSimilarity(
     case "categorical-multi":
       return calculateTypeC_CategoricalMulti(aResponse, bResponse, questionId);
     case "multi-select":
+      // Q6 special case: Religion with semantic similarity
+      if (questionId === "q6") {
+        return calculateQ6_ReligionWithSemantics(aResponse, bResponse);
+      }
       return calculateTypeD_MultiSelect(aResponse, bResponse);
     case "age":
       return calculateTypeE_Age(aResponse, bResponse);
@@ -414,6 +418,203 @@ function calculateTypeC_CategoricalMulti(
         : 0.0;
 
   // Average of mutual satisfaction
+  return (aSatisfied + bSatisfied) / 2;
+}
+
+/**
+ * Q6 Special Case: Religion with Semantic Similarity
+ *
+ * Beyond pure Jaccard similarity, considers semantic relationships:
+ * - Secular Group: "atheist", "agnostic" (semantically similar)
+ * - Flexible: "spiritual_not_religious" (compatible with anything)
+ * - Specific Religions: all other religions
+ *
+ * Scoring rules:
+ * For "same" preference:
+ *   - Exact match → 1.0
+ *   - Subset + both from Secular group → 0.9
+ *   - Subset + different groups + overlap → 0.7
+ *   - No overlap + both from Secular group → 0.3
+ *   - "spiritual_not_religious" involved → 0.5
+ *   - No overlap + different groups → 0.0
+ *
+ * For "similar" preference:
+ *   - Subset + both from Secular group → 1.0
+ *   - Subset + different groups + overlap → 0.8
+ *   - No overlap + both from Secular group → 0.7
+ *   - "spiritual_not_religious" involved → 0.8
+ *   - No overlap + different groups → 0.0
+ */
+function calculateQ6_ReligionWithSemantics(
+  aResponse: ResponseValue,
+  bResponse: ResponseValue,
+): number {
+  const aAnswer = aResponse.answer || [];
+  const bAnswer = bResponse.answer || [];
+  const aPreference = aResponse.preference;
+  const bPreference = bResponse.preference;
+
+  if (!Array.isArray(aAnswer) || !Array.isArray(bAnswer)) return 0.5;
+  if (aAnswer.length === 0 && bAnswer.length === 0) return 1.0;
+
+  // Semantic groups for religion
+  const secularGroup = new Set(["atheist", "agnostic"]);
+  const flexibleAnswer = "spiritual_not_religious"; // Note: underscore, not "but_not"
+
+  const aSet = new Set(aAnswer);
+  const bSet = new Set(bAnswer);
+  const intersection = new Set([...aSet].filter((x) => bSet.has(x)));
+
+  // Check if answers involve "spiritual_not_religious"
+  const aHasFlexible = aSet.has(flexibleAnswer);
+  const bHasFlexible = bSet.has(flexibleAnswer);
+
+  // Check if answers are from secular group
+  const aIsSecular = [...aSet].every((x) => secularGroup.has(x));
+  const bIsSecular = [...bSet].every((x) => secularGroup.has(x));
+
+  // Check for subset relationship
+  const aIsSubsetOfB = [...aSet].every((x) => bSet.has(x));
+  const bIsSubsetOfA = [...bSet].every((x) => aSet.has(x));
+  const isSubset = aIsSubsetOfB || bIsSubsetOfA;
+
+  // Handle null/flexible preferences
+  if (!aPreference || !bPreference) {
+    // If no preferences specified, use semantic-aware Jaccard
+    if (intersection.size > 0) {
+      // Has overlap
+      if (aIsSecular && bIsSecular && intersection.size > 0) {
+        return 0.8; // Both secular, some overlap
+      }
+      // Different groups but has overlap
+      return 0.6;
+    } else {
+      // No overlap
+      if ((aIsSecular && bIsSecular) || aHasFlexible || bHasFlexible) {
+        return 0.5; // Semantic similarity or flexible
+      }
+      return 0.0; // Completely different
+    }
+  }
+
+  // Handle preference-based matching
+  let aSatisfied = 1.0;
+  let bSatisfied = 1.0;
+
+  if (aPreference === "same") {
+    // Exact match check
+    if (aSet.size === bSet.size && [...aSet].every((item) => bSet.has(item))) {
+      aSatisfied = 1.0;
+    } else if (isSubset) {
+      // Subset scenario
+      if (aHasFlexible || bHasFlexible) {
+        aSatisfied = 0.5; // Flexible involved
+      } else if (aIsSecular && bIsSecular) {
+        aSatisfied = 0.9; // Both secular, subset match
+      } else if (intersection.size > 0) {
+        aSatisfied = 0.7; // Different groups but has overlap
+      } else {
+        aSatisfied = 0.0; // No overlap
+      }
+    } else if (intersection.size > 0) {
+      // Has overlap but neither is subset
+      if (aIsSecular && bIsSecular) {
+        aSatisfied = 0.9;
+      } else if (aHasFlexible || bHasFlexible) {
+        aSatisfied = 0.5;
+      } else {
+        aSatisfied = 0.7;
+      }
+    } else {
+      // No overlap at all
+      if ((aIsSecular && bIsSecular) || aHasFlexible || bHasFlexible) {
+        aSatisfied = aHasFlexible || bHasFlexible ? 0.5 : 0.3;
+      } else {
+        aSatisfied = 0.0;
+      }
+    }
+  } else if (aPreference === "similar") {
+    // Similar means: is there meaningful overlap or semantic similarity?
+    // Check exact match first
+    if (aSet.size === bSet.size && [...aSet].every((item) => bSet.has(item))) {
+      aSatisfied = 1.0; // Exact match
+    } else if (intersection.size > 0) {
+      if (aIsSecular && bIsSecular) {
+        aSatisfied = 1.0; // Both secular, has overlap
+      } else if (isSubset) {
+        aSatisfied = 0.8; // Subset with different groups
+      } else {
+        aSatisfied = 0.8; // Has overlap, different groups
+      }
+    } else {
+      // No overlap
+      if (aIsSecular && bIsSecular) {
+        aSatisfied = 0.7; // Semantic similarity within secular
+      } else if (aHasFlexible || bHasFlexible) {
+        aSatisfied = 0.8; // Flexible is forgiving
+      } else {
+        aSatisfied = 0.0;
+      }
+    }
+  }
+
+  if (bPreference === "same") {
+    // Exact match check
+    if (aSet.size === bSet.size && [...aSet].every((item) => bSet.has(item))) {
+      bSatisfied = 1.0;
+    } else if (isSubset) {
+      // Subset scenario
+      if (aHasFlexible || bHasFlexible) {
+        bSatisfied = 0.5; // Flexible involved
+      } else if (aIsSecular && bIsSecular) {
+        bSatisfied = 0.9; // Both secular, subset match
+      } else if (intersection.size > 0) {
+        bSatisfied = 0.7; // Different groups but has overlap
+      } else {
+        bSatisfied = 0.0; // No overlap
+      }
+    } else if (intersection.size > 0) {
+      // Has overlap but neither is subset
+      if (aIsSecular && bIsSecular) {
+        bSatisfied = 0.9;
+      } else if (aHasFlexible || bHasFlexible) {
+        bSatisfied = 0.5;
+      } else {
+        bSatisfied = 0.7;
+      }
+    } else {
+      // No overlap at all
+      if ((aIsSecular && bIsSecular) || aHasFlexible || bHasFlexible) {
+        bSatisfied = aHasFlexible || bHasFlexible ? 0.5 : 0.3;
+      } else {
+        bSatisfied = 0.0;
+      }
+    }
+  } else if (bPreference === "similar") {
+    // Similar means: is there meaningful overlap or semantic similarity?
+    // Check exact match first
+    if (aSet.size === bSet.size && [...aSet].every((item) => bSet.has(item))) {
+      bSatisfied = 1.0; // Exact match
+    } else if (intersection.size > 0) {
+      if (aIsSecular && bIsSecular) {
+        bSatisfied = 1.0; // Both secular, has overlap
+      } else if (isSubset) {
+        bSatisfied = 0.8; // Subset with different groups
+      } else {
+        bSatisfied = 0.8; // Has overlap, different groups
+      }
+    } else {
+      // No overlap
+      if (aIsSecular && bIsSecular) {
+        bSatisfied = 0.7; // Semantic similarity within secular
+      } else if (aHasFlexible || bHasFlexible) {
+        bSatisfied = 0.8; // Flexible is forgiving
+      } else {
+        bSatisfied = 0.0;
+      }
+    }
+  }
+
   return (aSatisfied + bSatisfied) / 2;
 }
 

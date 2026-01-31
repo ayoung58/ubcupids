@@ -243,11 +243,16 @@ function checkGenderCompatibility(
 
 /**
  * Checks all questions marked as dealbreakers by either user
+ * Also includes Q3 (sexual activity) as a conditional hard filter when marked as important/very_important
  *
  * Generic dealbreaker logic per V2.2:
  * - If User A marks question as dealbreaker AND User B's answer is incompatible → fail
  * - If User B marks question as dealbreaker AND User A's answer is incompatible → fail
  * - Compatibility is determined by question type and preference specification
+ *
+ * Q3 Special Case:
+ * - If User A marks Q3 as "important" or "very_important", it acts as a hard filter
+ * - User B's answer must match User A's preference to pass
  *
  * @param userA - First user
  * @param userB - Second user
@@ -276,6 +281,41 @@ function checkAllDealbreakers(
 
     // Skip if either response is missing
     if (!aResponse || !bResponse) continue;
+
+    // Q3 (sexual activity) special case: treat as hard filter if importance is important/very_important OR if isDealbreaker is set
+    if (questionId === "q3") {
+      // Check if User A marked Q3 as important/very_important or as a dealbreaker
+      const aIsHardFilter =
+        aResponse.isDealbreaker ||
+        aResponse.importance === "dealbreaker" ||
+        aResponse.importance === "important" ||
+        aResponse.importance === "very_important";
+
+      if (aIsHardFilter) {
+        if (!isCompatibleWithPreference(bResponse, aResponse)) {
+          failedQuestions.push(questionId);
+          continue;
+        }
+      }
+
+      // Check if User B marked Q3 as important/very_important or as a dealbreaker
+      const bIsHardFilter =
+        bResponse.isDealbreaker ||
+        bResponse.importance === "dealbreaker" ||
+        bResponse.importance === "important" ||
+        bResponse.importance === "very_important";
+
+      if (bIsHardFilter) {
+        if (!isCompatibleWithPreference(aResponse, bResponse)) {
+          failedQuestions.push(questionId);
+          continue;
+        }
+      }
+
+      // If neither marked it as important/very_important or dealbreaker, skip the hard filter check
+      // and let it be handled by regular scoring
+      continue;
+    }
 
     // Check if User A has dealbreaker for this question
     if (aResponse.isDealbreaker || aResponse.importance === "dealbreaker") {
