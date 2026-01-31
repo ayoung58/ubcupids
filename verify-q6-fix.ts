@@ -2,8 +2,8 @@
  * Verify the specific Q6 example from the user request
  */
 
-import { calculateSimilarity } from "../similarity";
-import type { MatchingUser } from "../types";
+import { calculateSimilarity } from "./lib/matching/v2/similarity";
+import type { MatchingUser } from "./lib/matching/v2/types";
 
 function createMockUser(
   id: string,
