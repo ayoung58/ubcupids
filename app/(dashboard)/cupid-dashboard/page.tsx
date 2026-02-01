@@ -92,6 +92,14 @@ export default async function CupidDashboardPage() {
               ? "Browse profiles and create meaningful connections"
               : "Questionnaires are still being filled out!"}
           </p>
+          <p className="text-slate-600">
+            <span className="text-sm">
+              <span className="text-sm flex-shrink-0">💡</span>
+              <strong>Tip:</strong> Be sure to look at the free response
+              questions; the algorithm doesn&apos;t use these to score and
+              match!
+            </span>
+          </p>
         </CardHeader>
         <CardContent>
           {matchesRevealed ? (

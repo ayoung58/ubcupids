@@ -205,10 +205,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                           Go to Cupid Dashboard
                         </Button>
                       </Link>
-                      <p className="text-sm text-gray-600 max-w-xs text-center">
-                        💡 Tip: be sure to look at the free response questions;
-                        the algorithm doesn&apos;t use these to score and match!
-                      </p>
                     </div>
                   </>
                 ) : isCupid ? (
@@ -219,10 +215,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                         Go to Cupid Dashboard
                       </Button>
                     </Link>
-                    <p className="text-sm text-gray-600 max-w-xs text-center">
-                      💡 Tip: be sure to look at the free response questions;
-                      the algorithm doesn&apos;t use these to score and match!
-                    </p>
                   </div>
                 ) : (
                   // User is only a match user
