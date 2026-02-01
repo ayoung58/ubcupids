@@ -19,6 +19,11 @@ function createUser(
   return {
     id,
     email: `${id}@test.com`,
+    name: `User ${id}`,
+    gender: "M",
+    interestedInGenders: ["F"],
+    campus: "Vancouver",
+    okMatchingDifferentCampus: true,
     responses: {
       q10: {
         questionId: "q10",
@@ -27,6 +32,7 @@ function createUser(
         importance: q10Importance,
       },
     },
+    responseRecord: {} as any,
   } as MatchingUser;
 }
 
