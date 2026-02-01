@@ -185,13 +185,13 @@ function Timeline({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const index = parseInt(
-              entry.target.getAttribute("data-index") || "0"
+              entry.target.getAttribute("data-index") || "0",
             );
             setVisibleItems((prev) => new Set([...prev, index]));
           }
         });
       },
-      { threshold: 0.2, rootMargin: "0px 0px -50px 0px" }
+      { threshold: 0.2, rootMargin: "0px 0px -50px 0px" },
     );
 
     const items = containerRef.current?.querySelectorAll("[data-index]");
@@ -249,7 +249,7 @@ export function HomepageTimeline() {
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (sectionRef.current) {
@@ -310,39 +310,8 @@ export function HomepageTimeline() {
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div
-        className={`text-center py-12 sm:py-16 transition-all duration-1000 delay-500 ${
-          sectionVisible
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-10"
-        }`}
-      >
-        <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6">
-          Ready to Get Started?
-        </h3>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-          <Link href="/register?type=match">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8"
-            >
-              <Heart className="w-5 h-5 mr-2" />
-              Sign Up as Match
-            </Button>
-          </Link>
-          <Link href="/register?type=cupid">
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 px-8"
-            >
-              <Target className="w-5 h-5 mr-2" />
-              Sign Up as Cupid
-            </Button>
-          </Link>
-        </div>
-      </div>
+      {/* Call to Action - HIDDEN */}
+      {/* Signup buttons hidden as per requirements */}
 
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-8 mt-16">

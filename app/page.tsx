@@ -166,7 +166,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </p>
 
             <p className="text-slate-500 max-w-lg mx-auto">
-              Sign ups are open until January 31st, 2026.
+              Sign ups are now closed for 2026!
             </p>
           </div>
 
@@ -175,11 +175,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             {/* Always show Login/Register buttons on sign-out page */}
             {showSignOutMessage ? (
               <>
-                <Link href="/signup">
-                  <Button size="lg" className="px-8" disabled={signupsClosed}>
-                    Get Started
-                  </Button>
-                </Link>
                 <Link href="/login">
                   <Button size="lg" variant="outline" className="px-8">
                     Login
@@ -240,11 +235,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             ) : (
               // User is logged out (normal state)
               <>
-                <Link href="/signup">
-                  <Button size="lg" className="px-8" disabled={signupsClosed}>
-                    Get Started
-                  </Button>
-                </Link>
                 <Link href="/login">
                   <Button size="lg" variant="outline" className="px-8">
                     Login

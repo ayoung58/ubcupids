@@ -1162,30 +1162,8 @@ export function ProfileForm() {
                   </p>
                 </div>
 
-                {/* Preferred Candidate Email */}
-                <div className="space-y-2" data-tutorial="preferred-email">
-                  <Label htmlFor="preferredCandidateEmail">
-                    Preferred Candidate Email (Optional)
-                  </Label>
-                  <Input
-                    id="preferredCandidateEmail"
-                    type="email"
-                    value={accountInfo.preferredCandidateEmail}
-                    onChange={(e) => {
-                      setAccountInfo({
-                        ...accountInfo,
-                        preferredCandidateEmail: e.target.value,
-                      });
-                      setHasUnsavedChanges(true);
-                      setShowError(null); // Clear error when user starts typing
-                    }}
-                    placeholder="someone@student.ubc.ca"
-                  />
-                  <p className="text-xs text-slate-600">
-                    If you have someone you&apos;d like to match (your preferred
-                    candidate), enter their student email here.
-                  </p>
-                </div>
+                {/* Preferred Candidate Email - DISABLED */}
+                {/* Hiding this field as per requirements */}
               </div>
             )}
           </form>
