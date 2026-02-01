@@ -127,7 +127,7 @@ function determineQuestionType(
     q9a: "multi-select", // Drug substances - multi with multi-pref
     q9b: "ordinal", // Drug frequency - ordinal (never < occasionally < regularly)
     q10: "directional", // Exercise - directional preference
-    q11: "categorical-same", // Relationship style - same preference
+    q11: "categorical-multi", // Relationship style - same/similar with flexible "exploring_unsure"
     q12: "ordinal", // Sexual activity - ordinal same/similar
     q13: "multi-select", // Relationship intent - multi with multi-pref
     q14: "multi-select", // Field of study - multi with multi-pref
@@ -412,7 +412,39 @@ function calculateTypeC_CategoricalMulti(
     return (aSatisfied + bSatisfied) / 2;
   }
 
-  // For non-Q26 questions: expect array preferences
+  // Q11 special case: "exploring_unsure" is flexible (matches partially with everything)
+  if (questionId === "q11") {
+    // If either user selected "exploring_unsure", they're flexible
+    if (aAnswer === "exploring_unsure" || bAnswer === "exploring_unsure") {
+      return 0.5; // Flexible but not perfect match
+    }
+
+    // Both have specific relationship styles, check preferences
+    // Q11 has string preferences ("same" or "similar"), not array preferences
+    let aSatisfied = 1.0;
+    if (aPreference === "same") {
+      aSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
+    } else if (aPreference === "similar") {
+      // For "similar", exact match is 1.0, different is 0.0
+      // (no ordinal relationship between relationship styles)
+      aSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
+    } else if (aPreference === null || aPreference === undefined) {
+      aSatisfied = 1.0; // No preference
+    }
+
+    let bSatisfied = 1.0;
+    if (bPreference === "same") {
+      bSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
+    } else if (bPreference === "similar") {
+      bSatisfied = aAnswer === bAnswer ? 1.0 : 0.0;
+    } else if (bPreference === null || bPreference === undefined) {
+      bSatisfied = 1.0; // No preference
+    }
+
+    return (aSatisfied + bSatisfied) / 2;
+  }
+
+  // For non-Q26/Q11 questions: expect array preferences
   const aPreferenceArray = Array.isArray(aPreference) ? aPreference : [];
   const bPreferenceArray = Array.isArray(bPreference) ? bPreference : [];
 
@@ -703,17 +735,11 @@ function calculateTypeD_MultiSelect(
         aSatisfied = overlapRatio;
       }
     } else if (aPreference.length > 0) {
-      // Array of acceptable values - use Jaccard similarity between preferences
-      // How much overlap is there between what A wants and what B wants?
-      // This is more nuanced than "all B's answers must be in A's preference"
+      // Array of acceptable values - check if ANY of B's answers are in A's preference
+      // For ethnicity/multi-select: if B selected 'east_asian' and A's preference includes 'east_asian', A is satisfied
       const aPrefSet = new Set(aPreference);
-      const bAnswerSet = new Set(bAnswer);
-      const prefIntersection = new Set(
-        [...aPrefSet].filter((x) => bAnswerSet.has(x)),
-      );
-      const prefUnion = new Set([...aPrefSet, ...bAnswerSet]);
-      aSatisfied =
-        prefUnion.size > 0 ? prefIntersection.size / prefUnion.size : 0.5;
+      const anyInPreference = bAnswer.some((item) => aPrefSet.has(item));
+      aSatisfied = anyInPreference ? 1.0 : 0.0;
     }
 
     // Check if B's preference is satisfied
@@ -735,16 +761,11 @@ function calculateTypeD_MultiSelect(
         bSatisfied = overlapRatio;
       }
     } else if (bPreference.length > 0) {
-      // Array of acceptable values - use Jaccard similarity between preferences
-      // How much overlap is there between what B wants and what A's answer provides?
+      // Array of acceptable values - check if ANY of A's answers are in B's preference
+      // For ethnicity/multi-select: if A selected 'latin_american' and B's preference includes 'latin_american', B is satisfied
       const bPrefSet = new Set(bPreference);
-      const aAnswerSet = new Set(aAnswer);
-      const bPrefIntersection = new Set(
-        [...bPrefSet].filter((x) => aAnswerSet.has(x)),
-      );
-      const bPrefUnion = new Set([...bPrefSet, ...aAnswerSet]);
-      bSatisfied =
-        bPrefUnion.size > 0 ? bPrefIntersection.size / bPrefUnion.size : 0.5;
+      const anyInPreference = aAnswer.some((item) => bPrefSet.has(item));
+      bSatisfied = anyInPreference ? 1.0 : 0.0;
     }
 
     return (aSatisfied + bSatisfied) / 2;
@@ -927,20 +948,59 @@ function calculateTypeF_SameSimilarDifferent(
 
 /**
  * Type G: Directional preference (more/less/similar/same)
- * For now, returns raw numeric similarity
- * α/β multipliers will be applied in Phase 4
+ * Handles directional preferences with null preference support
  *
  * Structure:
  * - answer: number (Likert scale)
- * - preference: "more" | "less" | "similar" | "same"
+ * - preference: "more" | "less" | "similar" | "same" | null
+ *
+ * Null preference means "no preference" = user is satisfied with anything (1.0)
+ * When both have preferences, calculate satisfaction based on directional logic
  */
 function calculateTypeG_Directional(
   aResponse: ResponseValue,
   bResponse: ResponseValue,
 ): number {
-  // For Phase 2, just calculate raw numeric similarity
-  // Phase 4 will apply α/β based on directional preference alignment
-  return calculateTypeA_Numeric(aResponse, bResponse);
+  const aAnswer = aResponse.answer;
+  const bAnswer = bResponse.answer;
+  const aPreference = aResponse.preference;
+  const bPreference = bResponse.preference;
+
+  // Validate numeric answers
+  if (typeof aAnswer !== "number" || typeof bAnswer !== "number") return 0.5;
+
+  // Calculate raw numeric similarity for when needed
+  const rawSimilarity = calculateTypeA_Numeric(aResponse, bResponse);
+  const diff = bAnswer - aAnswer; // Positive means B is higher than A
+
+  // Check A's satisfaction
+  let aSatisfied = 1.0; // Default: null preference = satisfied
+  if (aPreference === "more") {
+    aSatisfied = diff > 0 ? 1.0 : 0.0; // B must be higher than A
+  } else if (aPreference === "less") {
+    aSatisfied = diff < 0 ? 1.0 : 0.0; // B must be lower than A
+  } else if (aPreference === "same") {
+    aSatisfied = diff === 0 ? 1.0 : 0.0; // B must equal A
+  } else if (aPreference === "similar") {
+    aSatisfied = Math.abs(diff) <= 1 ? 1.0 : rawSimilarity; // Within 1 point or gradual
+  }
+  // else: null/undefined preference → aSatisfied = 1.0 (already set)
+
+  // Check B's satisfaction
+  let bSatisfied = 1.0; // Default: null preference = satisfied
+  const diffB = aAnswer - bAnswer; // For B's perspective: A relative to B
+  if (bPreference === "more") {
+    bSatisfied = diffB > 0 ? 1.0 : 0.0; // A must be higher than B
+  } else if (bPreference === "less") {
+    bSatisfied = diffB < 0 ? 1.0 : 0.0; // A must be lower than B
+  } else if (bPreference === "same") {
+    bSatisfied = diffB === 0 ? 1.0 : 0.0; // A must equal B
+  } else if (bPreference === "similar") {
+    bSatisfied = Math.abs(diffB) <= 1 ? 1.0 : rawSimilarity; // Within 1 point or gradual
+  }
+  // else: null/undefined preference → bSatisfied = 1.0 (already set)
+
+  return (aSatisfied + bSatisfied) / 2;
 }
 
 /**

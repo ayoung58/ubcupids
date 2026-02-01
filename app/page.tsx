@@ -200,22 +200,34 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                         Go to Match Dashboard
                       </Button>
                     </Link>
-                    <Link href="/cupid-dashboard">
-                      <Button
-                        size="lg"
-                        className="px-6 bg-white hover:bg-gray-50 text-black border-2 border-gray-400"
-                      >
-                        Go to Cupid Dashboard
-                      </Button>
-                    </Link>
+                    <div className="flex flex-col items-center gap-2">
+                      <Link href="/cupid-dashboard">
+                        <Button
+                          size="lg"
+                          className="px-6 bg-white hover:bg-gray-50 text-black border-2 border-gray-400"
+                        >
+                          Go to Cupid Dashboard
+                        </Button>
+                      </Link>
+                      <p className="text-sm text-gray-600 max-w-xs text-center">
+                        💡 Tip: be sure to look at the free response questions;
+                        the algorithm doesn&apos;t use these to score and match!
+                      </p>
+                    </div>
                   </>
                 ) : isCupid ? (
                   // User is only a cupid
-                  <Link href="/cupid-dashboard">
-                    <Button size="lg" className="px-8">
-                      Go to Cupid Dashboard
-                    </Button>
-                  </Link>
+                  <div className="flex flex-col items-center gap-2">
+                    <Link href="/cupid-dashboard">
+                      <Button size="lg" className="px-8">
+                        Go to Cupid Dashboard
+                      </Button>
+                    </Link>
+                    <p className="text-sm text-gray-600 max-w-xs text-center">
+                      💡 Tip: be sure to look at the free response questions;
+                      the algorithm doesn&apos;t use these to score and match!
+                    </p>
+                  </div>
                 ) : (
                   // User is only a match user
                   <Link href="/dashboard">

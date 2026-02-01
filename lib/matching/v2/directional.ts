@@ -83,26 +83,47 @@ export function applyDirectionalScoring(
   const alpha = config.ALPHA;
   const beta = config.BETA;
 
-  // Calculate multipliers for each user
-  const userAMultiplier = calculateDirectionalMultiplier(
-    userAAnswer,
-    userBAnswer,
-    userAPreference,
-    alpha,
-    beta,
-  );
+  // Special handling: if a user has NO preference (null), they're flexible
+  // Set their score to 1.0 directly (not multiplied by weighted similarity)
+  // This ensures null preference = "I'm happy with any answer" = high satisfaction
+  let userAFinal: number;
+  let userAMultiplier: number;
 
-  const userBMultiplier = calculateDirectionalMultiplier(
-    userBAnswer,
-    userAAnswer,
-    userBPreference,
-    alpha,
-    beta,
-  );
+  if (!userAPreference) {
+    // User A has no preference - they're flexible, always satisfied
+    userAFinal = 1.0;
+    userAMultiplier = 1.0;
+  } else {
+    // User A has a specific preference - apply directional logic
+    userAMultiplier = calculateDirectionalMultiplier(
+      userAAnswer,
+      userBAnswer,
+      userAPreference,
+      alpha,
+      beta,
+    );
+    userAFinal = weightedSimilarity * userAMultiplier;
+  }
 
-  // Apply multipliers
-  const userAFinal = weightedSimilarity * userAMultiplier;
-  const userBFinal = weightedSimilarity * userBMultiplier;
+  let userBFinal: number;
+  let userBMultiplier: number;
+
+  if (!userBPreference) {
+    // User B has no preference - they're flexible, always satisfied
+    userBFinal = 1.0;
+    userBMultiplier = 1.0;
+  } else {
+    // User B has a specific preference - apply directional logic
+    userBMultiplier = calculateDirectionalMultiplier(
+      userBAnswer,
+      userAAnswer,
+      userBPreference,
+      alpha,
+      beta,
+    );
+    userBFinal = weightedSimilarity * userBMultiplier;
+  }
+
   const averageFinal = (userAFinal + userBFinal) / 2;
 
   return {
@@ -141,24 +162,24 @@ function calculateDirectionalMultiplier(
     case "more":
       // Partner should have higher value
       if (difference > 0) return alpha; // Aligned: partner has more
-      return beta; // Conflict: partner has equal or less (preference not met)
+      return 0.0; // Conflict: preference not met (partner has equal or less)
 
     case "less":
       // Partner should have lower value
       if (difference < 0) return alpha; // Aligned: partner has less
-      return beta; // Conflict: partner has equal or more (preference not met)
+      return 0.0; // Conflict: preference not met (partner has equal or more)
 
     case "similar":
       // Partner should be close (±1 on scale)
       if (absDifference <= 1) return alpha; // Aligned
       if (absDifference === 2) return 1.0; // Neutral
-      return beta; // Conflict (too far apart)
+      return 0.0; // Conflict: too far apart (preference not met)
 
     case "same":
       // Partner should have exact same value
       if (difference === 0) return alpha; // Aligned
       if (absDifference === 1) return 1.0; // Neutral (close enough)
-      return beta; // Conflict (different)
+      return 0.0; // Conflict: different (preference not met)
 
     default:
       return 1.0;

@@ -527,8 +527,9 @@ export function calculateDirectionalScoreComplete(
     const userBWeighted = rawSim * importanceB;
     const importanceWeightedSim = (userAWeighted + userBWeighted) / 2;
 
-    // Calculate average importance for section weighting
-    const avgImportance = (importanceA + importanceB) / 2;
+    // Use MAXIMUM importance for section weighting (importance-weighted averaging)
+    // This ensures questions people care about matter more
+    const maxImportance = Math.max(importanceA, importanceB);
 
     // Skip questions with zero weighted similarity
     if (importanceWeightedSim === 0) {
@@ -572,18 +573,41 @@ export function calculateDirectionalScoreComplete(
 
     if (lifestyleQuestions.includes(qid)) {
       lifestyleScore += finalQuestionScore;
-      lifestyleWeightSum += avgImportance;
+      lifestyleWeightSum += maxImportance;
     } else {
       personalityScore += finalQuestionScore;
-      personalityWeightSum += avgImportance;
+      personalityWeightSum += maxImportance;
     }
   });
 
   // Calculate weighted average scores per section (divide by sum of weights, not count)
-  const avgLifestyle =
-    lifestyleWeightSum > 0 ? lifestyleScore / lifestyleWeightSum : 0;
-  const avgPersonality =
-    personalityWeightSum > 0 ? personalityScore / personalityWeightSum : 0;
+  // If all weights are 0, fall back to simple average
+  let avgLifestyle = 0;
+  let avgPersonality = 0;
+
+  if (lifestyleWeightSum > 0) {
+    avgLifestyle = lifestyleScore / lifestyleWeightSum;
+  } else if (
+    questionIds.filter((qid) => lifestyleQuestions.includes(qid)).length > 0
+  ) {
+    // Fallback: simple average if all weights are 0
+    const lifestyleCount = questionIds.filter((qid) =>
+      lifestyleQuestions.includes(qid),
+    ).length;
+    avgLifestyle = lifestyleScore / lifestyleCount;
+  }
+
+  if (personalityWeightSum > 0) {
+    avgPersonality = personalityScore / personalityWeightSum;
+  } else if (
+    questionIds.filter((qid) => !lifestyleQuestions.includes(qid)).length > 0
+  ) {
+    // Fallback: simple average if all weights are 0
+    const personalityCount = questionIds.filter(
+      (qid) => !lifestyleQuestions.includes(qid),
+    ).length;
+    avgPersonality = personalityScore / personalityCount;
+  }
 
   // Phase 5: Apply section weighting (65% lifestyle, 35% personality)
   const weightedTotal =

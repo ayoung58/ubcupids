@@ -218,6 +218,23 @@ describe("Phase 2: Similarity Calculation", () => {
       );
       expect(similarity).toBe(1.0);
     });
+
+    test("should handle Q11 'exploring_unsure' as flexible (0.5)", () => {
+      const userA = createUser("a", {
+        q11: { answer: "exclusively_monogamous", preference: "same" },
+      });
+      const userB = createUser("b", {
+        q11: { answer: "exploring_unsure", preference: "similar" },
+      });
+
+      const similarity = calculateQuestionSimilarity(
+        "q11",
+        userA,
+        userB,
+        "categorical-multi",
+      );
+      expect(similarity).toBe(0.5);
+    });
   });
 
   describe("Type D: Multi-select (Jaccard)", () => {

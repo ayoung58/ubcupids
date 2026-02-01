@@ -27,7 +27,7 @@ describe("Phase 4: Directional Scoring", () => {
       expect(result.userAFinal).toBe(0.8); // 0.8 × 1.0
     });
 
-    test("should apply β when partner has less", () => {
+    test("should apply 0.0 when partner has less", () => {
       const result = applyDirectionalScoring(
         baseWeightedSimilarity,
         4, // userA answer
@@ -36,11 +36,11 @@ describe("Phase 4: Directional Scoring", () => {
         undefined,
       );
 
-      expect(result.userAMultiplier).toBe(beta);
-      expect(result.userAFinal).toBeCloseTo(0.56, 2); // 0.8 × 0.7
+      expect(result.userAMultiplier).toBe(0.0);
+      expect(result.userAFinal).toBe(0.0); // 0.8 × 0.0
     });
 
-    test("should apply β when partner has same", () => {
+    test("should apply 0.0 when partner has same", () => {
       const result = applyDirectionalScoring(
         baseWeightedSimilarity,
         3,
@@ -49,8 +49,8 @@ describe("Phase 4: Directional Scoring", () => {
         undefined,
       );
 
-      expect(result.userAMultiplier).toBe(beta); // Equal doesn't satisfy 'more' preference
-      expect(result.userAFinal).toBeCloseTo(0.56, 2); // 0.8 × 0.7
+      expect(result.userAMultiplier).toBe(0.0); // Equal doesn't satisfy 'more' preference
+      expect(result.userAFinal).toBe(0.0); // 0.8 × 0.0
     });
   });
 
@@ -68,7 +68,7 @@ describe("Phase 4: Directional Scoring", () => {
       expect(result.userAFinal).toBe(0.8);
     });
 
-    test("should apply β when partner has more", () => {
+    test("should apply 0.0 when partner has more", () => {
       const result = applyDirectionalScoring(
         baseWeightedSimilarity,
         2, // userA answer
@@ -77,11 +77,11 @@ describe("Phase 4: Directional Scoring", () => {
         undefined,
       );
 
-      expect(result.userAMultiplier).toBe(beta);
-      expect(result.userAFinal).toBeCloseTo(0.56, 2);
+      expect(result.userAMultiplier).toBe(0.0);
+      expect(result.userAFinal).toBe(0.0);
     });
 
-    test("should apply β when partner has same", () => {
+    test("should apply 0.0 when partner has same", () => {
       const result = applyDirectionalScoring(
         baseWeightedSimilarity,
         3,
@@ -90,8 +90,8 @@ describe("Phase 4: Directional Scoring", () => {
         undefined,
       );
 
-      expect(result.userAMultiplier).toBe(beta); // Equal doesn't satisfy 'less' preference
-      expect(result.userAFinal).toBeCloseTo(0.56, 2); // 0.8 × 0.7
+      expect(result.userAMultiplier).toBe(0.0); // Equal doesn't satisfy 'less' preference
+      expect(result.userAFinal).toBe(0.0); // 0.8 × 0.0
     });
   });
 
@@ -135,7 +135,7 @@ describe("Phase 4: Directional Scoring", () => {
       expect(result.userAFinal).toBe(0.8);
     });
 
-    test("should apply β when difference is 3 or more", () => {
+    test("should apply 0.0 when difference is 3 or more", () => {
       const result = applyDirectionalScoring(
         baseWeightedSimilarity,
         1,
@@ -144,8 +144,8 @@ describe("Phase 4: Directional Scoring", () => {
         undefined,
       );
 
-      expect(result.userAMultiplier).toBe(beta);
-      expect(result.userAFinal).toBeCloseTo(0.56, 2);
+      expect(result.userAMultiplier).toBe(0.0);
+      expect(result.userAFinal).toBe(0.0);
     });
   });
 
@@ -176,7 +176,7 @@ describe("Phase 4: Directional Scoring", () => {
       expect(result.userAFinal).toBe(0.8);
     });
 
-    test("should apply β when difference is 2 or more", () => {
+    test("should apply 0.0 when difference is 2 or more", () => {
       const result = applyDirectionalScoring(
         baseWeightedSimilarity,
         2,
@@ -185,8 +185,8 @@ describe("Phase 4: Directional Scoring", () => {
         undefined,
       );
 
-      expect(result.userAMultiplier).toBe(beta);
-      expect(result.userAFinal).toBeCloseTo(0.56, 2);
+      expect(result.userAMultiplier).toBe(0.0);
+      expect(result.userAFinal).toBe(0.0);
     });
   });
 
@@ -202,7 +202,7 @@ describe("Phase 4: Directional Scoring", () => {
 
       expect(result.userAMultiplier).toBe(1.0);
       expect(result.userBMultiplier).toBe(1.0);
-      expect(result.averageFinal).toBe(0.8);
+      expect(result.averageFinal).toBe(1.0); // Both null preference = flexible, score 1.0
     });
   });
 
@@ -230,9 +230,9 @@ describe("Phase 4: Directional Scoring", () => {
         "more", // userB wants more (aligned: A > B)
       );
 
-      expect(result.userAMultiplier).toBe(beta); // A gets penalty (B has less)
+      expect(result.userAMultiplier).toBe(0.0); // A gets 0 (B has less)
       expect(result.userBMultiplier).toBe(alpha); // B gets boost (A has more)
-      expect(result.averageFinal).toBeCloseTo((0.56 + 0.8) / 2, 2); // Mixed
+      expect(result.averageFinal).toBeCloseTo((0.0 + 0.8) / 2, 2); // Mixed
     });
   });
 
@@ -262,9 +262,9 @@ describe("Phase 4: Directional Scoring", () => {
     test("should handle zero weighted similarity", () => {
       const result = applyDirectionalScoring(0.0, 2, 4, "more", undefined);
 
-      expect(result.userAFinal).toBe(0.0);
-      expect(result.userBFinal).toBe(0.0);
-      expect(result.averageFinal).toBe(0.0);
+      expect(result.userAFinal).toBe(0.0); // 0.0 × 1.0 = 0.0
+      expect(result.userBFinal).toBe(1.0); // B has no preference, score = 1.0
+      expect(result.averageFinal).toBe(0.5); // (0.0 + 1.0) / 2
     });
 
     test("should handle perfect weighted similarity", () => {
@@ -272,6 +272,72 @@ describe("Phase 4: Directional Scoring", () => {
 
       expect(result.userAFinal).toBe(1.0); // 1.0 × 1.0
       expect(result.averageFinal).toBe(1.0);
+    });
+  });
+
+  describe("Null preference handling", () => {
+    test("should set score to 1.0 for user with null preference (far apart answers)", () => {
+      const result = applyDirectionalScoring(
+        0.0, // raw similarity is 0 (answers far apart)
+        1, // userA answer
+        5, // userB answer
+        null, // userA has no preference (flexible)
+        "more", // userB wants more
+      );
+
+      // User A has null preference - should get 1.0 regardless of raw similarity
+      expect(result.userAFinal).toBe(1.0);
+      // User B wants "more", partner has 1 which is < 5, so conflict (β)
+      expect(result.userBFinal).toBe(0.0); // 0.0 × 0.7 = 0.0
+      expect(result.averageFinal).toBe(0.5); // (1.0 + 0.0) / 2
+    });
+
+    test("should handle case where one wants more but partner has less", () => {
+      const result = applyDirectionalScoring(
+        0.75, // raw similarity (3 vs 4, distance 1)
+        3, // userA answer
+        4, // userB answer
+        null, // userA has no preference
+        "more", // userB wants partner > 4
+      );
+
+      // User A has null preference - always satisfied
+      expect(result.userAFinal).toBe(1.0);
+      // User B wants "more" (wants partner > 4), partner is 3 (< 4), conflict
+      expect(result.userBMultiplier).toBe(0.0);
+      expect(result.userBFinal).toBe(0.0); // 0.75 × 0.0
+      expect(result.averageFinal).toBeCloseTo(0.5, 2); // (1.0 + 0.0) / 2
+    });
+
+    test("should handle both users with null preference", () => {
+      const result = applyDirectionalScoring(
+        0.0, // even if raw similarity is 0
+        1,
+        5,
+        null, // both flexible
+        null,
+      );
+
+      expect(result.userAFinal).toBe(1.0);
+      expect(result.userBFinal).toBe(1.0);
+      expect(result.averageFinal).toBe(1.0); // Both satisfied
+    });
+
+    test("should handle specific preference with null partner", () => {
+      const result = applyDirectionalScoring(
+        0.5,
+        2, // userA answer
+        4, // userB answer
+        "more", // userA wants more
+        null, // userB has no preference
+      );
+
+      // User A wants "more", partner is 4 (> 2), aligned (α)
+      expect(result.userAMultiplier).toBe(alpha);
+      expect(result.userAFinal).toBe(0.5); // 0.5 × 1.0
+      // User B has no preference - always satisfied
+      expect(result.userBFinal).toBe(1.0);
+      expect(result.averageFinal).toBe(0.75); // (0.5 + 1.0) / 2
     });
   });
 });

@@ -77,47 +77,52 @@ export interface SectionWeightingResult {
 }
 
 /**
- * Applies section weights to question-level scores
+ * Applies section weights to question-level scores with importance-based weighting
  *
  * Process:
  * 1. Group questions by section (Lifestyle vs Personality)
- * 2. Calculate average similarity for each section
- * 3. Apply section weights (configurable, default 50/50)
+ * 2. Calculate WEIGHTED average similarity for each section
+ *    - Each question is weighted by the MAXIMUM importance either user assigned
+ *    - This ensures questions people care about matter more
+ * 3. Apply section weights (configurable, default 65% lifestyle / 35% personality)
  * 4. Scale to 0-100 for final score
  *
  * @param questionScores - Map of question IDs to final similarity scores [0, 1]
+ * @param userA - First user (for importance weights)
+ * @param userB - Second user (for importance weights)
  * @param config - Matching configuration with section weights
  * @returns Section-weighted scores and diagnostics
  */
 export function applySectionWeighting(
   questionScores: Record<string, number>,
-  config: MatchingConfig
+  userA: MatchingUser,
+  userB: MatchingUser,
+  config: MatchingConfig,
 ): SectionWeightingResult {
-  // Separate questions by section
-  const lifestyleScores: number[] = [];
-  const personalityScores: number[] = [];
+  // Separate questions by section with importance weights
+  const lifestyleScores: Array<{ score: number; weight: number }> = [];
+  const personalityScores: Array<{ score: number; weight: number }> = [];
 
   for (const [questionId, score] of Object.entries(questionScores)) {
+    // Get the maximum importance weight between both users
+    const importanceWeight = getMaxImportanceWeight(
+      questionId,
+      userA,
+      userB,
+      config,
+    );
+
     if (QUESTION_SECTIONS.LIFESTYLE.includes(questionId as any)) {
-      lifestyleScores.push(score);
+      lifestyleScores.push({ score, weight: importanceWeight });
     } else if (QUESTION_SECTIONS.PERSONALITY.includes(questionId as any)) {
-      personalityScores.push(score);
+      personalityScores.push({ score, weight: importanceWeight });
     }
     // Questions not in either section are ignored
   }
 
-  // Calculate section averages
-  const lifestyleScore =
-    lifestyleScores.length > 0
-      ? lifestyleScores.reduce((sum, score) => sum + score, 0) /
-        lifestyleScores.length
-      : 0;
-
-  const personalityScore =
-    personalityScores.length > 0
-      ? personalityScores.reduce((sum, score) => sum + score, 0) /
-        personalityScores.length
-      : 0;
+  // Calculate weighted section averages
+  const lifestyleScore = calculateWeightedAverage(lifestyleScores);
+  const personalityScore = calculateWeightedAverage(personalityScores);
 
   // Apply section weights
   const weightedLifestyleScore =
@@ -143,13 +148,98 @@ export function applySectionWeighting(
 }
 
 /**
+ * Get the maximum importance weight between two users for a given question
+ * Uses the higher importance to ensure questions people care about matter more
+ *
+ * @param questionId - Question identifier
+ * @param userA - First user
+ * @param userB - Second user
+ * @param config - Matching configuration with importance weights
+ * @returns Maximum importance weight [0, 2.0]
+ */
+function getMaxImportanceWeight(
+  questionId: string,
+  userA: MatchingUser,
+  userB: MatchingUser,
+  config: MatchingConfig,
+): number {
+  const aResponse = userA.responses[questionId];
+  const bResponse = userB.responses[questionId];
+
+  const aImportance = getImportanceWeight(aResponse?.importance, config);
+  const bImportance = getImportanceWeight(bResponse?.importance, config);
+
+  // Return the maximum importance between the two users
+  return Math.max(aImportance, bImportance);
+}
+
+/**
+ * Convert importance level to numeric weight
+ * Per V2.2: NOT=0, SOMEWHAT=0.5, IMPORTANT=1.0, VERY=2.0
+ *
+ * @param importance - Importance string from questionnaire
+ * @param config - Matching configuration
+ * @returns Numeric importance weight
+ */
+function getImportanceWeight(
+  importance: string | number | undefined,
+  config: MatchingConfig,
+): number {
+  if (typeof importance === "number") return importance;
+  if (!importance) return config.IMPORTANCE_WEIGHTS.SOMEWHAT_IMPORTANT; // Default to somewhat
+
+  const weights = config.IMPORTANCE_WEIGHTS;
+
+  // Normalize to uppercase
+  const normalizedImportance =
+    typeof importance === "string" ? importance.toUpperCase() : importance;
+
+  const importanceMap: Record<string, number> = {
+    NOT_IMPORTANT: weights.NOT_IMPORTANT,
+    SOMEWHAT_IMPORTANT: weights.SOMEWHAT_IMPORTANT,
+    IMPORTANT: weights.IMPORTANT,
+    VERY_IMPORTANT: weights.VERY_IMPORTANT,
+  };
+
+  return importanceMap[normalizedImportance] ?? weights.SOMEWHAT_IMPORTANT;
+}
+
+/**
+ * Calculate weighted average of scores
+ * If all weights are 0, returns simple average (to avoid NaN)
+ *
+ * @param items - Array of score/weight pairs
+ * @returns Weighted average [0, 1]
+ */
+function calculateWeightedAverage(
+  items: Array<{ score: number; weight: number }>,
+): number {
+  if (items.length === 0) return 0;
+
+  const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+
+  // If all weights are 0, use simple average instead
+  if (totalWeight === 0) {
+    return items.reduce((sum, item) => sum + item.score, 0) / items.length;
+  }
+
+  // Weighted average: sum(score * weight) / sum(weight)
+  const weightedSum = items.reduce(
+    (sum, item) => sum + item.score * item.weight,
+    0,
+  );
+
+  return weightedSum / totalWeight;
+}
+
+/**
  * Helper to get section for a given question ID
  *
  * @param questionId - Question identifier (e.g., "q5")
  * @returns Section name ("LIFESTYLE" or "PERSONALITY") or undefined if not found
  */
 export function getQuestionSection(
-  questionId: string
+  questionId: string,
 ): "LIFESTYLE" | "PERSONALITY" | undefined {
   if (QUESTION_SECTIONS.LIFESTYLE.includes(questionId as any)) {
     return "LIFESTYLE";
