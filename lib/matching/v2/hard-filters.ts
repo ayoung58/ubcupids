@@ -289,6 +289,7 @@ export function checkAllDealbreakers(
 
   for (const questionId of allQuestionIds) {
     // Skip hard filter questions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (HARD_FILTER_QUESTIONS.includes(questionId as any)) {
       continue;
     }
@@ -419,7 +420,9 @@ export function checkAllDealbreakers(
  * @returns True if compatible, false if dealbreaker conflict
  */
 function isCompatibleWithPreference(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   matchResponse: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userResponse: any,
 ): boolean {
   const matchAnswer = matchResponse.answer;
@@ -450,6 +453,7 @@ function isCompatibleWithPreference(
     // If match's answer is an array (multi-select question)
     if (Array.isArray(matchAnswer)) {
       // Check if there's any overlap
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return matchAnswer.some((ans: any) => userPreference.includes(ans));
     }
     // Single-select answer with multi-select preference

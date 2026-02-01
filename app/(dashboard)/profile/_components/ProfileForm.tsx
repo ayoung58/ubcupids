@@ -44,7 +44,7 @@ import { useRouter } from "next/navigation";
 import { ProfileTutorial } from "./ProfileTutorial";
 import {
   hasSignupDeadlinePassed,
-  getSignupDeadlineMessage,
+  // getSignupDeadlineMessage, // Unused for now
 } from "@/lib/deadline-utils";
 
 export function ProfileForm() {
@@ -398,7 +398,7 @@ export function ProfileForm() {
       const normalizedPreferred = accountInfo.preferredCandidateEmail
         .trim()
         .toLowerCase();
-      const normalizedOwn = accountInfo.email.trim().toLowerCase();
+      // const normalizedOwn = accountInfo.email.trim().toLowerCase(); // Unused
 
       // Check if it's a valid UBC email
       const ubcEmailRegex =

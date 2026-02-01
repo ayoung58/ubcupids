@@ -38,7 +38,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const signupsClosed = now > SIGNUP_DEADLINE;
 
   // Determine correct dashboard URL(s) if user is logged in
-  let dashboardUrl = "/dashboard";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const dashboardUrl = "/dashboard";
   let userExists = false;
   let isCupid = false;
   let isMatchUser = false;
@@ -52,7 +53,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       isCupid = profile.isCupid;
       isMatchUser = profile.isBeingMatched;
       // Default URL if they only have one role
-      dashboardUrl = profile.isCupid ? "/cupid-dashboard" : "/dashboard";
+      // dashboardUrl = profile.isCupid ? "/cupid-dashboard" : "/dashboard"; // Unused
     }
   }
 

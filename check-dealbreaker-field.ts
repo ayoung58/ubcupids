@@ -15,7 +15,9 @@ async function checkDealbreakerFields() {
 
   let foundDealer = false;
   for (const response of responses) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const qResponses = response.responses as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allResponses = Object.entries(qResponses) as [string, any][];
 
     for (const [qId, qResponse] of allResponses) {
@@ -36,8 +38,10 @@ async function checkDealbreakerFields() {
   if (!foundDealer) {
     console.log("\n❌ No dealbreakers found in any responses");
     console.log("Showing sample response structure:");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sampleResponses = responses[0]?.responses as any;
     if (sampleResponses) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sample = Object.entries(sampleResponses)[5] as [string, any];
       console.log(`Sample (${sample[0]}):`, JSON.stringify(sample[1], null, 2));
     }

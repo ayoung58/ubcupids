@@ -20,7 +20,7 @@ function createMockUser(
     campus: "Vancouver",
     okMatchingDifferentCampus: true,
     responses,
-    responseRecord: {} as any,
+    responseRecord: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
   };
 }
 
@@ -44,7 +44,7 @@ const userA_q5 = createMockUser("A", {
   q5: {
     answer: ["southeast_asian", "east_asian"],
     preference: ["east_asian", "south_asian", "southeast_asian", "white"],
-    importance: "important",
+    importance: 8,
   },
 });
 
@@ -52,7 +52,7 @@ const userB_q5 = createMockUser("B", {
   q5: {
     answer: ["south_asian", "latin_american"],
     preference: ["east_asian", "latin_american", "white"],
-    importance: "very_important",
+    importance: 9,
   },
 });
 
@@ -101,7 +101,7 @@ const userA_q10 = createMockUser("A", {
   q10: {
     answer: 3,
     preference: null,
-    importance: "not_important",
+    importance: 3,
   },
 });
 
@@ -109,7 +109,7 @@ const userB_q10 = createMockUser("B", {
   q10: {
     answer: 4,
     preference: "more",
-    importance: "important",
+    importance: 8,
   },
 });
 
@@ -148,7 +148,7 @@ const userA_q10_null = createMockUser("A", {
   q10: {
     answer: 3,
     preference: null,
-    importance: "not_important",
+    importance: 3,
   },
 });
 
@@ -156,7 +156,7 @@ const userB_q10_null = createMockUser("B", {
   q10: {
     answer: 4,
     preference: null,
-    importance: "not_important",
+    importance: 3,
   },
 });
 

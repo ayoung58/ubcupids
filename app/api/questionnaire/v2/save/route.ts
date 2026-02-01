@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare data for database
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       responses: validatedData.responses,
       updatedAt: new Date(),

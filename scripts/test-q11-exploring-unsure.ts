@@ -19,6 +19,11 @@ function createUser(
   return {
     id,
     email: `${id}@test.com`,
+    name: `User ${id}`,
+    gender: "any",
+    interestedInGenders: ["any"],
+    campus: "Vancouver",
+    okMatchingDifferentCampus: true,
     responses: {
       q11: {
         questionId: "q11",
@@ -27,7 +32,9 @@ function createUser(
         importance: q11Importance,
       },
     },
-  } as MatchingUser;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    responseRecord: {} as any,
+  };
 }
 
 console.log("=".repeat(80));

@@ -32,8 +32,9 @@ function createUser(
         importance: q10Importance,
       },
     },
-    responseRecord: {} as any,
-  } as MatchingUser;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    responseRecord: {} as any, // QuestionnaireResponseV2 not needed for tests
+  };
 }
 
 console.log("=".repeat(80));

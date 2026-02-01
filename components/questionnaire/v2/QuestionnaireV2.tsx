@@ -94,6 +94,7 @@ export function QuestionnaireV2({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submittedState, setIsSubmitted] = useState(isSubmitted);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(!tutorialCompleted);
   const [tutorialCompletedState, setTutorialCompletedState] =
@@ -861,11 +862,12 @@ export function QuestionnaireV2({
       if (!response.ok) {
         // If validation failed, show detailed errors
         if (data.errors && Array.isArray(data.errors)) {
-          const errorMessages = data.errors.map((error: any) => {
-            if (error.questionNumber > 0) {
-              return `Q${error.questionNumber}: ${error.message}`;
+          const errorMessages = data.errors.map((error: unknown) => {
+            const err = error as { questionNumber: number; message: string };
+            if (err.questionNumber > 0) {
+              return `Q${err.questionNumber}: ${err.message}`;
             }
-            return error.message;
+            return err.message;
           });
           throw new Error(
             `Questionnaire validation failed:\n\n${errorMessages.join("\n")}\n\nCompletion: ${data.completionPercentage || 0}%`,

@@ -5,14 +5,14 @@
  * Validates all required fields before submission.
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { validateQuestionnaireV2 } from "@/lib/questionnaire/v2/validation";
 import { QUESTIONNAIRE_DEADLINE } from "@/lib/matching/config";
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     const session = await getServerSession(authOptions);
 
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     // Validate responses
     const validation = validateQuestionnaireV2(
-      existingResponse.responses as any,
+      existingResponse.responses as Record<string, unknown>,
       {
         freeResponse1: existingResponse.freeResponse1 || "",
         freeResponse2: existingResponse.freeResponse2 || "",

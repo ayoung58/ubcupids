@@ -139,6 +139,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user with new account type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
 
     if (isCupid) {

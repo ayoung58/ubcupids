@@ -112,6 +112,7 @@ function determineQuestionType(
   | "directional"
   | "binary" {
   // Map question IDs to their types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const typeMap: Record<string, any> = {
     // Hard filters (rarely scored)
     q1: "categorical-same",
@@ -796,8 +797,20 @@ function calculateTypeD_MultiSelect(
  *
  * Since age is a hard filter, this always returns 0.0 for scoring purposes.
  */
+/**
+ * Type E: Age range comparison
+ *
+ * Multiple possible formats:
+ * 1. Simple format: answer: number, preference: { min: number, max: number }
+ * 2. Combined format: answer: { userAge: number, minAge: number, maxAge: number }
+ * 3. Test format: answer: number, preference: { min: number, max: number }
+ *
+ * Since age is a hard filter, this always returns 0.0 for scoring purposes.
+ */
 function calculateTypeE_Age(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   aResponse: ResponseValue,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   bResponse: ResponseValue,
 ): number {
   // Age is a hard filter - pairs that don't satisfy age requirements are filtered out
@@ -854,8 +867,6 @@ function calculateTypeF_Ordinal(
   // Q9b: 1-3 (never, occasionally, regularly) → maxRange = 2
   // Q12: 1-4 (marriage, serious_commitment, connection, early_on) → maxRange = 3
   // Q23: 1-5 (lots_alone → balanced → always_company) → maxRange = 4
-  const maxValue = Math.max(aNumeric, bNumeric);
-  const minValue = Math.min(aNumeric, bNumeric);
 
   // For ordinal scales, max range is (max_possible - min_possible)
   const maxRangeMap: Record<string, number> = {

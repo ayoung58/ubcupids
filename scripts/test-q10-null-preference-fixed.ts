@@ -7,6 +7,7 @@
 import { calculateDirectionalScoreComplete } from "../lib/matching/v2/index";
 import { DEFAULT_CONFIG } from "../lib/matching/v2/config";
 import { MatchingUser } from "../lib/matching/v2/types";
+import { QuestionnaireResponseV2 } from "@prisma/client";
 
 // Helper to create mock user
 function createUser(
@@ -31,8 +32,8 @@ function createUser(
         importance: q10Importance,
       },
     },
-    responseRecord: {} as any,
-  } as MatchingUser;
+    responseRecord: {} as QuestionnaireResponseV2,
+  };
 }
 
 console.log("=".repeat(80));
