@@ -51,6 +51,59 @@ interface MatchingRunResult {
     phase8_minMatchScore: number;
     phase8_maxMatchScore: number;
     scoreDistribution: Record<string, number>;
+    unmatchedDetails?: {
+      hardFilterFailures: Array<{
+        userId: string;
+        userEmail: string;
+        userName: string;
+        reason: string;
+        dealbreakers: string[];
+        topPotentialMatches: Array<{
+          userId: string;
+          userEmail: string;
+          userName: string;
+          score: number;
+          scoreAtoB: number;
+          scoreBtoA: number;
+          whyNotMatched: string;
+          dealbreakers: string[];
+        }>;
+      }>;
+      eligibilityFailures: Array<{
+        userId: string;
+        userEmail: string;
+        userName: string;
+        reason: string;
+        dealbreakers: string[];
+        topPotentialMatches: Array<{
+          userId: string;
+          userEmail: string;
+          userName: string;
+          score: number;
+          scoreAtoB: number;
+          scoreBtoA: number;
+          whyNotMatched: string;
+          dealbreakers: string[];
+        }>;
+      }>;
+      blossomUnmatched: Array<{
+        userId: string;
+        userEmail: string;
+        userName: string;
+        reason: string;
+        dealbreakers: string[];
+        topPotentialMatches: Array<{
+          userId: string;
+          userEmail: string;
+          userName: string;
+          score: number;
+          scoreAtoB: number;
+          scoreBtoA: number;
+          whyNotMatched: string;
+          dealbreakers: string[];
+        }>;
+      }>;
+    };
     samplePairBreakdowns?: Array<{
       userAId: string;
       userAEmail: string;
@@ -694,6 +747,13 @@ export function AdminMatchingClient({
                           </div>
                         )}
 
+                        {/* Unmatched User Details */}
+                        {diagnostics.unmatchedDetails && (
+                          <UnmatchedUsersSection
+                            unmatchedDetails={diagnostics.unmatchedDetails}
+                          />
+                        )}
+
                         {/* Sample Pair Breakdown */}
                         {diagnostics.samplePairBreakdowns &&
                           diagnostics.samplePairBreakdowns.length > 0 && (
@@ -1256,8 +1316,9 @@ export function AdminMatchingClient({
           <div className="text-xs text-slate-500 pt-4 border-t">
             <p>
               <strong>Note:</strong> This action is irreversible. Once revealed,
-              candidates can see their matches. Use the admin dashboard&apos;s &quot;Clear
-              Matches&quot; button if you need to remove matches and start over.
+              candidates can see their matches. Use the admin dashboard&apos;s
+              &quot;Clear Matches&quot; button if you need to remove matches and
+              start over.
             </p>
           </div>
         </CardContent>
@@ -1339,6 +1400,340 @@ function QualityMetric({ label, value }: { label: string; value: string }) {
       <div className="text-xs text-slate-600 mb-1">{label}</div>
       <div className="text-xl font-bold text-slate-900">{value}</div>
       <div className="text-xs text-slate-500">/100</div>
+    </div>
+  );
+}
+
+function UnmatchedUsersSection({
+  unmatchedDetails,
+}: {
+  unmatchedDetails: {
+    hardFilterFailures: Array<{
+      userId: string;
+      userEmail: string;
+      userName: string;
+      reason: string;
+      dealbreakers: string[];
+      topPotentialMatches: Array<{
+        userId: string;
+        userEmail: string;
+        userName: string;
+        score: number;
+        scoreAtoB: number;
+        scoreBtoA: number;
+        whyNotMatched: string;
+        dealbreakers: string[];
+      }>;
+    }>;
+    eligibilityFailures: Array<{
+      userId: string;
+      userEmail: string;
+      userName: string;
+      reason: string;
+      dealbreakers: string[];
+      topPotentialMatches: Array<{
+        userId: string;
+        userEmail: string;
+        userName: string;
+        score: number;
+        scoreAtoB: number;
+        scoreBtoA: number;
+        whyNotMatched: string;
+        dealbreakers: string[];
+      }>;
+    }>;
+    blossomUnmatched: Array<{
+      userId: string;
+      userEmail: string;
+      userName: string;
+      reason: string;
+      dealbreakers: string[];
+      topPotentialMatches: Array<{
+        userId: string;
+        userEmail: string;
+        userName: string;
+        score: number;
+        scoreAtoB: number;
+        scoreBtoA: number;
+        whyNotMatched: string;
+        dealbreakers: string[];
+      }>;
+    }>;
+  };
+}) {
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+
+  const totalUnmatched =
+    (unmatchedDetails.hardFilterFailures?.length ?? 0) +
+    (unmatchedDetails.eligibilityFailures?.length ?? 0) +
+    (unmatchedDetails.blossomUnmatched?.length ?? 0);
+
+  if (totalUnmatched === 0) return null;
+
+  return (
+    <div>
+      <h3 className="font-semibold text-lg mb-3">
+        Unmatched Users Breakdown
+        <span className="text-sm font-normal text-slate-600 ml-2">
+          ({totalUnmatched} total)
+        </span>
+      </h3>
+
+      <div className="space-y-4">
+        {/* Hard Filter Failures */}
+        {(unmatchedDetails.hardFilterFailures?.length ?? 0) > 0 && (
+          <div className="border border-red-200 rounded-lg">
+            <button
+              onClick={() =>
+                setExpandedCategory(
+                  expandedCategory === "hardFilter" ? null : "hardFilter",
+                )
+              }
+              className="w-full p-4 flex items-center justify-between hover:bg-red-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
+                  {unmatchedDetails.hardFilterFailures.length}
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-red-900">
+                    Hard Filter Failures
+                  </div>
+                  <div className="text-sm text-red-700">
+                    Failed gender, age, campus, or dealbreaker compatibility
+                  </div>
+                </div>
+              </div>
+              <ChevronRight
+                className={`h-5 w-5 text-red-600 transition-transform ${expandedCategory === "hardFilter" ? "rotate-90" : ""}`}
+              />
+            </button>
+            {expandedCategory === "hardFilter" && (
+              <div className="border-t border-red-200 p-4 space-y-3 bg-red-50/30">
+                {unmatchedDetails.hardFilterFailures.map((user) => (
+                  <UnmatchedUserCard
+                    key={user.userId}
+                    user={user}
+                    isExpanded={expandedUserId === user.userId}
+                    onToggle={() =>
+                      setExpandedUserId(
+                        expandedUserId === user.userId ? null : user.userId,
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Eligibility Failures */}
+        {(unmatchedDetails.eligibilityFailures?.length ?? 0) > 0 && (
+          <div className="border border-amber-200 rounded-lg">
+            <button
+              onClick={() =>
+                setExpandedCategory(
+                  expandedCategory === "eligibility" ? null : "eligibility",
+                )
+              }
+              className="w-full p-4 flex items-center justify-between hover:bg-amber-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-semibold">
+                  {unmatchedDetails.eligibilityFailures.length}
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-amber-900">
+                    Eligibility Threshold Failures
+                  </div>
+                  <div className="text-sm text-amber-700">
+                    Had scores but didn&apos;t meet quality thresholds
+                  </div>
+                </div>
+              </div>
+              <ChevronRight
+                className={`h-5 w-5 text-amber-600 transition-transform ${expandedCategory === "eligibility" ? "rotate-90" : ""}`}
+              />
+            </button>
+            {expandedCategory === "eligibility" && (
+              <div className="border-t border-amber-200 p-4 space-y-3 bg-amber-50/30">
+                {unmatchedDetails.eligibilityFailures.map((user) => (
+                  <UnmatchedUserCard
+                    key={user.userId}
+                    user={user}
+                    isExpanded={expandedUserId === user.userId}
+                    onToggle={() =>
+                      setExpandedUserId(
+                        expandedUserId === user.userId ? null : user.userId,
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Blossom Unmatched */}
+        {(unmatchedDetails.blossomUnmatched?.length ?? 0) > 0 && (
+          <div className="border border-blue-200 rounded-lg">
+            <button
+              onClick={() =>
+                setExpandedCategory(
+                  expandedCategory === "blossom" ? null : "blossom",
+                )
+              }
+              className="w-full p-4 flex items-center justify-between hover:bg-blue-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                  {unmatchedDetails.blossomUnmatched.length}
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-blue-900">
+                    Blossom Algorithm Unmatched
+                  </div>
+                  <div className="text-sm text-blue-700">
+                    Eligible but not selected for global optimization
+                  </div>
+                </div>
+              </div>
+              <ChevronRight
+                className={`h-5 w-5 text-blue-600 transition-transform ${expandedCategory === "blossom" ? "rotate-90" : ""}`}
+              />
+            </button>
+            {expandedCategory === "blossom" && (
+              <div className="border-t border-blue-200 p-4 space-y-3 bg-blue-50/30">
+                {unmatchedDetails.blossomUnmatched.map((user) => (
+                  <UnmatchedUserCard
+                    key={user.userId}
+                    user={user}
+                    isExpanded={expandedUserId === user.userId}
+                    onToggle={() =>
+                      setExpandedUserId(
+                        expandedUserId === user.userId ? null : user.userId,
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function UnmatchedUserCard({
+  user,
+  isExpanded,
+  onToggle,
+}: {
+  user: {
+    userId: string;
+    userEmail: string;
+    userName: string;
+    reason: string;
+    dealbreakers: string[];
+    topPotentialMatches: Array<{
+      userId: string;
+      userEmail: string;
+      userName: string;
+      score: number;
+      scoreAtoB: number;
+      scoreBtoA: number;
+      whyNotMatched: string;
+      dealbreakers: string[];
+    }>;
+  };
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
+      >
+        <div className="flex-1">
+          <div className="font-semibold text-slate-900">{user.userName}</div>
+          <div className="text-sm text-slate-600">{user.userEmail}</div>
+          {user.dealbreakers.length > 0 && (
+            <div className="flex items-center gap-2 mt-1">
+              <AlertCircle className="h-3 w-3 text-orange-600" />
+              <span className="text-xs text-orange-700">
+                Has {user.dealbreakers.length} dealbreaker
+                {user.dealbreakers.length > 1 ? "s" : ""} set:{" "}
+                {user.dealbreakers.join(", ")}
+              </span>
+            </div>
+          )}
+        </div>
+        <ChevronRight
+          className={`h-5 w-5 text-slate-400 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+        />
+      </button>
+
+      {isExpanded && (
+        <div className="border-t border-slate-200 p-3 bg-slate-50 space-y-3">
+          <div className="text-sm text-slate-700">
+            <strong>Reason:</strong> {user.reason}
+          </div>
+
+          {user.topPotentialMatches.length > 0 ? (
+            <div>
+              <div className="text-sm font-semibold text-slate-900 mb-2">
+                Top Potential Matches:
+              </div>
+              <div className="space-y-2">
+                {user.topPotentialMatches.map((match) => (
+                  <div
+                    key={match.userId}
+                    className="bg-white border border-slate-200 rounded p-2 text-sm"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div>
+                        <div className="font-medium text-slate-900">
+                          {match.userName}
+                        </div>
+                        <div className="text-xs text-slate-600">
+                          {match.userEmail}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-slate-900">
+                          {match.score.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-slate-600">
+                          A→B: {match.scoreAtoB.toFixed(1)} | B→A:{" "}
+                          {match.scoreBtoA.toFixed(1)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1">
+                      <strong>Why not matched:</strong> {match.whyNotMatched}
+                    </div>
+                    {match.dealbreakers.length > 0 && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <AlertCircle className="h-3 w-3 text-red-600" />
+                        <span className="text-xs text-red-700">
+                          Their dealbreakers: {match.dealbreakers.join(", ")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-slate-600 italic">
+              No potential matches found (all failed hard filters)
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

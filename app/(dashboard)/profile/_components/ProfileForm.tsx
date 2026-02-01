@@ -42,12 +42,22 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProfileTutorial } from "./ProfileTutorial";
+import {
+  hasSignupDeadlinePassed,
+  getSignupDeadlineMessage,
+} from "@/lib/deadline-utils";
 
 export function ProfileForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [signupDeadlinePassed, setSignupDeadlinePassed] = useState(false);
+
+  // Check deadline on mount
+  useEffect(() => {
+    setSignupDeadlinePassed(hasSignupDeadlinePassed());
+  }, []);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState<string | null>(null);
@@ -656,26 +666,53 @@ export function ProfileForm() {
           {/* Account Linking Buttons */}
           {!accountInfo.isCupid && (
             <div className="pt-2" data-tutorial="cupid-account-link">
-              <Link href="/register?type=cupid&linking=true">
-                <Button variant="outline" className="w-full">
-                  Create Cupid Account 🏹
-                </Button>
-              </Link>
-              <p className="text-xs text-slate-500 mt-2">
-                Help match people anonymously while keeping your current account
-              </p>
+              {signupDeadlinePassed ? (
+                <>
+                  <Button variant="outline" className="w-full" disabled>
+                    Create Cupid Account 🏹 (Closed)
+                  </Button>
+                  <p className="text-xs text-amber-600 mt-2">
+                    Account linking deadline has passed (Feb 1, 2026)
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Link href="/register?type=cupid&linking=true">
+                    <Button variant="outline" className="w-full">
+                      Create Cupid Account 🏹
+                    </Button>
+                  </Link>
+                  <p className="text-xs text-slate-500 mt-2">
+                    Help match people anonymously while keeping your current
+                    account
+                  </p>
+                </>
+              )}
             </div>
           )}
           {!accountInfo.isBeingMatched && (
             <div className="pt-2">
-              <Link href="/register?type=match&linking=true">
-                <Button variant="outline" className="w-full">
-                  Create Match Account 💖
-                </Button>
-              </Link>
-              <p className="text-xs text-slate-500 mt-2">
-                Let Cupids and the algorithm find matches for you
-              </p>
+              {signupDeadlinePassed ? (
+                <>
+                  <Button variant="outline" className="w-full" disabled>
+                    Create Match Account 💖 (Closed)
+                  </Button>
+                  <p className="text-xs text-amber-600 mt-2">
+                    Account linking deadline has passed (Feb 1, 2026)
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Link href="/register?type=match&linking=true">
+                    <Button variant="outline" className="w-full">
+                      Create Match Account 💖
+                    </Button>
+                  </Link>
+                  <p className="text-xs text-slate-500 mt-2">
+                    Let Cupids and the algorithm find matches for you
+                  </p>
+                </>
+              )}
             </div>
           )}
         </CardContent>

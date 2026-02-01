@@ -29,14 +29,16 @@ export const MATCH_REVEAL_DATE = new Date("2026-02-08T00:00:00-08:00");
 /**
  * Questionnaire deadline
  * Users must complete questionnaire by this date
+ * Set to 12:10 AM on Feb 1 to give users a 10-minute grace period
  */
-export const QUESTIONNAIRE_DEADLINE = new Date("2026-01-31T23:59:59-08:00");
+export const QUESTIONNAIRE_DEADLINE = new Date("2026-02-01T00:10:00-08:00");
 
 /**
- * Sign-up deadline for registration
- * Users cannot register after this date
+ * Sign-up deadline for registration and account linking
+ * Users cannot register or link accounts after this date
+ * Set to 12:10 AM on Feb 1 to give users a 10-minute grace period
  */
-export const SIGNUP_DEADLINE = new Date("2026-01-31T23:59:59-08:00");
+export const SIGNUP_DEADLINE = new Date("2026-02-01T00:10:00-08:00");
 
 /**
  * Maximum number of users allowed (excluding test users)

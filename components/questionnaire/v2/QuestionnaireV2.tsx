@@ -30,6 +30,10 @@ import {
 import { cn } from "@/lib/utils";
 import { useAutosave } from "@/hooks/useAutosave";
 import { TutorialV2, TutorialStep } from "@/components/tutorial/TutorialV2";
+import {
+  hasQuestionnaireDeadlinePassed,
+  getQuestionnaireDeadlineMessage,
+} from "@/lib/deadline-utils";
 
 /**
  * Map preferenceFormat from config to PreferenceType enum
@@ -94,6 +98,12 @@ export function QuestionnaireV2({
   const [showTutorial, setShowTutorial] = useState(!tutorialCompleted);
   const [tutorialCompletedState, setTutorialCompletedState] =
     useState(tutorialCompleted);
+  const [deadlinePassed, setDeadlinePassed] = useState(false);
+
+  // Check if deadline has passed on mount and when transitioning to final step
+  useEffect(() => {
+    setDeadlinePassed(hasQuestionnaireDeadlinePassed());
+  }, [currentStep]);
 
   // Handle tutorial completion
   const handleTutorialComplete = () => {
@@ -372,7 +382,7 @@ export function QuestionnaireV2({
     freeResponseValues,
     questionsCompleted: completedCount,
     debounceMs: 3000,
-    enabled: !isLoading,
+    enabled: !isLoading && !submittedState && !deadlinePassed, // Don't autosave if loading, submitted, or deadline passed
   });
 
   // Get current question(s)
@@ -811,7 +821,7 @@ export function QuestionnaireV2({
   // Update response helper
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateResponse = (questionId: string, value: any) => {
-    if (submittedState) return; // Prevent editing after submission
+    if (submittedState || deadlinePassed) return; // Prevent editing after submission or deadline
     setResponses((prev) => ({
       ...prev,
       [questionId]: value,
@@ -820,6 +830,12 @@ export function QuestionnaireV2({
 
   // Submit questionnaire
   const handleSubmit = async () => {
+    // Check if deadline has passed
+    if (deadlinePassed) {
+      alert(getQuestionnaireDeadlineMessage());
+      return;
+    }
+
     // Show confirmation dialog
     const confirmed = window.confirm(
       "Are you sure you want to submit your questionnaire?\n\n" +
@@ -1007,6 +1023,37 @@ export function QuestionnaireV2({
         </div>
       )}
 
+      {/* Deadline Passed Banner (show if not submitted but deadline passed) */}
+      {!submittedState && deadlinePassed && (
+        <div className="bg-amber-50 border-b border-amber-200 py-3 px-6">
+          <div className="max-w-6xl mx-auto flex items-center gap-3">
+            <svg
+              className="h-5 w-5 text-amber-600 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-900">
+                Questionnaire Deadline Has Passed
+              </p>
+              <p className="text-xs text-amber-800">
+                The deadline to submit questionnaires was February 1, 2026 at
+                12:10 AM. Your responses are now read-only and cannot be
+                submitted or modified.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Progress Bar with Back to Dashboard button and Save Status */}
       <div className="flex items-center gap-4 px-4 py-3 bg-white border-b border-slate-200">
         <a
@@ -1047,7 +1094,8 @@ export function QuestionnaireV2({
       <div
         className={cn(
           "flex-1 py-8 px-4",
-          submittedState && "opacity-70 pointer-events-none",
+          (submittedState || deadlinePassed) &&
+            "opacity-70 pointer-events-none",
         )}
       >
         {getCurrentContent()}
@@ -1058,6 +1106,20 @@ export function QuestionnaireV2({
         className="sticky bottom-0 bg-white border-t border-slate-200 py-4 px-6 shadow-lg z-10"
         data-tutorial="navigation"
       >
+        {/* Deadline Warning Banner (show if deadline passed and on final step) */}
+        {deadlinePassed && currentStep === totalSteps && !submittedState && (
+          <div className="max-w-4xl mx-auto mb-3 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+            <p className="text-sm text-amber-900 font-medium">
+              ⚠️ Questionnaire Deadline Has Passed
+            </p>
+            <p className="text-xs text-amber-800 mt-1">
+              The deadline to submit questionnaires was February 1, 2026 at
+              12:10 AM. You can still view your responses, but submissions are
+              no longer being accepted.
+            </p>
+          </div>
+        )}
+
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <button
             onClick={handlePrev}
@@ -1080,26 +1142,35 @@ export function QuestionnaireV2({
           <button
             onClick={handleNext}
             disabled={
-              !canGoNext &&
-              !(
-                currentStep === totalSteps &&
-                completedCount === totalQuestions &&
-                !submittedState
-              )
+              deadlinePassed || // Disable if deadline passed
+              (!canGoNext &&
+                !(
+                  currentStep === totalSteps &&
+                  completedCount === totalQuestions &&
+                  !submittedState
+                ))
             }
             className={cn(
               "px-6 py-2 rounded-md font-medium transition-all",
               "focus:outline-none focus:ring-2 focus:ring-offset-2",
-              canGoNext ||
-                (currentStep === totalSteps &&
-                  completedCount === totalQuestions &&
-                  !submittedState)
+              !deadlinePassed &&
+                (canGoNext ||
+                  (currentStep === totalSteps &&
+                    completedCount === totalQuestions &&
+                    !submittedState))
                 ? "bg-pink-600 text-white hover:bg-pink-700 focus:ring-pink-500"
                 : "bg-pink-300 text-white cursor-not-allowed",
             )}
+            title={
+              deadlinePassed && currentStep === totalSteps
+                ? "Questionnaire deadline has passed"
+                : undefined
+            }
           >
             {isSubmitting ? (
               <>Submitting...</>
+            ) : deadlinePassed && currentStep === totalSteps ? (
+              "Complete (Deadline Passed)"
             ) : currentStep === totalSteps &&
               completedCount === totalQuestions &&
               !submittedState ? (

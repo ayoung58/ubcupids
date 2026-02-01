@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
-import { MAX_MATCH_USERS, MAX_CUPID_USERS } from "@/lib/matching/config";
+import {
+  MAX_MATCH_USERS,
+  MAX_CUPID_USERS,
+  SIGNUP_DEADLINE,
+} from "@/lib/matching/config";
 
 /**
  * Link Account API Endpoint
@@ -22,6 +26,18 @@ import { MAX_MATCH_USERS, MAX_CUPID_USERS } from "@/lib/matching/config";
  */
 export async function POST(request: NextRequest) {
   try {
+    // Check if signup/linking deadline has passed
+    const now = new Date();
+    if (now > SIGNUP_DEADLINE) {
+      return NextResponse.json(
+        {
+          error: "Account linking has closed",
+          hint: "The deadline for creating or linking accounts has passed (February 1, 2026 at 12:00 AM). Account linking is no longer available.",
+        },
+        { status: 403 },
+      );
+    }
+
     const session = await getCurrentUser();
 
     if (!session?.user?.id) {
@@ -43,7 +59,7 @@ export async function POST(request: NextRequest) {
     if (accountType !== "cupid" && accountType !== "match") {
       return NextResponse.json(
         { error: "Invalid account type" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -69,14 +85,14 @@ export async function POST(request: NextRequest) {
     if (accountType === "cupid" && currentUser.isCupid) {
       return NextResponse.json(
         { error: "There is already a Cupid account with that email" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (accountType === "match" && currentUser.isBeingMatched) {
       return NextResponse.json(
         { error: "There is already a Match account with that email" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -98,7 +114,7 @@ export async function POST(request: NextRequest) {
           error: `Maximum number of ${accountTypeName.toLowerCase()} reached`,
           hint: `We've reached the maximum capacity of ${maxUsers} ${accountTypeName.toLowerCase()} for 2026. Account linking is currently closed for this account type.`,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -146,7 +162,7 @@ export async function POST(request: NextRequest) {
               error: "You cannot set yourself as your preferred candidate",
               hint: "Please enter the email of someone you'd like to match.",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -162,7 +178,7 @@ export async function POST(request: NextRequest) {
               error: "Preferred candidate email not found",
               hint: "This email is not registered in UBCupids. Please enter a valid match user's email or leave the field empty.",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -172,7 +188,7 @@ export async function POST(request: NextRequest) {
               error: "This user is not participating in matching",
               hint: "The email you entered belongs to a user who is not a match participant. Please enter a match user's email or leave the field empty.",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -191,7 +207,7 @@ export async function POST(request: NextRequest) {
               error: "This candidate is already preferred by another cupid",
               hint: "Another cupid has already selected this person as their preferred match candidate.",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -221,7 +237,7 @@ export async function POST(request: NextRequest) {
     });
 
     console.log(
-      `[Link Account] User ${session.user.id} linked ${accountType} account`
+      `[Link Account] User ${session.user.id} linked ${accountType} account`,
     );
 
     return NextResponse.json(
@@ -230,7 +246,7 @@ export async function POST(request: NextRequest) {
         message: `${accountType === "cupid" ? "Cupid" : "Match"} account linked successfully!`,
         user: updatedUser,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("[Link Account] Unexpected error:", error);
@@ -242,7 +258,7 @@ export async function POST(request: NextRequest) {
           debug: error instanceof Error ? error.message : "Unknown error",
         }),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

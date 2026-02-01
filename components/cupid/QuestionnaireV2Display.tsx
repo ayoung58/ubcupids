@@ -145,7 +145,7 @@ function QuestionResponseDisplay({
     return null;
   }
 
-  const { answer, preference, importance, dealbreaker } = response;
+  const { answer, preference, importance, dealbreaker, isDealer } = response;
 
   // Format answer for display
   const formatAnswer = (value: any): string => {
@@ -211,7 +211,8 @@ function QuestionResponseDisplay({
 
   // Get importance badge
   const getImportanceBadge = () => {
-    if (dealbreaker) {
+    // Check for dealbreaker using both property names (dealbreaker and isDealer for backward compatibility)
+    if (dealbreaker || isDealer) {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 border border-red-200">
           <AlertCircle className="h-3 w-3" />

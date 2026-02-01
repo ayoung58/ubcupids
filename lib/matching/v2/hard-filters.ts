@@ -173,15 +173,27 @@ function checkAgeCompatibility(
   // If we couldn't extract ages, skip check (data format issue)
   if (typeof aAge !== "number" || typeof bAge !== "number") return true;
 
-  // Check if A's age is within B's range (if B has preferences)
-  if (bMinAge !== undefined && bMaxAge !== undefined) {
+  // Check if A's age is within B's range (if B has valid preferences)
+  // Note: null means "no preference", so we treat null as having no restriction
+  if (
+    typeof bMinAge === "number" &&
+    typeof bMaxAge === "number" &&
+    bMinAge !== null &&
+    bMaxAge !== null
+  ) {
     if (aAge < bMinAge || aAge > bMaxAge) {
       return false; // A's age is outside B's preferred range
     }
   }
 
-  // Check if B's age is within A's range (if A has preferences)
-  if (aMinAge !== undefined && aMaxAge !== undefined) {
+  // Check if B's age is within A's range (if A has valid preferences)
+  // Note: null means "no preference", so we treat null as having no restriction
+  if (
+    typeof aMinAge === "number" &&
+    typeof aMaxAge === "number" &&
+    aMinAge !== null &&
+    aMaxAge !== null
+  ) {
     if (bAge < aMinAge || bAge > aMaxAge) {
       return false; // B's age is outside A's preferred range
     }
@@ -235,8 +247,13 @@ function checkGenderCompatibility(
   }
 
   // Normal case: both specified their gender
-  const aInterestedInB = userA.interestedInGenders.includes(userB.gender);
-  const bInterestedInA = userB.interestedInGenders.includes(userA.gender);
+  // If either user selected "anyone", they're compatible with any gender
+  const aInterestedInB =
+    userA.interestedInGenders.includes("anyone") ||
+    userA.interestedInGenders.includes(userB.gender);
+  const bInterestedInA =
+    userB.interestedInGenders.includes("anyone") ||
+    userB.interestedInGenders.includes(userA.gender);
 
   return aInterestedInB && bInterestedInA;
 }
@@ -285,8 +302,10 @@ function checkAllDealbreakers(
     // Q3 (sexual activity) special case: treat as hard filter if importance is important/very_important OR if isDealbreaker is set
     if (questionId === "q3") {
       // Check if User A marked Q3 as important/very_important or as a dealbreaker
+      // Note: Check both isDealbreaker (correct) and isDealer (typo from UI) for backward compatibility
       const aIsHardFilter =
         aResponse.isDealbreaker ||
+        aResponse.isDealer ||
         aResponse.importance === "dealbreaker" ||
         aResponse.importance === "important" ||
         aResponse.importance === "very_important";
@@ -299,8 +318,10 @@ function checkAllDealbreakers(
       }
 
       // Check if User B marked Q3 as important/very_important or as a dealbreaker
+      // Note: Check both isDealbreaker (correct) and isDealer (typo from UI) for backward compatibility
       const bIsHardFilter =
         bResponse.isDealbreaker ||
+        bResponse.isDealer ||
         bResponse.importance === "dealbreaker" ||
         bResponse.importance === "important" ||
         bResponse.importance === "very_important";
@@ -317,8 +338,40 @@ function checkAllDealbreakers(
       continue;
     }
 
+    // Q5 (ethnicity) special case: treat as hard filter if importance is very_important
+    if (questionId === "q5") {
+      // Check if User A marked Q5 as very_important
+      const aIsHardFilter = aResponse.importance === "very_important";
+
+      if (aIsHardFilter) {
+        if (!isCompatibleWithPreference(bResponse, aResponse)) {
+          failedQuestions.push(questionId);
+          continue;
+        }
+      }
+
+      // Check if User B marked Q5 as very_important
+      const bIsHardFilter = bResponse.importance === "very_important";
+
+      if (bIsHardFilter) {
+        if (!isCompatibleWithPreference(aResponse, bResponse)) {
+          failedQuestions.push(questionId);
+          continue;
+        }
+      }
+
+      // If neither marked it as very_important, skip the hard filter check
+      // and let it be handled by regular scoring
+      continue;
+    }
+
     // Check if User A has dealbreaker for this question
-    if (aResponse.isDealbreaker || aResponse.importance === "dealbreaker") {
+    // Note: Check both isDealbreaker (correct) and isDealer (typo from UI) for backward compatibility
+    if (
+      aResponse.isDealbreaker ||
+      aResponse.isDealer ||
+      aResponse.importance === "dealbreaker"
+    ) {
       if (!isCompatibleWithPreference(bResponse, aResponse)) {
         failedQuestions.push(questionId);
         continue;
@@ -326,7 +379,12 @@ function checkAllDealbreakers(
     }
 
     // Check if User B has dealbreaker for this question
-    if (bResponse.isDealbreaker || bResponse.importance === "dealbreaker") {
+    // Note: Check both isDealbreaker (correct) and isDealer (typo from UI) for backward compatibility
+    if (
+      bResponse.isDealbreaker ||
+      bResponse.isDealer ||
+      bResponse.importance === "dealbreaker"
+    ) {
       if (!isCompatibleWithPreference(aResponse, bResponse)) {
         failedQuestions.push(questionId);
       }

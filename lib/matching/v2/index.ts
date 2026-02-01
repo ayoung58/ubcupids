@@ -142,6 +142,16 @@ export interface PipelineDiagnostics {
   phase8_minMatchScore: number;
   phase8_maxMatchScore: number;
 
+  // Unmatched User Details
+  unmatchedDetails: {
+    // Users who failed hard filters (no potential matches at all)
+    hardFilterFailures: UnmatchedUserDetail[];
+    // Users who had scores but failed eligibility thresholds
+    eligibilityFailures: UnmatchedUserDetail[];
+    // Users who passed eligibility but weren't matched by Blossom algorithm
+    blossomUnmatched: UnmatchedUserDetail[];
+  };
+
   // Performance
   executionTimeMs: number;
 
@@ -150,6 +160,26 @@ export interface PipelineDiagnostics {
     range: string;
     count: number;
   }[];
+}
+
+export interface UnmatchedUserDetail {
+  userId: string;
+  userEmail: string;
+  userName: string;
+  reason: string; // Why they weren't matched
+  dealbreakers: string[]; // Question IDs marked as dealbreakers
+  topPotentialMatches: PotentialMatch[];
+}
+
+export interface PotentialMatch {
+  userId: string;
+  userEmail: string;
+  userName: string;
+  score: number;
+  scoreAtoB: number; // How well B satisfies A
+  scoreBtoA: number; // How well A satisfies B
+  whyNotMatched: string; // Specific reason
+  dealbreakers: string[]; // Question IDs the potential match marked as dealbreakers
 }
 
 /**
@@ -206,7 +236,13 @@ export function runMatchingPipeline(
     questionId: string;
     reason?: string;
   }[] = [];
-  const pairScores: { userAId: string; userBId: string; score: number }[] = [];
+  const pairScores: {
+    userAId: string;
+    userBId: string;
+    score: number;
+    scoreAtoB: number;
+    scoreBtoA: number;
+  }[] = [];
   const eligiblePairs: EligiblePair[] = [];
 
   // Phase 1-7: Calculate scores for all pairs
@@ -249,6 +285,8 @@ export function runMatchingPipeline(
         userAId: userA.id,
         userBId: userB.id,
         score: pairScoreResult.pairScore,
+        scoreAtoB,
+        scoreBtoA,
       });
 
       // Phase 7: Eligibility Thresholding
@@ -366,6 +404,15 @@ export function runMatchingPipeline(
 
   const executionTimeMs = Date.now() - startTime;
 
+  // Generate detailed unmatched user information
+  const unmatchedDetails = generateUnmatchedDetails(
+    processedUsers,
+    matchingResult,
+    dealbreakers,
+    pairScores,
+    eligiblePairs,
+  );
+
   return {
     matches: matchingResult.matched,
     unmatched: matchingResult.unmatched,
@@ -392,6 +439,8 @@ export function runMatchingPipeline(
       phase8_medianMatchScore: eligiblePairStats.median,
       phase8_minMatchScore: eligiblePairStats.min,
       phase8_maxMatchScore: eligiblePairStats.max,
+
+      unmatchedDetails,
 
       executionTimeMs,
 
@@ -568,6 +617,282 @@ function calculateScoreDistribution(
 }
 
 /**
+ * Generate detailed information about unmatched users
+ */
+function generateUnmatchedDetails(
+  users: MatchingUser[],
+  matchingResult: MatchingResult,
+  dealbreakers: {
+    userAId: string;
+    userBId: string;
+    questionId: string;
+    reason?: string;
+  }[],
+  pairScores: {
+    userAId: string;
+    userBId: string;
+    score: number;
+    scoreAtoB: number;
+    scoreBtoA: number;
+  }[],
+  eligiblePairs: EligiblePair[],
+): {
+  hardFilterFailures: UnmatchedUserDetail[];
+  eligibilityFailures: UnmatchedUserDetail[];
+  blossomUnmatched: UnmatchedUserDetail[];
+} {
+  const matchedUserIds = new Set(
+    matchingResult.matched
+      .map((m) => m.userAId)
+      .concat(matchingResult.matched.map((m) => m.userBId)),
+  );
+
+  const hardFilterFailures: UnmatchedUserDetail[] = [];
+  const eligibilityFailures: UnmatchedUserDetail[] = [];
+  const blossomUnmatched: UnmatchedUserDetail[] = [];
+
+  for (const user of users) {
+    if (matchedUserIds.has(user.id)) continue; // Skip matched users
+
+    // Extract dealbreakers for this user
+    const userDealbreakers = extractUserDealbreakers(user);
+
+    // Find all pair scores involving this user
+    const userPairScores = pairScores.filter(
+      (p) => p.userAId === user.id || p.userBId === user.id,
+    );
+
+    // Find eligible pairs involving this user
+    const userEligiblePairs = eligiblePairs.filter(
+      (p) => p.userAId === user.id || p.userBId === user.id,
+    );
+
+    // Find top potential matches (top 3 from all pair scores)
+    const topPotentialMatches = getTopPotentialMatches(
+      user,
+      userPairScores,
+      pairScores,
+      eligiblePairs,
+      users,
+      dealbreakers,
+      3,
+    );
+
+    const detail: UnmatchedUserDetail = {
+      userId: user.id,
+      userEmail: user.email,
+      userName: user.name,
+      reason: "",
+      dealbreakers: userDealbreakers,
+      topPotentialMatches,
+    };
+
+    // Categorize by reason
+    if (userPairScores.length === 0) {
+      // No pair scores at all - failed hard filters with everyone
+      // Analyze dealbreakers to determine specific failure reason
+      const hardFilterReasons = analyzeHardFilterFailures(
+        user,
+        users,
+        dealbreakers,
+      );
+      detail.reason = hardFilterReasons;
+      hardFilterFailures.push(detail);
+    } else if (userEligiblePairs.length === 0) {
+      // Had pair scores but none passed eligibility
+      detail.reason =
+        "No matches met quality thresholds (absolute or relative minimum scores)";
+      eligibilityFailures.push(detail);
+    } else {
+      // Had eligible pairs but wasn't matched by Blossom
+      detail.reason =
+        "Blossom algorithm prioritized other pairings for globally optimal outcome";
+      blossomUnmatched.push(detail);
+    }
+  }
+
+  return {
+    hardFilterFailures,
+    eligibilityFailures,
+    blossomUnmatched,
+  };
+}
+
+/**
+ * Analyze why a user failed hard filters with all potential matches
+ */
+function analyzeHardFilterFailures(
+  user: MatchingUser,
+  allUsers: MatchingUser[],
+  dealbreakers: {
+    userAId: string;
+    userBId: string;
+    questionId: string;
+    reason?: string;
+  }[],
+): string {
+  const reasons = {
+    gender: 0,
+    age: 0,
+    campus: 0,
+    dealbreaker: 0,
+  };
+
+  // Check each other user to see why they failed
+  for (const otherUser of allUsers) {
+    if (otherUser.id === user.id) continue;
+
+    const result = checkHardFilters(user, otherUser);
+    if (result.passed) continue; // Skip if they passed
+
+    // Categorize the failure
+    if (result.reason?.includes("Gender")) {
+      reasons.gender++;
+    } else if (result.reason?.includes("Age")) {
+      reasons.age++;
+    } else if (result.reason?.includes("Campus")) {
+      reasons.campus++;
+    } else {
+      reasons.dealbreaker++;
+    }
+  }
+
+  // Build a descriptive reason based on what failed most often
+  const totalUsers = allUsers.length - 1; // Exclude self
+  const parts: string[] = [];
+
+  if (reasons.gender === totalUsers) {
+    parts.push("gender incompatibility with all users");
+  } else if (reasons.gender > 0) {
+    parts.push(`gender incompatibility with ${reasons.gender} users`);
+  }
+
+  if (reasons.age === totalUsers) {
+    parts.push("age incompatibility with all users");
+  } else if (reasons.age > 0) {
+    parts.push(`age incompatibility with ${reasons.age} users`);
+  }
+
+  if (reasons.campus === totalUsers) {
+    parts.push("campus incompatibility with all users");
+  } else if (reasons.campus > 0) {
+    parts.push(`campus incompatibility with ${reasons.campus} users`);
+  }
+
+  if (reasons.dealbreaker === totalUsers) {
+    parts.push("dealbreaker conflicts with all users");
+  } else if (reasons.dealbreaker > 0) {
+    parts.push(`dealbreaker conflicts with ${reasons.dealbreaker} users`);
+  }
+
+  if (parts.length === 0) {
+    return "Failed hard filters with all potential matches";
+  }
+
+  return `Failed due to: ${parts.join(", ")}`;
+}
+
+/**
+ * Extract dealbreaker question IDs from a user's responses
+ */
+function extractUserDealbreakers(user: MatchingUser): string[] {
+  const dealbreakers: string[] = [];
+
+  for (const [questionId, response] of Object.entries(user.responses)) {
+    if (
+      response &&
+      (response.isDealbreaker ||
+        response.isDealer ||
+        response.importance === "dealbreaker")
+    ) {
+      dealbreakers.push(questionId);
+    }
+  }
+
+  return dealbreakers;
+}
+
+/**
+ * Get top N potential matches for a user based on pair scores
+ */
+function getTopPotentialMatches(
+  user: MatchingUser,
+  userPairScores: {
+    userAId: string;
+    userBId: string;
+    score: number;
+    scoreAtoB: number;
+    scoreBtoA: number;
+  }[],
+  allPairScores: {
+    userAId: string;
+    userBId: string;
+    score: number;
+    scoreAtoB: number;
+    scoreBtoA: number;
+  }[],
+  eligiblePairs: EligiblePair[],
+  allUsers: MatchingUser[],
+  dealbreakers: {
+    userAId: string;
+    userBId: string;
+    questionId: string;
+    reason?: string;
+  }[],
+  limit: number,
+): PotentialMatch[] {
+  // Sort pair scores by total score descending
+  const sorted = userPairScores
+    .map((ps) => {
+      const isUserA = ps.userAId === user.id;
+      const partnerId = isUserA ? ps.userBId : ps.userAId;
+      const partner = allUsers.find((u) => u.id === partnerId);
+
+      if (!partner) return null;
+
+      const isEligible = eligiblePairs.some(
+        (ep) =>
+          (ep.userAId === user.id && ep.userBId === partnerId) ||
+          (ep.userBId === user.id && ep.userAId === partnerId),
+      );
+
+      const hadHardFilterIssue = dealbreakers.some(
+        (db) =>
+          (db.userAId === user.id && db.userBId === partnerId) ||
+          (db.userBId === user.id && db.userAId === partnerId),
+      );
+
+      let whyNotMatched = "";
+      if (hadHardFilterIssue) {
+        whyNotMatched = "Failed dealbreaker or hard filter";
+      } else if (!isEligible) {
+        whyNotMatched = "Did not meet eligibility threshold";
+      } else {
+        whyNotMatched =
+          "Eligible but not selected by Blossom (global optimization)";
+      }
+
+      const partnerDealbreakers = extractUserDealbreakers(partner);
+
+      return {
+        userId: partner.id,
+        userEmail: partner.email,
+        userName: partner.name,
+        score: ps.score,
+        scoreAtoB: isUserA ? ps.scoreAtoB : ps.scoreBtoA,
+        scoreBtoA: isUserA ? ps.scoreBtoA : ps.scoreAtoB,
+        whyNotMatched,
+        dealbreakers: partnerDealbreakers,
+      };
+    })
+    .filter((pm): pm is PotentialMatch => pm !== null)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+
+  return sorted;
+}
+
+/**
  * Create empty diagnostics object.
  */
 function createEmptyDiagnostics(totalUsers: number): PipelineDiagnostics {
@@ -588,6 +913,11 @@ function createEmptyDiagnostics(totalUsers: number): PipelineDiagnostics {
     phase8_medianMatchScore: 0,
     phase8_minMatchScore: 0,
     phase8_maxMatchScore: 0,
+    unmatchedDetails: {
+      hardFilterFailures: [],
+      eligibilityFailures: [],
+      blossomUnmatched: [],
+    },
     executionTimeMs: 0,
     scoreDistribution: [],
   };

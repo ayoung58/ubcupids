@@ -522,14 +522,14 @@ export async function POST(request: NextRequest) {
         phase8_maxMatchScore:
           Math.round(result.diagnostics.phase8_maxMatchScore * 100) / 100,
 
-        unmatchedDetails: result.unmatched.map((u) => ({
-          userId: u.userId,
-          reason: u.reason,
-          bestPossibleScore: u.bestPossibleScore
-            ? Math.round(u.bestPossibleScore * 100) / 100
-            : undefined,
-          bestPossibleMatchId: u.bestPossibleMatchId,
-        })),
+        unmatchedDetails: {
+          hardFilterFailures:
+            result.diagnostics.unmatchedDetails.hardFilterFailures,
+          eligibilityFailures:
+            result.diagnostics.unmatchedDetails.eligibilityFailures,
+          blossomUnmatched:
+            result.diagnostics.unmatchedDetails.blossomUnmatched,
+        },
 
         // Sample pair breakdowns for manual verification
         samplePairBreakdowns,

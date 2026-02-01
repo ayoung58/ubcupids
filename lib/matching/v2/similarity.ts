@@ -470,6 +470,18 @@ function calculateQ6_ReligionWithSemantics(
   if (!Array.isArray(aAnswer) || !Array.isArray(bAnswer)) return 0.5;
   if (aAnswer.length === 0 && bAnswer.length === 0) return 1.0;
 
+  // Handle prefer_not_to_answer as missing data - use penalty similarity
+  // If either user chose "prefer_not_to_answer", they're uncertain, so compatibility is reduced
+  const aHasPrefersNotToAnswer = aAnswer.includes("prefer_not_to_answer");
+  const bHasPrefersNotToAnswer = bAnswer.includes("prefer_not_to_answer");
+
+  if (aHasPrefersNotToAnswer || bHasPrefersNotToAnswer) {
+    // At least one user is uncertain about their religion preference
+    // Return penalty value instead of optimistic semantic matching
+    // This should be handled like missing preference (0.5) not a preference match
+    return 0.5;
+  }
+
   // Semantic groups for religion
   const secularGroup = new Set(["atheist", "agnostic"]);
   const flexibleAnswer = "spiritual_not_religious"; // Note: underscore, not "but_not"
@@ -691,10 +703,13 @@ function calculateTypeD_MultiSelect(
         aSatisfied = overlapRatio;
       }
     } else if (aPreference.length > 0) {
-      // Array of acceptable values - check if B's answer overlaps
-      aSatisfied = bAnswer.some((item) => aPreference.includes(item))
-        ? 1.0
-        : 0.0;
+      // Array of acceptable values - check if ALL of B's answers are in A's preference
+      // A is satisfied if their entire preference list covers B's answer
+      // (i.e., all items B wants are in A's acceptable list)
+      const allBAnswersInPreference = bAnswer.every((item) =>
+        aPreference.includes(item),
+      );
+      aSatisfied = allBAnswersInPreference ? 1.0 : 0.0;
     }
 
     // Check if B's preference is satisfied
@@ -716,10 +731,11 @@ function calculateTypeD_MultiSelect(
         bSatisfied = overlapRatio;
       }
     } else if (bPreference.length > 0) {
-      // Array of acceptable values - check if A's answer overlaps
-      bSatisfied = aAnswer.some((item) => bPreference.includes(item))
-        ? 1.0
-        : 0.0;
+      // Array of acceptable values - check if ALL of B's answers are in A's answer
+      // B is satisfied if their entire answer is a subset of A's answer
+      // (i.e., all items B wants are options that A is open to)
+      const allBAnswersInA = bAnswer.every((item) => aAnswer.includes(item));
+      bSatisfied = allBAnswersInA ? 1.0 : 0.0;
     }
 
     return (aSatisfied + bSatisfied) / 2;

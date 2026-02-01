@@ -10,6 +10,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { validateQuestionnaireV2 } from "@/lib/questionnaire/v2/validation";
+import { QUESTIONNAIRE_DEADLINE } from "@/lib/matching/config";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +18,18 @@ export async function POST(req: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if questionnaire deadline has passed
+    const now = new Date();
+    if (now > QUESTIONNAIRE_DEADLINE) {
+      return NextResponse.json(
+        {
+          error: "Questionnaire submission deadline has passed",
+          hint: "The deadline to submit your questionnaire was February 1, 2026 at 12:00 AM. Submissions are no longer being accepted.",
+        },
+        { status: 403 },
+      );
     }
 
     const userId = session.user.id;
@@ -32,7 +45,7 @@ export async function POST(req: NextRequest) {
           error:
             "No questionnaire responses found. Please complete the questionnaire first.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -43,7 +56,7 @@ export async function POST(req: NextRequest) {
           error: "Questionnaire already submitted",
           submittedAt: existingResponse.submittedAt,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -56,7 +69,7 @@ export async function POST(req: NextRequest) {
         freeResponse3: existingResponse.freeResponse3 || "",
         freeResponse4: existingResponse.freeResponse4 || "",
         freeResponse5: existingResponse.freeResponse5 || "",
-      }
+      },
     );
 
     if (!validation.isValid) {
@@ -65,10 +78,10 @@ export async function POST(req: NextRequest) {
           error: "Questionnaire validation failed",
           errors: validation.errors,
           completionPercentage: Math.round(
-            (validation.completedCount / validation.requiredCount) * 100
+            (validation.completedCount / validation.requiredCount) * 100,
           ),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -98,7 +111,7 @@ export async function POST(req: NextRequest) {
     console.error("[SUBMIT_V2_ERROR]", error);
     return NextResponse.json(
       { error: "Failed to submit questionnaire" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

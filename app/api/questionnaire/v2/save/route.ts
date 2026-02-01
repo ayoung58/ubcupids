@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { QUESTIONNAIRE_DEADLINE } from "@/lib/matching/config";
 
 /**
  * POST /api/questionnaire/v2/save
@@ -59,7 +60,19 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized - Please log in" },
-        { status: 401 }
+        { status: 401 },
+      );
+    }
+
+    // Check if questionnaire deadline has passed
+    const now = new Date();
+    if (now > QUESTIONNAIRE_DEADLINE) {
+      return NextResponse.json(
+        {
+          error: "Questionnaire submission deadline has passed",
+          hint: "The deadline to submit your questionnaire was February 1, 2026 at 12:00 AM. You can no longer save changes to your questionnaire.",
+        },
+        { status: 403 },
       );
     }
 
@@ -76,7 +89,7 @@ export async function POST(request: NextRequest) {
     if (existing?.isSubmitted) {
       return NextResponse.json(
         { error: "Questionnaire already submitted and cannot be edited" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -141,13 +154,13 @@ export async function POST(request: NextRequest) {
           error: "Invalid request data",
           details: error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { error: "Failed to save questionnaire" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
