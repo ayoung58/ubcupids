@@ -703,13 +703,17 @@ function calculateTypeD_MultiSelect(
         aSatisfied = overlapRatio;
       }
     } else if (aPreference.length > 0) {
-      // Array of acceptable values - check if ALL of B's answers are in A's preference
-      // A is satisfied if their entire preference list covers B's answer
-      // (i.e., all items B wants are in A's acceptable list)
-      const allBAnswersInPreference = bAnswer.every((item) =>
-        aPreference.includes(item),
+      // Array of acceptable values - use Jaccard similarity between preferences
+      // How much overlap is there between what A wants and what B wants?
+      // This is more nuanced than "all B's answers must be in A's preference"
+      const aPrefSet = new Set(aPreference);
+      const bAnswerSet = new Set(bAnswer);
+      const prefIntersection = new Set(
+        [...aPrefSet].filter((x) => bAnswerSet.has(x)),
       );
-      aSatisfied = allBAnswersInPreference ? 1.0 : 0.0;
+      const prefUnion = new Set([...aPrefSet, ...bAnswerSet]);
+      aSatisfied =
+        prefUnion.size > 0 ? prefIntersection.size / prefUnion.size : 0.5;
     }
 
     // Check if B's preference is satisfied
@@ -731,11 +735,16 @@ function calculateTypeD_MultiSelect(
         bSatisfied = overlapRatio;
       }
     } else if (bPreference.length > 0) {
-      // Array of acceptable values - check if ALL of B's answers are in A's answer
-      // B is satisfied if their entire answer is a subset of A's answer
-      // (i.e., all items B wants are options that A is open to)
-      const allBAnswersInA = bAnswer.every((item) => aAnswer.includes(item));
-      bSatisfied = allBAnswersInA ? 1.0 : 0.0;
+      // Array of acceptable values - use Jaccard similarity between preferences
+      // How much overlap is there between what B wants and what A's answer provides?
+      const bPrefSet = new Set(bPreference);
+      const aAnswerSet = new Set(aAnswer);
+      const bPrefIntersection = new Set(
+        [...bPrefSet].filter((x) => aAnswerSet.has(x)),
+      );
+      const bPrefUnion = new Set([...bPrefSet, ...aAnswerSet]);
+      bSatisfied =
+        bPrefUnion.size > 0 ? bPrefIntersection.size / bPrefUnion.size : 0.5;
     }
 
     return (aSatisfied + bSatisfied) / 2;

@@ -13,7 +13,14 @@
  */
 
 import { MatchingUser } from "./types";
-import { checkHardFilters, HardFilterResult } from "./hard-filters";
+import {
+  checkHardFilters,
+  HardFilterResult,
+  checkCampusCompatibility,
+  checkAgeCompatibility,
+  checkGenderCompatibility,
+  checkAllDealbreakers,
+} from "./hard-filters";
 import { calculateSimilarity } from "./similarity";
 import { applyImportanceWeighting } from "./importance";
 import { calculateDirectionalScore } from "./directional";
@@ -720,6 +727,7 @@ function generateUnmatchedDetails(
 
 /**
  * Analyze why a user failed hard filters with all potential matches
+ * Uses a cascading filter approach to show progressive elimination
  */
 function analyzeHardFilterFailures(
   user: MatchingUser,
@@ -731,65 +739,80 @@ function analyzeHardFilterFailures(
     reason?: string;
   }[],
 ): string {
-  const reasons = {
-    gender: 0,
-    age: 0,
-    campus: 0,
-    dealbreaker: 0,
-  };
+  const totalUsers = allUsers.length - 1; // Exclude self
 
-  // Check each other user to see why they failed
-  for (const otherUser of allUsers) {
-    if (otherUser.id === user.id) continue;
+  // Cascading filter: track how many users remain after each stage
+  let remainingUsers = allUsers.filter((u) => u.id !== user.id);
+  let currentCount = remainingUsers.length;
 
-    const result = checkHardFilters(user, otherUser);
-    if (result.passed) continue; // Skip if they passed
+  // Stage 1: Gender compatibility
+  remainingUsers = remainingUsers.filter((otherUser) => {
+    return checkGenderCompatibility(user, otherUser);
+  });
+  const afterGender = remainingUsers.length;
+  const genderFailed = currentCount - afterGender;
 
-    // Categorize the failure
-    if (result.reason?.includes("Gender")) {
-      reasons.gender++;
-    } else if (result.reason?.includes("Age")) {
-      reasons.age++;
-    } else if (result.reason?.includes("Campus")) {
-      reasons.campus++;
+  // Stage 2: Age compatibility (of those who passed gender)
+  currentCount = remainingUsers.length;
+  remainingUsers = remainingUsers.filter((otherUser) => {
+    return checkAgeCompatibility(user, otherUser);
+  });
+  const afterAge = remainingUsers.length;
+  const ageFailed = currentCount - afterAge;
+
+  // Stage 3: Campus compatibility (of those who passed gender + age)
+  currentCount = remainingUsers.length;
+  remainingUsers = remainingUsers.filter((otherUser) => {
+    return checkCampusCompatibility(user, otherUser);
+  });
+  const afterCampus = remainingUsers.length;
+  const campusFailed = currentCount - afterCampus;
+
+  // Stage 4: Dealbreaker check (of those who passed all other filters)
+  currentCount = remainingUsers.length;
+  remainingUsers = remainingUsers.filter((otherUser) => {
+    const result = checkAllDealbreakers(user, otherUser);
+    return result.passed;
+  });
+  const afterDealbreakers = remainingUsers.length;
+  const dealbreakerFailed = currentCount - afterDealbreakers;
+
+  // Build cascading message
+  const parts: string[] = [];
+
+  if (genderFailed > 0) {
+    if (genderFailed === totalUsers) {
+      parts.push("all users failed gender compatibility");
     } else {
-      reasons.dealbreaker++;
+      parts.push(`${genderFailed} failed gender → ${afterGender} remain`);
     }
   }
 
-  // Build a descriptive reason based on what failed most often
-  const totalUsers = allUsers.length - 1; // Exclude self
-  const parts: string[] = [];
-
-  if (reasons.gender === totalUsers) {
-    parts.push("gender incompatibility with all users");
-  } else if (reasons.gender > 0) {
-    parts.push(`gender incompatibility with ${reasons.gender} users`);
+  if (ageFailed > 0) {
+    if (afterGender > 0) {
+      parts.push(`${ageFailed} failed age → ${afterAge} remain`);
+    }
   }
 
-  if (reasons.age === totalUsers) {
-    parts.push("age incompatibility with all users");
-  } else if (reasons.age > 0) {
-    parts.push(`age incompatibility with ${reasons.age} users`);
+  if (campusFailed > 0) {
+    if (afterAge > 0) {
+      parts.push(`${campusFailed} failed campus → ${afterCampus} remain`);
+    }
   }
 
-  if (reasons.campus === totalUsers) {
-    parts.push("campus incompatibility with all users");
-  } else if (reasons.campus > 0) {
-    parts.push(`campus incompatibility with ${reasons.campus} users`);
-  }
-
-  if (reasons.dealbreaker === totalUsers) {
-    parts.push("dealbreaker conflicts with all users");
-  } else if (reasons.dealbreaker > 0) {
-    parts.push(`dealbreaker conflicts with ${reasons.dealbreaker} users`);
+  if (dealbreakerFailed > 0) {
+    if (afterCampus > 0) {
+      parts.push(
+        `${dealbreakerFailed} failed dealbreakers → ${afterDealbreakers} remain`,
+      );
+    }
   }
 
   if (parts.length === 0) {
     return "Failed hard filters with all potential matches";
   }
 
-  return `Failed due to: ${parts.join(", ")}`;
+  return `Failed due to: ${parts.join("; ")}`;
 }
 
 /**

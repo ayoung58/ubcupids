@@ -85,7 +85,7 @@ export function checkHardFilters(
  * @param userB - Second user
  * @returns True if both users are compatible based on campus preferences
  */
-function checkCampusCompatibility(
+export function checkCampusCompatibility(
   userA: MatchingUser,
   userB: MatchingUser,
 ): boolean {
@@ -119,7 +119,7 @@ function checkCampusCompatibility(
  * @param userB - Second user
  * @returns True if both users' ages are within each other's ranges
  */
-function checkAgeCompatibility(
+export function checkAgeCompatibility(
   userA: MatchingUser,
   userB: MatchingUser,
 ): boolean {
@@ -216,7 +216,7 @@ function checkAgeCompatibility(
  * @param userB - Second user
  * @returns True if both users are interested in each other's genders
  */
-function checkGenderCompatibility(
+export function checkGenderCompatibility(
   userA: MatchingUser,
   userB: MatchingUser,
 ): boolean {
@@ -275,7 +275,7 @@ function checkGenderCompatibility(
  * @param userB - Second user
  * @returns Filter result indicating if dealbreakers passed
  */
-function checkAllDealbreakers(
+export function checkAllDealbreakers(
   userA: MatchingUser,
   userB: MatchingUser,
 ): HardFilterResult {
@@ -306,7 +306,7 @@ function checkAllDealbreakers(
       const aIsHardFilter =
         aResponse.isDealbreaker ||
         aResponse.isDealer ||
-        aResponse.importance === "dealbreaker" ||
+        aResponse.dealbreaker ||
         aResponse.importance === "important" ||
         aResponse.importance === "very_important";
 
@@ -322,7 +322,7 @@ function checkAllDealbreakers(
       const bIsHardFilter =
         bResponse.isDealbreaker ||
         bResponse.isDealer ||
-        bResponse.importance === "dealbreaker" ||
+        bResponse.dealbreaker ||
         bResponse.importance === "important" ||
         bResponse.importance === "very_important";
 
@@ -370,7 +370,7 @@ function checkAllDealbreakers(
     if (
       aResponse.isDealbreaker ||
       aResponse.isDealer ||
-      aResponse.importance === "dealbreaker"
+      aResponse.dealbreaker
     ) {
       if (!isCompatibleWithPreference(bResponse, aResponse)) {
         failedQuestions.push(questionId);
@@ -383,7 +383,7 @@ function checkAllDealbreakers(
     if (
       bResponse.isDealbreaker ||
       bResponse.isDealer ||
-      bResponse.importance === "dealbreaker"
+      bResponse.dealbreaker
     ) {
       if (!isCompatibleWithPreference(aResponse, bResponse)) {
         failedQuestions.push(questionId);
