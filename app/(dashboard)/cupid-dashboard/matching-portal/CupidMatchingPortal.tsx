@@ -235,12 +235,32 @@ export function CupidMatchingPortal({
       );
       const currentMatch = filteredMatches[currentMatchIndex];
 
+      console.log("[loadQuestionnaireData] Loading match questionnaire:", {
+        currentMatchIndex,
+        totalPotentialMatches: currentAssignment.potentialMatches.length,
+        rejectedCount: rejectedMatches.size,
+        filteredMatchesCount: filteredMatches.length,
+        currentMatchUserId: currentMatch?.userId,
+        currentMatchName: currentMatch?.profile?.firstName,
+      });
+
       if (currentMatch) {
         const matchRes = await fetch(
           `/api/questionnaire/v2/view?userId=${currentMatch.userId}`,
         );
         if (matchRes.ok) {
           const matchData = await matchRes.json();
+          console.log(
+            "[loadQuestionnaireData] Successfully loaded questionnaire for:",
+            {
+              userId: currentMatch.userId,
+              name: currentMatch.profile?.firstName,
+              hasResponses: !!matchData.responses,
+              hasFreeResponses: !!(
+                matchData.freeResponse1 || matchData.freeResponse2
+              ),
+            },
+          );
           setMatchResponses(matchData.responses);
           setMatchFreeResponses({
             freeResponse1: matchData.freeResponse1,
@@ -258,6 +278,13 @@ export function CupidMatchingPortal({
           setMatchResponses(null);
           setMatchFreeResponses(null);
         }
+      } else {
+        console.warn(
+          "[loadQuestionnaireData] No current match found at index",
+          currentMatchIndex,
+        );
+        setMatchResponses(null);
+        setMatchFreeResponses(null);
       }
     } catch (err) {
       console.error("Error loading questionnaire data:", err);
@@ -443,6 +470,13 @@ export function CupidMatchingPortal({
   // Load rejected matches from current assignment and load revealed count from backend
   useEffect(() => {
     if (currentAssignment) {
+      console.log("[CupidMatchingPortal] Loading assignment state:", {
+        assignmentId: currentAssignment.assignmentId,
+        candidateName: currentAssignment.candidate?.firstName,
+        rejectedMatchesFromDB: currentAssignment.rejectedMatches,
+        rejectedCount: currentAssignment.rejectedMatches?.length || 0,
+        revealedCount: currentAssignment.revealedCount || 5,
+      });
       setRejectedMatches(new Set(currentAssignment.rejectedMatches || []));
       setRevealedMatchCount(currentAssignment.revealedCount || 5);
     }
