@@ -191,7 +191,7 @@ export function CupidMatchingPortal({
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentAssignmentIndex, currentMatchIndex, dashboard]);
+  }, [currentAssignmentIndex, currentMatchIndex, rejectedMatches, dashboard]);
 
   // Reset match index to 0 when switching between match candidates
   useEffect(() => {
@@ -229,9 +229,12 @@ export function CupidMatchingPortal({
         setCandidateFreeResponses(null);
       }
 
-      // Load match questionnaire V2
-      const currentMatch =
-        currentAssignment.potentialMatches[currentMatchIndex];
+      // Load match questionnaire V2 - use filtered matches that exclude rejected ones
+      const filteredMatches = currentAssignment.potentialMatches.filter(
+        (m) => !rejectedMatches.has(m.userId),
+      );
+      const currentMatch = filteredMatches[currentMatchIndex];
+
       if (currentMatch) {
         const matchRes = await fetch(
           `/api/questionnaire/v2/view?userId=${currentMatch.userId}`,
