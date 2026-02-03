@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -19,6 +19,7 @@ import {
   Eye,
   ChevronDown,
   ChevronUp,
+  CheckCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -80,6 +81,17 @@ export function AdminCupidAssignmentClient({
   const [expandedCandidates, setExpandedCandidates] = useState<Set<string>>(
     new Set(),
   );
+
+  // Current assignments state
+  const [showCurrentAssignments, setShowCurrentAssignments] = useState(false);
+  const [currentAssignments, setCurrentAssignments] = useState<any>(null);
+  const [isLoadingAssignments, setIsLoadingAssignments] = useState(false);
+  const [expandedCurrentCupids, setExpandedCurrentCupids] = useState<
+    Set<string>
+  >(new Set());
+  const [expandedCurrentCandidates, setExpandedCurrentCandidates] = useState<
+    Set<string>
+  >(new Set());
 
   const currentStats = userType === "test" ? testStats : productionStats;
 
@@ -182,6 +194,63 @@ export function AdminCupidAssignmentClient({
     } finally {
       setIsRunning(false);
     }
+  };
+
+  // Fetch current assignments
+  const fetchCurrentAssignments = async () => {
+    setIsLoadingAssignments(true);
+    try {
+      const response = await fetch(
+        `/api/admin/current-assignments?isTestUser=${userType === "test"}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setCurrentAssignments(data);
+      } else {
+        console.error("Failed to fetch current assignments:", data.error);
+      }
+    } catch (err) {
+      console.error("Error fetching current assignments:", err);
+    } finally {
+      setIsLoadingAssignments(false);
+    }
+  };
+
+  // Load current assignments when section is expanded or user type changes
+  useEffect(() => {
+    if (showCurrentAssignments) {
+      fetchCurrentAssignments();
+    }
+  }, [showCurrentAssignments, userType]);
+
+  const toggleCurrentCupid = (cupidId: string) => {
+    setExpandedCurrentCupids((prev) => {
+      const next = new Set(prev);
+      if (next.has(cupidId)) {
+        next.delete(cupidId);
+      } else {
+        next.add(cupidId);
+      }
+      return next;
+    });
+  };
+
+  const toggleCurrentCandidate = (candidateId: string) => {
+    setExpandedCurrentCandidates((prev) => {
+      const next = new Set(prev);
+      if (next.has(candidateId)) {
+        next.delete(candidateId);
+      } else {
+        next.add(candidateId);
+      }
+      return next;
+    });
   };
 
   return (
@@ -356,6 +425,252 @@ export function AdminCupidAssignmentClient({
         </Card>
       </div>
 
+      {/* Current Assignments Section */}
+      {currentStats.totalAssignments > 0 && (
+        <Card>
+          <CardHeader>
+            <button
+              onClick={() => setShowCurrentAssignments(!showCurrentAssignments)}
+              className="w-full flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                View Current Cupid Assignments
+              </CardTitle>
+              {showCurrentAssignments ? (
+                <ChevronUp className="h-5 w-5 text-slate-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-slate-400" />
+              )}
+            </button>
+          </CardHeader>
+          {showCurrentAssignments && (
+            <CardContent className="space-y-4">
+              {isLoadingAssignments ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                </div>
+              ) : currentAssignments ? (
+                <>
+                  {/* Summary Stats */}
+                  <div className="grid grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg">
+                    <div>
+                      <div className="text-sm text-slate-600">Total Cupids</div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {currentAssignments.totalCupids}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-600">
+                        Total Assignments
+                      </div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {currentAssignments.totalAssignments}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-600">Completed</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {currentAssignments.completedAssignments}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-600">Pending</div>
+                      <div className="text-2xl font-bold text-amber-600">
+                        {currentAssignments.pendingAssignments}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cupid Assignments */}
+                  {currentAssignments.cupidAssignments.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-3">
+                        Cupid Assignments
+                      </h3>
+                      <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                        {currentAssignments.cupidAssignments.map(
+                          (cupidAssignment: any) => (
+                            <div
+                              key={cupidAssignment.cupidId}
+                              className="border border-slate-200 rounded-lg bg-white overflow-hidden"
+                            >
+                              <button
+                                onClick={() =>
+                                  toggleCurrentCupid(cupidAssignment.cupidId)
+                                }
+                                className="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
+                              >
+                                <div className="flex-1">
+                                  <div className="font-semibold text-slate-900">
+                                    {cupidAssignment.cupidName}
+                                  </div>
+                                  <div className="text-sm text-slate-600">
+                                    {cupidAssignment.cupidEmail}
+                                  </div>
+                                  <div className="text-sm text-slate-500 mt-1">
+                                    {cupidAssignment.candidates.length}{" "}
+                                    candidate
+                                    {cupidAssignment.candidates.length !== 1
+                                      ? "s"
+                                      : ""}{" "}
+                                    •{" "}
+                                    {
+                                      cupidAssignment.candidates.filter(
+                                        (c: any) => c.hasSelection,
+                                      ).length
+                                    }{" "}
+                                    completed
+                                  </div>
+                                </div>
+                                {expandedCurrentCupids.has(
+                                  cupidAssignment.cupidId,
+                                ) ? (
+                                  <ChevronUp className="h-5 w-5 text-slate-400" />
+                                ) : (
+                                  <ChevronDown className="h-5 w-5 text-slate-400" />
+                                )}
+                              </button>
+
+                              {expandedCurrentCupids.has(
+                                cupidAssignment.cupidId,
+                              ) && (
+                                <div className="border-t border-slate-200 p-3 bg-slate-50">
+                                  <div className="space-y-2">
+                                    {cupidAssignment.candidates.map(
+                                      (candidate: any) => (
+                                        <div
+                                          key={candidate.candidateId}
+                                          className={`border rounded-lg overflow-hidden ${
+                                            candidate.hasSelection
+                                              ? "border-green-300 bg-green-50"
+                                              : "border-slate-200 bg-white"
+                                          }`}
+                                        >
+                                          <button
+                                            onClick={() =>
+                                              toggleCurrentCandidate(
+                                                candidate.candidateId,
+                                              )
+                                            }
+                                            className="w-full p-2 flex items-center justify-between hover:opacity-80 transition-opacity text-left"
+                                          >
+                                            <div className="flex-1">
+                                              <div className="flex items-center gap-2">
+                                                {candidate.hasSelection && (
+                                                  <CheckCircle className="h-4 w-4 text-green-600" />
+                                                )}
+                                                <div>
+                                                  <div className="font-medium text-slate-900">
+                                                    {candidate.candidateName}
+                                                  </div>
+                                                  <div className="text-xs text-slate-600">
+                                                    {candidate.candidateEmail}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              {candidate.isPreferred && (
+                                                <div className="text-xs text-purple-600 mt-1">
+                                                  ⭐ Preferred candidate
+                                                </div>
+                                              )}
+                                              {candidate.hasSelection && (
+                                                <div className="text-sm text-green-700 mt-1 font-medium">
+                                                  ✓ Selected:{" "}
+                                                  {candidate.selectedMatchName}
+                                                </div>
+                                              )}
+                                              {candidate.hasSelection &&
+                                                candidate.selectionReason && (
+                                                  <div className="text-xs text-slate-600 mt-1 italic">
+                                                    Reason:{" "}
+                                                    {candidate.selectionReason}
+                                                  </div>
+                                                )}
+                                            </div>
+                                            {expandedCurrentCandidates.has(
+                                              candidate.candidateId,
+                                            ) ? (
+                                              <ChevronUp className="h-4 w-4 text-slate-400" />
+                                            ) : (
+                                              <ChevronDown className="h-4 w-4 text-slate-400" />
+                                            )}
+                                          </button>
+
+                                          {expandedCurrentCandidates.has(
+                                            candidate.candidateId,
+                                          ) && (
+                                            <div className="border-t border-slate-200 p-2 bg-white">
+                                              <div className="text-sm font-medium text-slate-700 mb-2">
+                                                Top Matches (
+                                                {candidate.potentialMatchCount}{" "}
+                                                total):
+                                              </div>
+                                              <div className="space-y-1">
+                                                {candidate.topMatches.map(
+                                                  (match: any, idx: number) => (
+                                                    <div
+                                                      key={match.userId}
+                                                      className={`p-2 rounded text-sm flex items-center justify-between ${
+                                                        match.userId ===
+                                                        candidate.selectedMatchId
+                                                          ? "bg-green-100 border border-green-300"
+                                                          : match.isInitiallyVisible
+                                                            ? "bg-blue-50 border border-blue-200"
+                                                            : "bg-slate-50 border border-slate-200"
+                                                      }`}
+                                                    >
+                                                      <div className="flex items-center gap-2">
+                                                        {match.userId ===
+                                                          candidate.selectedMatchId && (
+                                                          <CheckCircle className="h-4 w-4 text-green-600" />
+                                                        )}
+                                                        <div>
+                                                          <div className="font-medium text-slate-900">
+                                                            {match.name}
+                                                          </div>
+                                                          <div className="text-xs text-slate-600">
+                                                            {match.email}
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                      <div className="text-right">
+                                                        <div className="font-bold text-slate-900">
+                                                          {match.score.toFixed(
+                                                            1,
+                                                          )}
+                                                        </div>
+                                                        {match.isInitiallyVisible && (
+                                                          <div className="text-xs text-blue-600">
+                                                            Initially visible
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                  ),
+                                                )}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : null}
+            </CardContent>
+          )}
+        </Card>
+      )}
+
       {/* Assignment Actions */}
       <Card>
         <CardHeader>
@@ -413,7 +728,10 @@ export function AdminCupidAssignmentClient({
             <Button
               onClick={runAssignment}
               disabled={
-                isRunning || isPreviewing || currentStats.totalCandidates === 0
+                isRunning ||
+                isPreviewing ||
+                currentStats.totalCandidates === 0 ||
+                userType === "production"
               }
               className="flex-1"
               size="lg"

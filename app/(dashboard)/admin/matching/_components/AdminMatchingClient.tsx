@@ -18,9 +18,13 @@ import {
   Rocket,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useEffect } from "react";
 
 interface Stats {
   totalUsers: number;
@@ -179,6 +183,14 @@ export function AdminMatchingClient({
     message: string;
   } | null>(null);
 
+  // Current matches state
+  const [showCurrentMatches, setShowCurrentMatches] = useState(false);
+  const [currentMatches, setCurrentMatches] = useState<any>(null);
+  const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+  const [expandedUnmatched, setExpandedUnmatched] = useState<Set<string>>(
+    new Set(),
+  );
+
   // Get the current stats based on selected user type
   const currentStats = userType === "test" ? testStats : productionStats;
 
@@ -267,6 +279,51 @@ export function AdminMatchingClient({
     } finally {
       setIsRevealing(false);
     }
+  };
+
+  // Fetch current matches
+  const fetchCurrentMatches = async () => {
+    setIsLoadingMatches(true);
+    try {
+      const response = await fetch(
+        `/api/admin/current-matches?isTestUser=${userType === "test"}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setCurrentMatches(data);
+      } else {
+        console.error("Failed to fetch current matches:", data.error);
+      }
+    } catch (err) {
+      console.error("Error fetching current matches:", err);
+    } finally {
+      setIsLoadingMatches(false);
+    }
+  };
+
+  // Load current matches when section is expanded or user type changes
+  useEffect(() => {
+    if (showCurrentMatches) {
+      fetchCurrentMatches();
+    }
+  }, [showCurrentMatches, userType]);
+
+  const toggleUnmatchedUser = (userId: string) => {
+    setExpandedUnmatched((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
   };
 
   return (
@@ -442,6 +499,192 @@ export function AdminMatchingClient({
         </Card>
       </div>
 
+      {/* Current Matches Section */}
+      {currentStats.totalMatches > 0 && (
+        <Card>
+          <CardHeader>
+            <button
+              onClick={() => setShowCurrentMatches(!showCurrentMatches)}
+              className="w-full flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                View Current Matches & Unmatched Users
+              </CardTitle>
+              {showCurrentMatches ? (
+                <ChevronUp className="h-5 w-5 text-slate-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-slate-400" />
+              )}
+            </button>
+          </CardHeader>
+          {showCurrentMatches && (
+            <CardContent className="space-y-4">
+              {isLoadingMatches ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                </div>
+              ) : currentMatches ? (
+                <>
+                  {/* Summary Stats */}
+                  <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 rounded-lg">
+                    <div>
+                      <div className="text-sm text-slate-600">
+                        Total Matches
+                      </div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {currentMatches.totalMatches}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-600">Unmatched</div>
+                      <div className="text-2xl font-bold text-amber-600">
+                        {currentMatches.totalUnmatched}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-600">Match Rate</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {currentMatches.matchRate.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Matched Users */}
+                  {currentMatches.matches.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-3">
+                        Matched Users (Sorted by Compatibility Score)
+                      </h3>
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {currentMatches.matches.map((match: any) => (
+                          <div
+                            key={match.matchId}
+                            className="bg-green-50 border border-green-200 rounded-lg p-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3">
+                                  <div>
+                                    <div className="font-medium text-slate-900">
+                                      {match.user1.name}
+                                    </div>
+                                    <div className="text-xs text-slate-600">
+                                      {match.user1.email}
+                                    </div>
+                                  </div>
+                                  <Heart className="h-4 w-4 text-rose-500" />
+                                  <div>
+                                    <div className="font-medium text-slate-900">
+                                      {match.user2.name}
+                                    </div>
+                                    <div className="text-xs text-slate-600">
+                                      {match.user2.email}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right ml-4">
+                                <div className="text-2xl font-bold text-green-600">
+                                  {match.compatibilityScore.toFixed(1)}
+                                </div>
+                                <div className="text-xs text-slate-600">
+                                  Compatibility
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Unmatched Users */}
+                  {currentMatches.unmatchedUsers.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-3">
+                        Unmatched Users ({currentMatches.unmatchedUsers.length})
+                      </h3>
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {currentMatches.unmatchedUsers.map((user: any) => (
+                          <div
+                            key={user.userId}
+                            className="bg-white border border-slate-200 rounded-lg overflow-hidden"
+                          >
+                            <button
+                              onClick={() => toggleUnmatchedUser(user.userId)}
+                              className="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
+                            >
+                              <div className="flex-1">
+                                <div className="font-semibold text-slate-900">
+                                  {user.userName}
+                                </div>
+                                <div className="text-sm text-slate-600">
+                                  {user.userEmail}
+                                </div>
+                                <div className="text-sm text-amber-700 mt-1">
+                                  {user.reason}
+                                </div>
+                              </div>
+                              {expandedUnmatched.has(user.userId) ? (
+                                <ChevronUp className="h-5 w-5 text-slate-400" />
+                              ) : (
+                                <ChevronDown className="h-5 w-5 text-slate-400" />
+                              )}
+                            </button>
+
+                            {expandedUnmatched.has(user.userId) && (
+                              <div className="border-t border-slate-200 p-3 bg-slate-50">
+                                {user.topPotentialMatches.length > 0 ? (
+                                  <div>
+                                    <div className="text-sm font-semibold text-slate-900 mb-2">
+                                      Top Potential Matches:
+                                    </div>
+                                    <div className="space-y-2">
+                                      {user.topPotentialMatches.map(
+                                        (match: any) => (
+                                          <div
+                                            key={match.userId}
+                                            className="bg-white border border-slate-200 rounded p-2 text-sm"
+                                          >
+                                            <div className="flex items-center justify-between">
+                                              <div>
+                                                <div className="font-medium text-slate-900">
+                                                  {match.userName}
+                                                </div>
+                                                <div className="text-xs text-slate-600">
+                                                  {match.userEmail}
+                                                </div>
+                                              </div>
+                                              <div className="text-lg font-bold text-slate-900">
+                                                {match.score.toFixed(1)}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="text-sm text-slate-600 italic">
+                                    No potential matches found (all failed hard
+                                    filters)
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : null}
+            </CardContent>
+          )}
+        </Card>
+      )}
+
       {/* Error Display */}
       {error && (
         <Alert variant="destructive">
@@ -490,7 +733,11 @@ export function AdminMatchingClient({
 
             <Button
               onClick={() => runMatching(false)}
-              disabled={isRunning || currentStats.totalUsers < 2}
+              disabled={
+                isRunning ||
+                currentStats.totalUsers < 2 ||
+                userType === "production"
+              }
               className={`flex-1 ${userType === "test" ? "bg-blue-600 hover:bg-blue-700" : "bg-purple-600 hover:bg-purple-700"}`}
             >
               {isRunning ? (
