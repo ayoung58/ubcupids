@@ -91,6 +91,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <span className="font-medium">Guide</span>
             </Link>
             <Link
+              href="/statistics"
+              className="px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
+            >
+              Statistics
+            </Link>
+            <Link
               href="/privacy"
               className="px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
             >
