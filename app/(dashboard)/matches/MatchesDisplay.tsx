@@ -30,6 +30,7 @@ interface MatchDisplay {
   matchType: "algorithm" | "cupid_sent" | "cupid_received";
   compatibilityScore: number | null;
   cupidComment: string | null;
+  cupidName: string | null;
   status: MatchStatus;
   matchedUser: {
     firstName: string;
@@ -95,7 +96,7 @@ export function MatchesDisplay() {
 
   const handleRespondToRequest = async (
     matchId: string,
-    action: "accept" | "decline"
+    action: "accept" | "decline",
   ) => {
     try {
       const res = await fetch("/api/matches/respond", {
@@ -182,12 +183,17 @@ export function MatchesDisplay() {
           <Card className="border-2 border-slate-200">
             <CardContent className="p-12 text-center">
               <Heart className="h-16 w-16 mx-auto text-slate-300 mb-6" />
-              <h2 className="text-2xl font-bold text-slate-700 mb-2">
-                No Matches Yet
+              <h2 className="text-2xl font-bold text-slate-700 mb-4">
+                No Matches This Year
               </h2>
-              <p className="text-slate-500 max-w-md mx-auto">
-                We couldn&apos;t find compatible matches for you this batch.
-                Don&apos;t worry - keep your profile updated!
+              <p className="text-slate-600 max-w-md mx-auto mb-4">
+                Unfortunately, we weren&apos;t able to find compatible matches
+                for you this year. Compatibility matching is complex, and
+                sometimes the right connections just aren&apos;t available in
+                the current participant pool.
+              </p>
+              <p className="text-slate-600 max-w-md mx-auto">
+                We&apos;d love to have you participate again next year! 💝
               </p>
             </CardContent>
           </Card>
@@ -236,7 +242,7 @@ export function MatchesDisplay() {
                 variant={filterType === "algorithm" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterType("algorithm")}
-                className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200"
+                className="flex items-center gap-2"
               >
                 <Sparkles className="h-4 w-4" />
                 Algorithm ({counts.algorithm})
@@ -245,7 +251,7 @@ export function MatchesDisplay() {
                 variant={filterType === "cupid_sent" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterType("cupid_sent")}
-                className="flex items-center gap-2 relative bg-blue-50 hover:bg-blue-100 border-blue-200"
+                className="flex items-center gap-2 relative"
               >
                 <Send className="h-4 w-4" />
                 Your Cupid&apos;s Picks ({counts.cupid_sent})
@@ -255,7 +261,7 @@ export function MatchesDisplay() {
                       <Clock className="h-3 w-3 text-yellow-500" />
                     )}
                     {data.requestsSent.every(
-                      (m) => m.status === "accepted"
+                      (m) => m.status === "accepted",
                     ) && <Check className="h-3 w-3 text-green-500" />}
                     {data.requestsSent.some((m) => m.status === "declined") && (
                       <X className="h-3 w-3 text-red-500" />
@@ -269,7 +275,7 @@ export function MatchesDisplay() {
                 }
                 size="sm"
                 onClick={() => setFilterType("cupid_received")}
-                className="flex items-center gap-2 relative bg-green-50 hover:bg-green-100 border-green-200"
+                className="flex items-center gap-2 relative"
               >
                 <Inbox className="h-4 w-4" />
                 Match Requests ({counts.cupid_received})
@@ -278,7 +284,7 @@ export function MatchesDisplay() {
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                     {
                       data.requestsReceived.filter(
-                        (m) => m.status === "pending"
+                        (m) => m.status === "pending",
                       ).length
                     }
                   </span>
@@ -294,9 +300,7 @@ export function MatchesDisplay() {
             <Card>
               <CardContent className="p-12 text-center">
                 <Heart className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-                <p className="text-slate-500">
-                  No matches in this category yet
-                </p>
+                <p className="text-slate-500">No matches in this category</p>
               </CardContent>
             </Card>
           ) : (
@@ -325,7 +329,7 @@ export function MatchesDisplay() {
 // Helper function to sort and filter matches
 function getSortedAndFilteredMatches(
   matches: MatchDisplay[],
-  filterType: "all" | "algorithm" | "cupid_sent" | "cupid_received"
+  filterType: "all" | "algorithm" | "cupid_sent" | "cupid_received",
 ): MatchDisplay[] {
   // Filter matches
   const filtered =
@@ -392,13 +396,8 @@ function AlgorithmMatchCard({ match }: { match: MatchDisplay }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h3 className="text-xl font-semibold text-slate-900">
-                  {displayName}, {match.matchedUser.age}
+                  {displayName}
                 </h3>
-                {match.compatibilityScore && (
-                  <p className="text-sm text-purple-600 font-medium mt-1">
-                    {Math.round(match.compatibilityScore)}% Compatible
-                  </p>
-                )}
               </div>
             </div>
 
@@ -495,7 +494,7 @@ function MatchRequestCard({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h3 className="text-xl font-semibold text-slate-900">
-                    {displayName}, {match.matchedUser.age}
+                    {displayName}
                   </h3>
                   <span className="inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 bg-slate-200 text-slate-700">
                     {statusText}
@@ -517,7 +516,7 @@ function MatchRequestCard({
               {match.cupidComment && (
                 <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <p className="text-sm font-medium text-blue-900 mb-1">
-                    💘 Cupid says:
+                    💘 Their cupid {match.cupidName || ""} says:
                   </p>
                   <p className="text-sm text-slate-700 italic">
                     &quot;{match.cupidComment}&quot;
@@ -580,7 +579,7 @@ function MatchRequestCard({
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h3 className="text-xl font-semibold text-slate-900">
-                  {displayName}, {match.matchedUser.age}
+                  {displayName}
                 </h3>
                 <span className="inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 bg-yellow-100 text-yellow-700">
                   Pending Response
@@ -591,7 +590,7 @@ function MatchRequestCard({
             {match.cupidComment && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm font-medium text-blue-900 mb-1">
-                  💘 Cupid says:
+                  💘 Their cupid {match.cupidName || ""} says:
                 </p>
                 <p className="text-sm text-slate-700 italic">
                   &quot;{match.cupidComment}&quot;
@@ -614,6 +613,14 @@ function MatchRequestCard({
                 </p>
               </div>
             )}
+
+            {/* Free Response Dropdown for pending matches */}
+            <FreeResponseDropdown
+              freeResponses={match.matchedUser.freeResponses}
+              showFreeResponseToMatches={
+                match.matchedUser.showFreeResponseToMatches
+              }
+            />
 
             {/* Action Buttons */}
             <div className="mt-4 flex gap-3">
@@ -696,7 +703,7 @@ function RequestSentCard({ match }: { match: MatchDisplay }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h3 className="text-xl font-semibold text-slate-900">
-                  {displayName}, {match.matchedUser.age}
+                  {displayName}
                 </h3>
                 <span
                   className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${statusConfig.badge}`}
@@ -728,7 +735,7 @@ function RequestSentCard({ match }: { match: MatchDisplay }) {
             {match.cupidComment && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm font-medium text-blue-900 mb-1">
-                  💘 Your cupid&apos;s reasoning:
+                  💘 Your cupid {match.cupidName || ""} says:
                 </p>
                 <p className="text-sm text-slate-700 italic">
                   &quot;{match.cupidComment}&quot;
@@ -752,15 +759,13 @@ function RequestSentCard({ match }: { match: MatchDisplay }) {
               </div>
             )}
 
-            {/* Free Response Dropdown for accepted matches */}
-            {match.status === "accepted" && (
-              <FreeResponseDropdown
-                freeResponses={match.matchedUser.freeResponses}
-                showFreeResponseToMatches={
-                  match.matchedUser.showFreeResponseToMatches
-                }
-              />
-            )}
+            {/* Free Response Dropdown - shown for all match requests */}
+            <FreeResponseDropdown
+              freeResponses={match.matchedUser.freeResponses}
+              showFreeResponseToMatches={
+                match.matchedUser.showFreeResponseToMatches
+              }
+            />
           </div>
         </div>
       </CardContent>

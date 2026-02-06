@@ -22,6 +22,12 @@ export async function GET() {
 
     const userId = session.user.id;
 
+    // Check if user is a test user
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isTestUser: true },
+    });
+
     // Get all matches for this user in the current batch
     const matches = await prisma.match.findMany({
       where: {
@@ -63,6 +69,32 @@ export async function GET() {
       },
     });
 
+    // Get cupid information for matches that have cupidId
+    const cupidIds = matches
+      .filter((m) => m.cupidId)
+      .map((m) => m.cupidId as string);
+
+    const cupids =
+      cupidIds.length > 0
+        ? await prisma.user.findMany({
+            where: { id: { in: cupidIds } },
+            select: {
+              id: true,
+              cupidDisplayName: true,
+              displayName: true,
+              firstName: true,
+            },
+          })
+        : [];
+
+    // Create a map for quick cupid lookup
+    const cupidMap = new Map(
+      cupids.map((c) => [
+        c.id,
+        c.cupidDisplayName || c.displayName || c.firstName || null,
+      ]),
+    );
+
     // Format matches for display, respecting privacy settings
     const displayMatches: MatchDisplay[] = matches.map((match) => {
       // Hide contact info for pending cupid_received matches
@@ -95,6 +127,7 @@ export async function GET() {
           | "cupid_received",
         compatibilityScore: match.compatibilityScore,
         cupidComment: match.cupidComment,
+        cupidName: match.cupidId ? cupidMap.get(match.cupidId) || null : null,
         status: match.status as "accepted" | "pending" | "declined",
         matchedUser: {
           firstName: match.matchedUser.firstName,
@@ -126,13 +159,13 @@ export async function GET() {
 
     // Separate matches by type
     const algorithmMatches = displayMatches.filter(
-      (m) => m.matchType === "algorithm"
+      (m) => m.matchType === "algorithm",
     );
     const requestsSent = displayMatches.filter(
-      (m) => m.matchType === "cupid_sent"
+      (m) => m.matchType === "cupid_sent",
     );
     const requestsReceived = displayMatches.filter(
-      (m) => m.matchType === "cupid_received"
+      (m) => m.matchType === "cupid_received",
     );
 
     // Check if matches are revealed for this batch
@@ -141,13 +174,46 @@ export async function GET() {
       select: { revealedAt: true },
     });
 
+    // Check if matches have been revealed for this user type
+    let isRevealed: boolean;
+    if (currentUser?.isTestUser) {
+      // Test users: Check if any test user matches have been revealed
+      const anyTestMatchRevealed = await prisma.match.findFirst({
+        where: {
+          batchNumber: CURRENT_BATCH,
+          revealedAt: { not: null },
+          user: { isTestUser: true },
+        },
+        select: { id: true },
+      });
+      isRevealed = anyTestMatchRevealed !== null;
+    } else {
+      // Production users: Check if any production matches have been revealed
+      // AND if batch reveal date has passed (Feb 8) or admin revealed
+      // This ensures we only show results when both conditions are met
+      const anyProdMatchRevealed = await prisma.match.findFirst({
+        where: {
+          batchNumber: CURRENT_BATCH,
+          revealedAt: { not: null },
+          user: { isTestUser: false },
+        },
+        select: { id: true },
+      });
+
+      const batchRevealed = batch !== null && batch.revealedAt !== null;
+
+      // Show as revealed if batch is revealed (this handles both admin reveal and date passing)
+      // Even users with 0 matches need to see the "no matches" screen
+      isRevealed = batchRevealed;
+    }
+
     const response: UserMatchesData = {
       algorithmMatches,
       requestsSent,
       requestsReceived,
       totalMatches: displayMatches.length,
       batchNumber: CURRENT_BATCH,
-      isRevealed: batch !== null && batch.revealedAt !== null,
+      isRevealed,
     };
 
     return NextResponse.json(response);
@@ -155,7 +221,7 @@ export async function GET() {
     console.error("Error fetching matches:", error);
     return NextResponse.json(
       { error: "Failed to fetch matches" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

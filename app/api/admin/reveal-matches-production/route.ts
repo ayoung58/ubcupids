@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
+import * as cupidLib from "@/lib/matching/cupid";
 
 /**
  * Reveal Matches to Production Candidates ONLY
@@ -41,11 +42,18 @@ export async function POST() {
         {
           error: "No matches found for production users. Create matches first.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Step 1: Cupid-initiated matches handled by existing cupid system
+    // Step 1: Create Match records from cupid selections (production users only)
+    const cupidMatchResult = await cupidLib.createCupidSelectedMatches(
+      batchNumber,
+      false,
+    ); // false = production users only
+    console.log(
+      `Created ${cupidMatchResult.created} cupid-initiated matches for production users, updated ${cupidMatchResult.updated}, skipped ${cupidMatchResult.skipped}`,
+    );
 
     // Step 2: Update all matches for non-test users to set revealedAt timestamp
     // Also update the batch revealedAt only when production users are revealed
@@ -71,12 +79,17 @@ export async function POST() {
     return NextResponse.json({
       message: `Revealed ${result.count} matches to production candidates`,
       revealed: result.count,
+      cupidMatches: {
+        created: cupidMatchResult.created,
+        updated: cupidMatchResult.updated,
+        skipped: cupidMatchResult.skipped,
+      },
     });
   } catch (error) {
     console.error("Error revealing matches for production users:", error);
     return NextResponse.json(
       { error: "Failed to reveal matches to production candidates" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
