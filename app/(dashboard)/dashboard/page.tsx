@@ -195,8 +195,8 @@ export default async function DashboardPage() {
           <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
             <p className="text-sm text-slate-600 mb-2">
               {matchesRevealed
-                ? "Help us improve! You'll have a chance to win 1 of 3 $10 Amazon gift cards!"
-                : "Feedback forms open when matches are revealed on Feb 8th"}
+                ? "Help us improve the experience by providing feedback! Fill this out by Feb. 21st, and you'll have a chance to win 1 of 3 $10 Amazon gift cards!"
+                : "Feedback forms open when matches are revealed on Feb 8th. Fill this out by Feb. 21st and you'll have a chance to win 1 of 3 $10 Amazon gift cards!"}
             </p>
             {matchesRevealed ? (
               <Link
