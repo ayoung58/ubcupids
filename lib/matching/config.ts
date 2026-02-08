@@ -131,7 +131,7 @@ export const MAX_CUPID_SENT_MATCHES = 2;
 /**
  * Maximum cupid-received matches a user can receive
  */
-export const MAX_CUPID_RECEIVED_MATCHES = 2;
+export const MAX_CUPID_RECEIVED_MATCHES = 20;
 
 // ===========================================
 // CUPID SYSTEM
