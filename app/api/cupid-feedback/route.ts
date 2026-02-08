@@ -116,10 +116,8 @@ export async function POST(request: NextRequest) {
 
       console.log("[Cupid Feedback] Full Resend response:", {
         emailResult,
-        hasId: !!emailResult?.id,
-        hasData: !!emailResult?.data,
         hasError: !!emailResult?.error,
-        dataId: emailResult?.data?.id,
+        dataId: (emailResult as any)?.data?.id,
       });
 
       // Check if there's an error in the response (bounce, invalid email, etc.)
@@ -130,9 +128,10 @@ export async function POST(request: NextRequest) {
           to: cupid.email,
           error: emailResult.error,
         });
-      } else if (emailResult?.data?.id || emailResult?.id) {
+      } else if ((emailResult as any)?.data?.id || (emailResult as any)?.id) {
         // Check if the data indicates a bounce or delivery failure
-        const actualId = emailResult?.data?.id || emailResult?.id;
+        const actualId =
+          (emailResult as any)?.data?.id || (emailResult as any)?.id;
         emailSent = true;
         console.log("[Cupid Feedback] ✅ Email sent successfully:", {
           to: cupid.email,
