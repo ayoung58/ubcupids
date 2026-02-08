@@ -23,6 +23,7 @@ import {
   AlcoholConsumptionChart,
   SubstanceUseChart,
   EngagementMetricsChart,
+  MatchOverviewChart,
 } from "./_components/StatisticsCharts";
 
 interface QuestionnaireResponses {
@@ -44,24 +45,71 @@ export const dynamic = "force-dynamic";
  */
 
 async function getStatisticsData() {
-  // Get all matched users who have submitted questionnaire v2 (excluding test users)
-  const matchedUsers = await prisma.user.findMany({
+  // Get all users who have submitted questionnaire v2 (excluding test users)
+  const usersWithCompletedQuestionnaires = await prisma.user.findMany({
     where: {
       isTestUser: false,
       isBeingMatched: true,
       questionnaireResponseV2: {
         isSubmitted: true,
       },
-      OR: [{ matchesGiven: { some: {} } }, { matchesReceived: { some: {} } }],
     },
     include: {
       questionnaireResponseV2: true,
     },
   });
 
+  // Get additional statistics for match overview
+  const confirmedMatchAccounts = await prisma.user.count({
+    where: {
+      isTestUser: false,
+      isBeingMatched: true,
+    },
+  });
+
+  const completedQuestionnaires = await prisma.user.count({
+    where: {
+      isTestUser: false,
+      isBeingMatched: true,
+      questionnaireResponseV2: {
+        isSubmitted: true,
+      },
+    },
+  });
+
+  const unmatchedUsers = await prisma.user.count({
+    where: {
+      isTestUser: false,
+      isBeingMatched: true,
+      questionnaireResponseV2: {
+        isSubmitted: true,
+      },
+      AND: [{ matchesGiven: { none: {} } }, { matchesReceived: { none: {} } }],
+    },
+  });
+
+  // Count unique cupids who actually selected matches for their candidates
+  const cupidsWhoMadeMatches = await prisma.match.groupBy({
+    by: ["cupidId"],
+    where: {
+      cupidId: {
+        not: null,
+      },
+      matchType: {
+        in: ["cupid_sent", "cupid_received"],
+      },
+    },
+  });
+  const cupidsWithMatches = cupidsWhoMadeMatches.length;
+
   // Extract statistics
   const stats = {
-    totalUsers: matchedUsers.length,
+    totalUsers: usersWithCompletedQuestionnaires.length,
+    // Match overview metrics
+    confirmedMatchAccounts,
+    completedQuestionnaires,
+    unmatchedUsers,
+    cupidsWithMatches,
     ages: [] as number[],
     genderIdentity: {} as Record<string, number>,
     genderPreference: {} as Record<string, number>,
@@ -82,7 +130,7 @@ async function getStatisticsData() {
     dualRole: 0, // Both match user AND cupid
   };
 
-  matchedUsers.forEach((user) => {
+  usersWithCompletedQuestionnaires.forEach((user) => {
     // Age
     if (user.age) {
       stats.ages.push(user.age);
@@ -168,10 +216,10 @@ async function getStatisticsData() {
       stats.relationshipStyle[q11] = (stats.relationshipStyle[q11] || 0) + 1;
     }
 
-    // Q14: Dating History
-    const q14 = responses.q14?.answer;
-    if (q14 && typeof q14 === "string") {
-      stats.datingHistory[q14] = (stats.datingHistory[q14] || 0) + 1;
+    // Q20: Relationship Experience (Dating History)
+    const q20 = responses.q20?.answer;
+    if (q20 && typeof q20 === "string") {
+      stats.datingHistory[q20] = (stats.datingHistory[q20] || 0) + 1;
     }
 
     // Q22: Introversion/Extroversion (likert 1-5)
@@ -217,17 +265,33 @@ export default async function StatisticsPage() {
               Community Insights
             </CardTitle>
             <CardDescription className="text-center text-lg">
-              Statistics from {stats.totalUsers} matched UBC students
+              Statistics from {stats.totalUsers} UBC students with completed
+              questionnaires
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-center text-slate-600">
               Explore the demographics and preferences of our UBCupids
               community. All data is anonymized and aggregated from users who
-              have completed their questionnaires and been matched.
+              have completed their questionnaires.
             </p>
           </CardContent>
         </Card>
+
+        {/* Match Overview Section */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <span className="text-3xl">💝</span>
+            Match Overview
+          </h2>
+
+          <MatchOverviewChart
+            confirmedMatchAccounts={stats.confirmedMatchAccounts}
+            completedQuestionnaires={stats.completedQuestionnaires}
+            unmatchedUsers={stats.unmatchedUsers}
+            cupidsWithMatches={stats.cupidsWithMatches}
+          />
+        </div>
 
         {/* Demographics Section */}
         <div className="space-y-6">
@@ -309,9 +373,8 @@ export default async function StatisticsPage() {
         <Card className="bg-slate-100 border-slate-300">
           <CardContent className="pt-6">
             <p className="text-sm text-slate-600 text-center">
-              📊 Statistics are updated in real-time and include only users who
-              have submitted their questionnaires and have been matched. All
-              data is anonymized to protect privacy.
+              📊 Statistics include users who have submitted their
+              questionnaires. All data is anonymized to protect privacy.
             </p>
           </CardContent>
         </Card>

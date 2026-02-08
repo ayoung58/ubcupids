@@ -37,6 +37,13 @@ export function DashboardLayoutClient({
             {/* Navigation Links - Left (hidden on small screens) */}
             <div className="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 items-center gap-2">
               <Link
+                href="/statistics"
+                className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"
+              >
+                <span className="text-lg">📊</span>
+                <span className="font-medium">Statistics</span>
+              </Link>
+              <Link
                 href="/user-guide"
                 className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"
               >
@@ -84,6 +91,13 @@ export function DashboardLayoutClient({
             {/* Mobile Navigation - Below logo on small screens */}
             <div className="lg:hidden flex flex-col items-center gap-2 mt-4">
               <div className="flex justify-center items-center gap-2 flex-wrap">
+                <Link
+                  href="/statistics"
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"
+                >
+                  <span>📊</span>
+                  <span className="font-medium">Statistics</span>
+                </Link>
                 <Link
                   href="/user-guide"
                   className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"

@@ -120,10 +120,11 @@ const formatRelationshipStyle = (value: string) => {
 
 const formatDatingHistory = (value: string) => {
   const labels: Record<string, string> = {
-    never: "Never dated",
-    few: "A few relationships",
-    many: "Many relationships",
-    currently_dating: "Currently dating",
+    no_prior: "No prior experience",
+    dated_not_serious: "Dated, not serious",
+    one_serious: "One serious relationship",
+    few_relationships: "A few relationships",
+    many_relationships: "Many relationships",
     prefer_not_to_answer: "Prefer not to say",
   };
   return labels[value] || value;
@@ -156,7 +157,9 @@ export function AgeDistributionChart({ ages }: { ages: number[] }) {
   // Create age buckets
   const ageBuckets: Record<string, number> = {};
   ages.forEach((age) => {
-    const bucket = Math.floor(age / 2) * 2; // Group by 2-year intervals
+    // Merge 16-17 into 18-19 bucket
+    const adjustedAge = age < 18 ? 18 : age;
+    const bucket = Math.floor(adjustedAge / 2) * 2; // Group by 2-year intervals
     const bucketLabel = `${bucket}-${bucket + 1}`;
     ageBuckets[bucketLabel] = (ageBuckets[bucketLabel] || 0) + 1;
   });
@@ -232,7 +235,7 @@ export function GenderIdentityChart({
               cy="50%"
               labelLine={false}
               label={({ name, percent }) =>
-                `${name}: ${((percent || 0) * 100).toFixed(0)}%`
+                `${name}: ${((percent || 0) * 100).toFixed(2)}%`
               }
               outerRadius={80}
               fill="#8884d8"
@@ -375,8 +378,11 @@ export function CulturalBackgroundChart({
         <CardTitle className="text-lg">Cultural Background (Top 8)</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
+        <ResponsiveContainer width="100%" height={380}>
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis
               dataKey="name"
@@ -384,7 +390,8 @@ export function CulturalBackgroundChart({
               style={{ fontSize: "11px" }}
               angle={-45}
               textAnchor="end"
-              height={100}
+              height={90}
+              interval={0}
             />
             <YAxis stroke="#64748b" style={{ fontSize: "12px" }} />
             <Tooltip
@@ -415,22 +422,58 @@ export function SexualOrientationChart({
       value,
     }));
 
+  const CustomLabel = (props: {
+    cx?: number;
+    cy?: number;
+    midAngle?: number;
+    outerRadius?: number;
+    percent?: number;
+    name?: string;
+  }) => {
+    const { cx, cy, midAngle, outerRadius, percent, name } = props;
+    if (
+      cx === undefined ||
+      cy === undefined ||
+      midAngle === undefined ||
+      outerRadius === undefined ||
+      percent === undefined ||
+      name === undefined
+    ) {
+      return null;
+    }
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 25;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#1e293b"
+        textAnchor={x > cx ? "start" : "end"}
+        dominantBaseline="central"
+        style={{ fontSize: "12px" }}
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   return (
     <Card className="border-purple-200 bg-white/80 backdrop-blur">
       <CardHeader>
         <CardTitle className="text-lg">Sexual Orientation</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={350}>
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) =>
-                `${name}: ${((percent || 0) * 100).toFixed(0)}%`
-              }
+              cy="45%"
+              labelLine={true}
+              label={CustomLabel}
               outerRadius={80}
               fill="#8884d8"
               dataKey="value"
@@ -473,8 +516,11 @@ export function ReligionChart({
         <CardTitle className="text-lg">Religious & Spiritual Beliefs</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
+        <ResponsiveContainer width="100%" height={380}>
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis
               dataKey="name"
@@ -482,7 +528,8 @@ export function ReligionChart({
               style={{ fontSize: "11px" }}
               angle={-45}
               textAnchor="end"
-              height={100}
+              height={90}
+              interval={0}
             />
             <YAxis stroke="#64748b" style={{ fontSize: "12px" }} />
             <Tooltip
@@ -524,16 +571,20 @@ export function PoliticalLeaningChart({
         <CardTitle className="text-lg">Political Leaning</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
+        <ResponsiveContainer width="100%" height={380}>
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis
               dataKey="name"
               stroke="#64748b"
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: "9px" }}
               angle={-15}
               textAnchor="end"
-              height={80}
+              height={90}
+              interval={0}
             />
             <YAxis stroke="#64748b" style={{ fontSize: "12px" }} />
             <Tooltip
@@ -575,16 +626,20 @@ export function IntroversionExtroversionChart({
         <CardTitle className="text-lg">Introversion / Extroversion</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
+        <ResponsiveContainer width="100%" height={380}>
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis
               dataKey="name"
               stroke="#64748b"
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: "9px" }}
               angle={-15}
               textAnchor="end"
-              height={80}
+              height={90}
+              interval={0}
             />
             <YAxis stroke="#64748b" style={{ fontSize: "12px" }} />
             <Tooltip
@@ -615,23 +670,59 @@ export function RelationshipStyleChart({
       value,
     }));
 
+  const CustomLabel = (props: {
+    cx?: number;
+    cy?: number;
+    midAngle?: number;
+    outerRadius?: number;
+    percent?: number;
+    name?: string;
+  }) => {
+    const { cx, cy, midAngle, outerRadius, percent, name } = props;
+    if (
+      cx === undefined ||
+      cy === undefined ||
+      midAngle === undefined ||
+      outerRadius === undefined ||
+      percent === undefined ||
+      name === undefined
+    ) {
+      return null;
+    }
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 35; // Increased from 25
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#1e293b"
+        textAnchor={x > cx ? "start" : "end"}
+        dominantBaseline="central"
+        style={{ fontSize: "11px" }} // Slightly smaller font
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   return (
     <Card className="border-purple-200 bg-white/80 backdrop-blur">
       <CardHeader>
         <CardTitle className="text-lg">Relationship Style</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={400}>
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) =>
-                `${name}: ${((percent || 0) * 100).toFixed(0)}%`
-              }
-              outerRadius={80}
+              cy="40%"
+              labelLine={true}
+              label={CustomLabel}
+              outerRadius={90}
               fill="#8884d8"
               dataKey="value"
             >
@@ -871,6 +962,92 @@ export function EngagementMetricsChart({
         </ResponsiveContainer>
         <div className="mt-4 text-sm text-slate-600 text-center">
           {totalUsers} total users tracked
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Match Overview Chart
+export function MatchOverviewChart({
+  confirmedMatchAccounts,
+  completedQuestionnaires,
+  unmatchedUsers,
+  cupidsWithMatches,
+}: {
+  confirmedMatchAccounts: number;
+  completedQuestionnaires: number;
+  unmatchedUsers: number;
+  cupidsWithMatches: number;
+}) {
+  const matchedUsers = completedQuestionnaires - unmatchedUsers;
+
+  return (
+    <Card className="border-pink-200 bg-white/80 backdrop-blur">
+      <CardHeader>
+        <CardTitle className="text-lg">Match Overview</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Confirmed Match Accounts */}
+          <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg">
+            <div className="text-4xl font-bold text-pink-600">
+              {confirmedMatchAccounts}
+            </div>
+            <div className="text-sm text-slate-600 mt-2">
+              Confirmed Match Accounts
+            </div>
+          </div>
+
+          {/* Completed Questionnaires */}
+          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
+            <div className="text-4xl font-bold text-purple-600">
+              {completedQuestionnaires}
+            </div>
+            <div className="text-sm text-slate-600 mt-2">
+              Completed Questionnaires
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              {(
+                (completedQuestionnaires / confirmedMatchAccounts) *
+                100
+              ).toFixed(1)}
+              % of confirmed accounts
+            </div>
+          </div>
+
+          {/* Matched vs Unmatched */}
+          <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg">
+            <div className="flex justify-around items-center">
+              <div>
+                <div className="text-3xl font-bold text-green-600">
+                  {matchedUsers}
+                </div>
+                <div className="text-xs text-slate-600 mt-1">Matched</div>
+              </div>
+              <div className="text-2xl text-slate-400">/</div>
+              <div>
+                <div className="text-3xl font-bold text-orange-600">
+                  {unmatchedUsers}
+                </div>
+                <div className="text-xs text-slate-600 mt-1">Unmatched</div>
+              </div>
+            </div>
+            <div className="text-xs text-slate-500 mt-2">
+              {((matchedUsers / completedQuestionnaires) * 100).toFixed(1)}%
+              matched rate
+            </div>
+          </div>
+
+          {/* Cupids Who Made Matches */}
+          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg md:col-span-3">
+            <div className="text-4xl font-bold text-fuchsia-600">
+              {cupidsWithMatches}
+            </div>
+            <div className="text-sm text-slate-600 mt-2">
+              Matches made by cupids
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
