@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         { error: "Account types must be specified" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -51,8 +51,24 @@ export async function POST(request: Request) {
     if (deleteMatch) {
       // Delete match-related data
       await prisma.$transaction(async (tx) => {
-        // Delete questionnaire response
+        // Delete questionnaire responses (both v1 and v2)
         await tx.questionnaireResponse.deleteMany({
+          where: { userId },
+        });
+        await tx.questionnaireResponseV2.deleteMany({
+          where: { userId },
+        });
+        await tx.questionnaire.deleteMany({
+          where: { userId },
+        });
+
+        // Delete text embeddings
+        await tx.textEmbedding.deleteMany({
+          where: { userId },
+        });
+
+        // Delete cupid profile summary
+        await tx.cupidProfileSummary.deleteMany({
           where: { userId },
         });
 
@@ -75,6 +91,11 @@ export async function POST(request: Request) {
           where: { candidateId: userId },
         });
 
+        // Delete uploads (profile pictures, etc.)
+        await tx.upload.deleteMany({
+          where: { userId },
+        });
+
         // Update user flags
         await tx.user.update({
           where: { id: userId },
@@ -83,10 +104,14 @@ export async function POST(request: Request) {
             age: null,
             major: null,
             profilePicture: null,
+            bio: null,
+            interests: null,
+            pointOfContact: null,
             showBioToMatches: true,
             showProfilePicToMatches: true,
             showInterestsToMatches: true,
             showPointOfContactToMatches: true,
+            showFreeResponseToMatches: true,
           },
         });
       });
@@ -115,7 +140,7 @@ export async function POST(request: Request) {
 
           if (hasUser) {
             const filtered = potentialMatches.filter(
-              (pm) => pm.userId !== userId
+              (pm) => pm.userId !== userId,
             );
 
             await prisma.cupidAssignment.update({
@@ -157,14 +182,28 @@ export async function POST(request: Request) {
           where: { userId },
         });
 
+        // Delete cupid profile summary
+        await tx.cupidProfileSummary.deleteMany({
+          where: { userId },
+        });
+
         // Delete cupid assignments where this user is the cupid
         await tx.cupidAssignment.deleteMany({
           where: { cupidUserId: userId },
         });
 
         // Delete matches where this user was the cupid who created them
-        await tx.match.deleteMany({
+        // Note: This removes the cupid attribution but keeps the matches for the matched users
+        await tx.match.updateMany({
           where: { cupidId: userId },
+          data: { cupidId: null, cupidComment: null },
+        });
+
+        // Delete cupid feedback sent or received
+        await tx.cupidFeedback.deleteMany({
+          where: {
+            OR: [{ senderId: userId }, { cupidId: userId }],
+          },
         });
 
         // Update user flags
@@ -203,13 +242,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { error: "No valid account type specified" },
-      { status: 400 }
+      { status: 400 },
     );
   } catch (error) {
     console.error("Error deleting account:", error);
     return NextResponse.json(
       { error: "Failed to delete account" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
