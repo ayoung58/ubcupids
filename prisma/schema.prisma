@@ -7,31 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// NextAuth.js Required Models
-// ============================================
-
-// Initial Schema:
-// Includes NextAuth required tables (Account, Session, VerificationToken)
-// Uses cuid() for IDs (collision-resistant, URL-safe)
-// Indexes on foreign keys for query performance
-// Json fields for flexible data (questionnaire responses, preferences)
-
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -55,194 +44,126 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ============================================
-// User Model (Enhanced)
-// ============================================
-
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String    // Bcrypt hashed password
-  emailVerified DateTime? // NULL until user verifies via email link
-  
-  // Required at Registration
-  firstName     String    // Required for all accounts
-  lastName      String    // Required for all accounts
-  age           Int?      // User's age (required for matching, optional for Cupids)
-  acceptedTerms DateTime  // NEW: Timestamp when user accepted T&C
-  
-  // User Role Flags
-  isCupid       Boolean   @default(false) // Can create matches for others
-  isBeingMatched Boolean  @default(true)  // Participating in matching (default true for new users)
-  isAdmin       Boolean   @default(false) // Has admin dashboard access
-  isTestUser    Boolean   @default(false) // Generated test user (can be bulk deleted)
-  lastActiveDashboard String @default("match") // 'match' or 'cupid' - tracks which dashboard was last active
-  preferredCandidateEmail String? // Cupid's preferred candidate email (optional)
-  
-  // Profile Information
-  displayName   String?   // Shown to matches, defaults to firstName
-  cupidDisplayName String? // Display name when acting as a Cupid (defaults to displayName)
-  major         String?   // Optional, from signup or profile
-  interests     String?   @db.Text // Hobbies and interests (used for matching)
-  bio           String?   @db.Text // Short bio (used minimally for matching)
-  profilePicture String?  // Cloudinary URL for profile picture
-  pointOfContact String?  // Optional contact info (social media, email, etc.) to show to matches
-  
-  // Profile Visibility Settings
-  showBioToMatches Boolean @default(true)  // Whether to display bio to matches
-  showProfilePicToMatches Boolean @default(true) // Whether to display profile pic to matches
-  showInterestsToMatches Boolean @default(true)  // Whether to display interests to matches
-  showPointOfContactToMatches Boolean @default(true) // Whether to display point of contact to matches
-  showFreeResponseToMatches Boolean @default(true) // Whether to display free response answers to matches
-  
-  // Campus Information (Match users only)
-  campus String @default("Vancouver") // UBC campus: Vancouver or Okanagan
-  okMatchingDifferentCampus Boolean @default(true) // Whether user is okay matching with different campus students
-  
-  // Tutorial Completion Tracking (per-user)
-  dashboardTutorialCompleted Boolean @default(false) // Match dashboard tutorial
-  profileTutorialCompleted Boolean @default(false)   // Profile page tutorial
-  questionnaireTutorialCompleted Boolean @default(false) // Questionnaire tutorial
-  cupidPortalTutorialCompleted Boolean @default(false)   // Cupid matching portal tutorial
-  
-  // Questionnaire Version Tracking
-  needsQuestionnaireUpdate Boolean @default(false) // Set to true when user needs to complete V2 questionnaire
-  
-  // Legacy fields (keeping for backwards compatibility)
-  yearOfStudy   Int?
-  
-  // Preferences stored as JSONB (for complex matching criteria)
-  // Note: Consider moving this entirely to Questionnaire model
-  preferences   Json?
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // NextAuth Relations
-  accounts      Account[]
-  sessions      Session[]
-
-  // Application Relations
-  questionnaire Questionnaire?
-  questionnaireResponse QuestionnaireResponse?
-  questionnaireResponseV2 QuestionnaireResponseV2? // New V2 questionnaire
-  matchesGiven  Match[]   @relation("UserMatches")
-  matchesReceived Match[] @relation("MatchedUser")
-  uploads       Upload[]
-  cupidProfile  CupidProfile?
-  
-  // Matching System Relations
-  compatibilityScoresGiven CompatibilityScore[] @relation("UserCompatibilityScores")
-  compatibilityScoresReceived CompatibilityScore[] @relation("TargetCompatibilityScores")
-  cupidAssignments CupidAssignment[] @relation("CupidAssignments")
-  assignedAsCandidates CupidAssignment[] @relation("AssignedCandidates")
-  textEmbeddings TextEmbedding[]
-  cupidProfileSummary CupidProfileSummary?
+  id                             String                   @id @default(cuid())
+  email                          String                   @unique
+  emailVerified                  DateTime?
+  password                       String
+  firstName                      String
+  lastName                       String
+  major                          String?
+  yearOfStudy                    Int?
+  interests                      String?
+  preferences                    Json?
+  createdAt                      DateTime                 @default(now())
+  updatedAt                      DateTime                 @updatedAt
+  acceptedTerms                  DateTime
+  bio                            String?
+  displayName                    String?
+  isBeingMatched                 Boolean                  @default(true)
+  isCupid                        Boolean                  @default(false)
+  profilePicture                 String?
+  showBioToMatches               Boolean                  @default(true)
+  showInterestsToMatches         Boolean                  @default(true)
+  showProfilePicToMatches        Boolean                  @default(true)
+  age                            Int?
+  lastActiveDashboard            String                   @default("match")
+  cupidDisplayName               String?
+  pointOfContact                 String?
+  showPointOfContactToMatches    Boolean                  @default(true)
+  dashboardTutorialCompleted     Boolean                  @default(false)
+  isAdmin                        Boolean                  @default(false)
+  preferredCandidateEmail        String?
+  profileTutorialCompleted       Boolean                  @default(false)
+  isTestUser                     Boolean                  @default(false)
+  cupidPortalTutorialCompleted   Boolean                  @default(false)
+  questionnaireTutorialCompleted Boolean                  @default(false)
+  needsQuestionnaireUpdate       Boolean                  @default(false)
+  campus                         String                   @default("Vancouver")
+  okMatchingDifferentCampus      Boolean                  @default(true)
+  showFreeResponseToMatches      Boolean                  @default(true)
+  accounts                       Account[]
+  compatibilityScoresReceived    CompatibilityScore[]     @relation("TargetCompatibilityScores")
+  compatibilityScoresGiven       CompatibilityScore[]     @relation("UserCompatibilityScores")
+  assignedAsCandidates           CupidAssignment[]        @relation("AssignedCandidates")
+  cupidAssignments               CupidAssignment[]        @relation("CupidAssignments")
+  cupidProfile                   CupidProfile?
+  cupidProfileSummary            CupidProfileSummary?
+  matchesReceived                Match[]                  @relation("MatchedUser")
+  matchesGiven                   Match[]                  @relation("UserMatches")
+  questionnaire                  Questionnaire?
+  questionnaireResponse          QuestionnaireResponse?
+  questionnaireResponseV2        QuestionnaireResponseV2?
+  sessions                       Session[]
+  textEmbeddings                 TextEmbedding[]
+  uploads                        Upload[]
 
   @@index([email])
 }
 
-// ============================================
-// Application-Specific Models
-// ============================================
-
 model Questionnaire {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  responses Json     // JSONB field storing all questionnaire answers
-  
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  responses   Json
   completedAt DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model QuestionnaireResponse {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  responses   String   @db.Text // Encrypted JSON: { "q0.1": "man", "q1": "pizza", ... }
-  importance  String?  @db.Text // Encrypted JSON: { "q1": 3, "q5": 5, ... } (1-5 scale)
-  
-  isSubmitted Boolean  @default(false)  // false = draft, true = locked
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  responses   String
+  importance  String?
+  isSubmitted Boolean   @default(false)
   submittedAt DateTime?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([isSubmitted])
 }
 
-// ============================================
-// Questionnaire V2 Model (2026 Revamp)
-// ============================================
-
 model QuestionnaireResponseV2 {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Split-screen responses stored as JSONB
-  // Structure: {
-  //   "q1": { "answer": "Woman", "preference": null, "importance": null, "dealbreaker": false },
-  //   "q3": { "answer": "Bisexual", "preference": ["Bisexual", "Pansexual"], "importance": "important", "dealbreaker": false },
-  //   "q7": { "answer": 2, "preference": "similar", "importance": "very_important", "dealbreaker": false },
-  //   "q9": { "answer": { "substances": ["Cannabis"], "frequency": "occasionally" }, "preference": { "substances": ["Cannabis", "None"], "frequency": "similar" }, "importance": "somewhat_important", "dealbreaker": false },
-  //   ...
-  // }
-  responses   Json     @default("{}")
-  
-  // Free response questions (separate for easier access)
-  // Mandatory questions
-  freeResponse1 String? @db.Text // "What do you value most in a relationship?"
-  freeResponse2 String? @db.Text // "Ask your match a question!"
-  
-  // Optional questions
-  freeResponse3 String? @db.Text // "One thing you want match to know"
-  freeResponse4 String? @db.Text // "Something you're passionate about"
-  freeResponse5 String? @db.Text // "Something you cannot compromise on"
-  
-  // Progress tracking
-  questionsCompleted Int @default(0) // Out of 38 (36 main + 2 mandatory free response)
-  
-  // Submission status
-  isSubmitted Boolean  @default(false)  // false = draft, true = locked
-  submittedAt DateTime?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  freeResponse1      String?
+  freeResponse2      String?
+  freeResponse3      String?
+  freeResponse4      String?
+  freeResponse5      String?
+  questionsCompleted Int       @default(0)
+  isSubmitted        Boolean   @default(false)
+  submittedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  responses          Json      @default("{}")
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([isSubmitted])
 }
 
 model Match {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation("UserMatches", fields: [userId], references: [id], onDelete: Cascade)
-  
-  matchedUserId   String
-  matchedUser     User     @relation("MatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
-  
-  // Match type: 'algorithm' | 'cupid_sent' | 'cupid_received'
+  id                 String    @id @default(cuid())
+  userId             String
+  matchedUserId      String
+  compatibilityScore Float?
   matchType          String
-  compatibilityScore Float?   // Only for algorithm matches, null for cupid matches
-  cupidId            String?  // If cupid match, ID of cupid who made it
-  cupidComment       String?  // Rationale from cupid for why this match was made
-  batchNumber        Int      // Always 1 for 2026 (single batch)
-  
-  // Status: 'accepted' (algorithm/accepted cupid match), 'pending' (cupid match awaiting response), 'declined' (rejected cupid match)
-  status          String   @default("accepted")  // Algorithm matches auto-accepted
-  
-  revealedAt      DateTime?  // Null until matches are revealed
-  createdAt       DateTime @default(now())
-  respondedAt     DateTime?  // When user responded to match request (for cupid matches)
+  cupidId            String?
+  batchNumber        Int
+  revealedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  cupidComment       String?
+  respondedAt        DateTime?
+  status             String    @default("accepted")
+  matchedUser        User      @relation("MatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
+  user               User      @relation("UserMatches", fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, matchedUserId, batchNumber, matchType]) // Prevent duplicate matches per type in same batch
+  @@unique([userId, matchedUserId, batchNumber, matchType])
   @@index([userId, batchNumber])
   @@index([matchedUserId, batchNumber])
 }
@@ -250,212 +171,153 @@ model Match {
 model Upload {
   id           String   @id @default(cuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   cloudinaryId String   @unique
   url          String
-  type         String   // 'receipt' | 'story'
-  
+  type         String
   fileSize     Int
   mimeType     String
-  
   createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([type])
 }
 
 model CupidProfile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  approved        Boolean  @default(false)
-  matchesCreated  Int      @default(0)
-  
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  approved       Boolean  @default(false)
+  matchesCreated Int      @default(0)
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
 model RateLimit {
-  id         String   @id @default(cuid())
-  identifier String   // Email address or IP
-  action     String   // 'resend-verification', 'login-attempt', etc.
-  attempts   Int      @default(1)
+  id          String   @id @default(cuid())
+  identifier  String
+  action      String
+  attempts    Int      @default(1)
   windowStart DateTime @default(now())
-  expiresAt  DateTime
-  
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   @@unique([identifier, action])
   @@index([identifier, action])
   @@index([expiresAt])
 }
 
 model PasswordResetToken {
-  id         String   @id @default(cuid())
-  email      String
-  token      String   @unique
-  expires    DateTime
-  used       Boolean  @default(false)
-  
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   @@index([email])
   @@index([token])
 }
 
-// ===========================================
-// MATCHING SYSTEM MODELS
-// ===========================================
-
-// Stores detailed compatibility breakdown between two users
 model CompatibilityScore {
-  id              String   @id @default(cuid())
-  
-  userId          String
-  user            User     @relation("UserCompatibilityScores", fields: [userId], references: [id], onDelete: Cascade)
-  
-  targetUserId    String
-  targetUser      User     @relation("TargetCompatibilityScores", fields: [targetUserId], references: [id], onDelete: Cascade)
-  
-  // Section scores (0-100 scale before weighting)
-  section1Score   Float    // Icebreakers & Fun
-  section2Score   Float    // What I'm Like  
-  section3Score   Float    // What I'm Looking For
-  section5Score   Float    // Open-Ended (text similarity)
-  
-  // Weighted total score (0-100)
-  totalScore      Float
-  
-  // Bidirectional average (with target's score toward user)
+  id                 String   @id @default(cuid())
+  userId             String
+  targetUserId       String
+  section1Score      Float
+  section2Score      Float
+  section3Score      Float
+  section5Score      Float
+  totalScore         Float
   bidirectionalScore Float?
-  
-  batchNumber     Int      // Always 1 for 2026 (single batch)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  batchNumber        Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  targetUser         User     @relation("TargetCompatibilityScores", fields: [targetUserId], references: [id], onDelete: Cascade)
+  user               User     @relation("UserCompatibilityScores", fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, targetUserId, batchNumber])
   @@index([userId, batchNumber])
   @@index([targetUserId, batchNumber])
   @@index([totalScore])
 }
 
-// Tracks cupid assignments - each cupid is assigned ONE candidate
-// and must select the best match from the candidate's top 5 compatible people
 model CupidAssignment {
-  id              String   @id @default(cuid())
-  
-  cupidUserId     String
-  cupidUser       User     @relation("CupidAssignments", fields: [cupidUserId], references: [id], onDelete: Cascade)
-  
-  // The candidate assigned to this cupid
-  candidateId     String
-  candidate       User     @relation("AssignedCandidates", fields: [candidateId], references: [id], onDelete: Cascade)
-  
-  // Top 25 potential matches for this candidate
-  // Stored as JSON array: [{ userId: "...", score: 85.5 }, { userId: "...", score: 82.3 }, ...]
+  id               String    @id @default(cuid())
+  cupidUserId      String
+  batchNumber      Int
+  decidedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  candidateId      String
   potentialMatches Json
-  
-  // Rejected matches - array of userIds that cupid marked as "Not a Match"
-  // Stored as JSON array: ["userId1", "userId2", ...]
-  rejectedMatches Json @default("[]")
-  
-  // Number of matches revealed to cupid (for progressive reveal)
-  revealedCount Int @default(5)
-  
-  // Cupid's selection - which userId from potentialMatches they chose
-  selectedMatchId String?
-  selectionReason String?  @db.Text
-  
-  batchNumber     Int
-  
-  decidedAt       DateTime?
-  createdAt       DateTime @default(now())
-  
+  selectedMatchId  String?
+  selectionReason  String?
+  rejectedMatches  Json      @default("[]")
+  revealedCount    Int       @default(5)
+  candidate        User      @relation("AssignedCandidates", fields: [candidateId], references: [id], onDelete: Cascade)
+  cupidUser        User      @relation("CupidAssignments", fields: [cupidUserId], references: [id], onDelete: Cascade)
+
   @@unique([cupidUserId, candidateId, batchNumber])
   @@index([cupidUserId, batchNumber])
   @@index([candidateId, batchNumber])
   @@index([selectedMatchId])
 }
 
-// Stores text embeddings for open-ended questions
 model TextEmbedding {
-  id              String   @id @default(cuid())
-  
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  questionId      String   // e.g., "Q60", "Q61", "Q62", "Q63"
-  
-  // Embedding vector stored as JSON array of floats
-  embedding       Json     // Float array from sentence-transformers
-  embeddingModel  String   @default("all-MiniLM-L6-v2")
-  
-  // Original text hash for cache invalidation
-  textHash        String
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id             String   @id @default(cuid())
+  userId         String
+  questionId     String
+  embedding      Json
+  embeddingModel String   @default("all-MiniLM-L6-v2")
+  textHash       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, questionId])
   @@index([userId])
   @@index([questionId])
 }
 
-// AI-generated profile summaries for cupids
 model CupidProfileSummary {
-  id              String   @id @default(cuid())
-  
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // AI-generated summary of user's questionnaire responses
-  summary         String   @db.Text
-  
-  // Key traits extracted for quick reference
-  keyTraits       Json     // Array of trait strings
-  
-  // Relationship preferences summary
-  lookingFor      String   @db.Text
-  
-  // Model used for generation
-  aiModel         String   @default("gpt-3.5-turbo")
-  
-  // Version for cache invalidation
-  responseHash    String   // Hash of questionnaire responses used
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@unique([userId])
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  summary      String
+  keyTraits    Json
+  lookingFor   String
+  aiModel      String   @default("gpt-3.5-turbo")
+  responseHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }
 
-// Tracks matching batch runs
 model MatchingBatch {
-  id              String   @id @default(cuid())
-  
-  batchNumber     Int      @unique  // Always 1 for 2026 (single batch)
-  
-  // Status: 'pending' | 'scoring' | 'matching' | 'cupid_review' | 'completed'
-  status          String   @default("pending")
-  
-  // Stats
-  totalUsers      Int      @default(0)
-  totalPairs      Int      @default(0)  // Scored pairs
-  algorithmMatches Int     @default(0)
-  cupidMatches    Int      @default(0)
-  
-  // Timestamps
-  scoringStartedAt DateTime?
-  scoringCompletedAt DateTime?
-  matchingStartedAt DateTime?
+  id                  String    @id @default(cuid())
+  batchNumber         Int       @unique
+  status              String    @default("pending")
+  totalUsers          Int       @default(0)
+  totalPairs          Int       @default(0)
+  algorithmMatches    Int       @default(0)
+  cupidMatches        Int       @default(0)
+  scoringStartedAt    DateTime?
+  scoringCompletedAt  DateTime?
+  matchingStartedAt   DateTime?
   matchingCompletedAt DateTime?
-  revealedAt      DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  revealedAt          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model CupidFeedback {
+  id       String   @id @default(cuid())
+  senderId String
+  cupidId  String
+  message  String
+  sentAt   DateTime @default(now())
+
+  @@unique([senderId, cupidId])
+  @@index([senderId])
+  @@index([cupidId])
 }

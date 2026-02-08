@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { DashboardTutorial } from "./_components/DashboardTutorial";
+import { CupidFeedbackSection } from "@/components/dashboard/CupidFeedbackSection";
 
 async function getQuestionnaireStatus(userId: string) {
   try {
@@ -44,12 +45,6 @@ async function getQuestionnaireStatus(userId: string) {
   }
 }
 
-function isQuestionnaireOpen(): boolean {
-  const now = new Date();
-  const openingDate = new Date("2026-01-16T00:00:00.000Z"); // January 16, 2026, 00:00 UTC
-  return now >= openingDate;
-}
-
 async function isQuestionnaireOpenForUser(userId: string): Promise<boolean> {
   const now = new Date();
   const openingDate = new Date("2026-01-16T00:00:00.000Z"); // January 16, 2026, 00:00 UTC
@@ -66,6 +61,119 @@ async function isQuestionnaireOpenForUser(userId: string): Promise<boolean> {
   }
 
   return now >= openingDate;
+}
+
+async function getCupidFeedbackData(userId: string) {
+  // Check if user has a cupid who matched them
+  const cupidAssignment = await prisma.cupidAssignment.findFirst({
+    where: {
+      candidateId: userId,
+      selectedMatchId: { not: null },
+    },
+    include: {
+      cupidUser: {
+        select: {
+          id: true,
+          displayName: true,
+          firstName: true,
+        },
+      },
+    },
+  });
+
+  // Find all cupids who matched this user (cupid_sent matches)
+  // User could be either the userId (primary candidate) or matchedUserId (the match)
+  // Include both accepted and declined (passed) matches
+  const cupidMatches = await prisma.match.findMany({
+    where: {
+      OR: [
+        {
+          userId: userId,
+          matchType: "cupid_sent",
+          status: { in: ["accepted", "declined"] },
+        },
+        {
+          matchedUserId: userId,
+          matchType: "cupid_sent",
+          status: { in: ["accepted", "declined"] },
+        },
+      ],
+    },
+    select: {
+      cupidId: true,
+      status: true,
+      userId: true,
+      matchedUserId: true,
+    },
+  });
+
+  // Build map of cupid IDs to their match status from the perspective of the current user
+  const cupidMatchStatusMap = new Map<string, string>();
+  cupidMatches.forEach((match) => {
+    if (match.cupidId && match.cupidId !== cupidAssignment?.cupidUserId) {
+      // Determine if current user was the one who responded to the match
+      // If matchedUserId is current user, they were the one who responded
+      const isUserResponder = match.matchedUserId === userId;
+      if (isUserResponder) {
+        cupidMatchStatusMap.set(match.cupidId, match.status);
+      }
+    }
+  });
+
+  // Get unique cupid IDs
+  const cupidIds = Array.from(cupidMatchStatusMap.keys());
+
+  // Get cupid details
+  const otherCupids = await prisma.user.findMany({
+    where: {
+      id: { in: cupidIds },
+    },
+    select: {
+      id: true,
+      displayName: true,
+      firstName: true,
+    },
+  });
+
+  // Check which cupids have already received feedback
+  const sentFeedback = await prisma.cupidFeedback.findMany({
+    where: {
+      senderId: userId,
+      cupidId: {
+        in: [cupidAssignment?.cupidUserId, ...cupidIds].filter(
+          (id): id is string => id !== undefined,
+        ),
+      },
+    },
+    select: {
+      cupidId: true,
+    },
+  });
+
+  const sentCupidIds = new Set(sentFeedback.map((f) => f.cupidId));
+
+  // Format data for component
+  const userCupid = cupidAssignment
+    ? {
+        id: cupidAssignment.cupidUserId,
+        name:
+          cupidAssignment.cupidUser.displayName ||
+          cupidAssignment.cupidUser.firstName,
+        alreadySent: sentCupidIds.has(cupidAssignment.cupidUserId),
+      }
+    : null;
+
+  const otherCupidsData = otherCupids.map((cupid) => ({
+    id: cupid.id,
+    name: cupid.displayName || cupid.firstName,
+    alreadySent: sentCupidIds.has(cupid.id),
+    status: cupidMatchStatusMap.get(cupid.id) || "accepted",
+  }));
+
+  return {
+    userCupid,
+    otherCupids: otherCupidsData,
+  };
 }
 
 export const metadata: Metadata = {
@@ -109,6 +217,9 @@ export default async function DashboardPage() {
     select: { revealedAt: true },
   });
   const matchesRevealed = batch?.revealedAt !== null;
+
+  // Get cupid feedback data
+  const cupidFeedbackData = await getCupidFeedbackData(session.user.id);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -224,6 +335,15 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Cupid Feedback Section */}
+      {(cupidFeedbackData.userCupid ||
+        cupidFeedbackData.otherCupids.length > 0) && (
+        <CupidFeedbackSection
+          userCupid={cupidFeedbackData.userCupid}
+          otherCupids={cupidFeedbackData.otherCupids}
+        />
+      )}
 
       {/* Next Steps Timeline */}
       <Card>
