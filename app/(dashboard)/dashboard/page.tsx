@@ -171,19 +171,27 @@ export default async function DashboardPage() {
             <CardTitle className="text-lg">My Matches</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col justify-between min-h-[120px] pt-2">
-            <p className="text-sm text-slate-600 mb-2">
-              View your Valentine&apos;s Day matches
-            </p>
             {questionnaireStatus === "completed" ? (
-              <Link href="/matches">
-                <Button className="w-full" variant="outline">
-                  View Matches
-                </Button>
-              </Link>
+              <>
+                <p className="text-sm text-slate-600 mb-2">
+                  View your Valentine&apos;s Day matches
+                </p>
+                <Link href="/matches">
+                  <Button className="w-full" variant="outline">
+                    View Matches
+                  </Button>
+                </Link>
+              </>
             ) : (
-              <Button className="w-full" variant="outline" disabled>
-                Complete Questionnaire First
-              </Button>
+              <>
+                <p className="text-sm text-slate-600 mb-2">
+                  Sorry, your questionnaire was not submitted by the deadline,
+                  so you have not been matched
+                </p>
+                <Button className="w-full" variant="outline" disabled>
+                  Complete Questionnaire First
+                </Button>
+              </>
             )}
           </CardContent>
         </Card>
