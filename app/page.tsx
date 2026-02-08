@@ -148,17 +148,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </Alert>
           )}
 
-          {/* Sign-ups Closed Message */}
-          {signupsClosed && !userExists && (
-            <Alert className="border-red-200 bg-red-50">
-              <XCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800 font-medium">
-                Sign-ups have closed for 2026. Registration is no longer
-                available.
-              </AlertDescription>
-            </Alert>
-          )}
-
           {/* Hero Content */}
           <div className="space-y-4">
             <h1 className="text-5xl font-bold text-slate-900">💘 UBCupids</h1>
@@ -192,27 +181,25 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               // User is logged in and exists in database
               <>
                 {isCupid && isMatchUser ? (
-                  // User has both roles - show two buttons side by side
-                  <>
+                  // User has both roles - stack vertically on mobile, side by side on desktop
+                  <div className="flex flex-col sm:flex-row gap-4 items-center">
                     <Link href="/dashboard">
                       <Button
                         size="lg"
-                        className="px-6 bg-black hover:bg-gray-800 text-white"
+                        className="px-6 bg-black hover:bg-gray-800 text-white w-full sm:w-auto"
                       >
                         Go to Match Dashboard
                       </Button>
                     </Link>
-                    <div className="flex flex-col items-center gap-2">
-                      <Link href="/cupid-dashboard">
-                        <Button
-                          size="lg"
-                          className="px-6 bg-white hover:bg-gray-50 text-black border-2 border-gray-400"
-                        >
-                          Go to Cupid Dashboard
-                        </Button>
-                      </Link>
-                    </div>
-                  </>
+                    <Link href="/cupid-dashboard">
+                      <Button
+                        size="lg"
+                        className="px-6 bg-white hover:bg-gray-50 text-black border-2 border-gray-400 w-full sm:w-auto"
+                      >
+                        Go to Cupid Dashboard
+                      </Button>
+                    </Link>
+                  </div>
                 ) : isCupid ? (
                   // User is only a cupid
                   <div className="flex flex-col items-center gap-2">

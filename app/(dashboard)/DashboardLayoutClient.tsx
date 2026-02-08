@@ -70,8 +70,8 @@ export function DashboardLayoutClient({
               </Link>
             </div>
 
-            {/* Profile Button - Right */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            {/* Profile Button - Right (hidden on mobile) */}
+            <div className="hidden lg:block absolute right-4 top-1/2 -translate-y-1/2">
               <ProfileButton
                 firstName={firstName}
                 lastName={lastName}
@@ -82,26 +82,38 @@ export function DashboardLayoutClient({
             </div>
 
             {/* Mobile Navigation - Below logo on small screens */}
-            <div className="lg:hidden flex justify-center items-center gap-2 mt-4 flex-wrap">
-              <Link
-                href="/user-guide"
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"
-              >
-                <BookOpen className="h-4 w-4" />
-                <span className="font-medium">Guide</span>
-              </Link>
-              <Link
-                href="/privacy"
-                className="px-3 py-1.5 text-sm text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
-              >
-                Privacy
-              </Link>
-              <a
-                href="mailto:support@ubcupids.org"
-                className="px-3 py-1.5 text-sm text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
-              >
-                Contact
-              </a>
+            <div className="lg:hidden flex flex-col items-center gap-2 mt-4">
+              <div className="flex justify-center items-center gap-2 flex-wrap">
+                <Link
+                  href="/user-guide"
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span className="font-medium">Guide</span>
+                </Link>
+                <Link
+                  href="/privacy"
+                  className="px-3 py-1.5 text-sm text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
+                >
+                  Privacy
+                </Link>
+                <a
+                  href="mailto:support@ubcupids.org"
+                  className="px-3 py-1.5 text-sm text-slate-700 hover:text-pink-600 hover:bg-pink-50 rounded-md transition-colors font-medium"
+                >
+                  Contact
+                </a>
+              </div>
+              {/* Profile Button - Below navigation on mobile */}
+              <div className="mt-2">
+                <ProfileButton
+                  firstName={firstName}
+                  lastName={lastName}
+                  profilePicture={profilePicture}
+                  isCupid={isCupid}
+                  isBeingMatched={isBeingMatched}
+                />
+              </div>
             </div>
           </div>
         </div>

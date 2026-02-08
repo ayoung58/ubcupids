@@ -763,6 +763,100 @@ export async function submitCupidSelection(
     },
   });
 
+  // Check if matches have already been revealed for this batch
+  const batch = await prisma.matchingBatch.findUnique({
+    where: { batchNumber: assignment.batchNumber },
+    select: { revealedAt: true },
+  });
+
+  const matchesAlreadyRevealed = batch?.revealedAt !== null;
+
+  // If matches have been revealed, immediately create the Match records
+  // so they appear on the match user's page without waiting for admin action
+  if (matchesAlreadyRevealed) {
+    const candidateId = assignment.candidateId;
+    const batchNumber = assignment.batchNumber;
+
+    // Get compatibility score
+    const matchData = potentialMatches.find(
+      (m) => m.userId === selectedMatchId,
+    );
+    const compatibilityScore = matchData?.score || 0;
+
+    // Check if matches already exist (to avoid duplicates)
+    const existingCupidSentMatch = await prisma.match.findFirst({
+      where: {
+        userId: candidateId,
+        matchedUserId: selectedMatchId,
+        batchNumber,
+        matchType: "cupid_sent",
+      },
+    });
+
+    const existingCupidReceivedMatch = await prisma.match.findFirst({
+      where: {
+        userId: selectedMatchId,
+        matchedUserId: candidateId,
+        batchNumber,
+        matchType: "cupid_received",
+      },
+    });
+
+    // Only create matches if they don't already exist
+    if (!existingCupidSentMatch && !existingCupidReceivedMatch) {
+      try {
+        // Create bidirectional Match records with revealedAt set to now
+        await prisma.match.create({
+          data: {
+            userId: candidateId,
+            matchedUserId: selectedMatchId,
+            matchType: "cupid_sent",
+            compatibilityScore,
+            cupidId: cupidUserId,
+            cupidComment: reason || null,
+            batchNumber,
+            status: "pending",
+            revealedAt: new Date(), // Set revealedAt so it appears immediately
+          },
+        });
+
+        await prisma.match.create({
+          data: {
+            userId: selectedMatchId,
+            matchedUserId: candidateId,
+            matchType: "cupid_received",
+            compatibilityScore,
+            cupidId: cupidUserId,
+            cupidComment: reason || null,
+            batchNumber,
+            status: "pending",
+            revealedAt: new Date(), // Set revealedAt so it appears immediately
+          },
+        });
+
+        // Update cupid's match count
+        await prisma.cupidProfile.update({
+          where: { userId: cupidUserId },
+          data: { matchesCreated: { increment: 1 } },
+        });
+
+        return {
+          success: true,
+          message:
+            "Match selected and created! The match users will see this immediately.",
+        };
+      } catch (error) {
+        console.error("Error creating immediate cupid match:", error);
+        // Still return success since the assignment was saved
+        return {
+          success: true,
+          message:
+            "Match selected! (Note: Match record creation will be retried later)",
+        };
+      }
+    }
+  }
+
   return {
     success: true,
     message:

@@ -102,12 +102,7 @@ export default async function CupidDashboardPage() {
           </p>
         </CardHeader>
         <CardContent>
-          {matchesRevealed ? (
-            <Button size="lg" className="w-full md:w-auto" disabled>
-              <Target className="mr-2 h-5 w-5" />
-              Matches have now been revealed to match users. Thank you cupids!
-            </Button>
-          ) : cupidsAssigned ? (
+          {cupidsAssigned ? (
             <Link href="/cupid-dashboard/matching-portal">
               <Button size="lg" className="w-full md:w-auto">
                 <Target className="mr-2 h-5 w-5" />
