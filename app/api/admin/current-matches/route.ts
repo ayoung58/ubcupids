@@ -27,9 +27,10 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const isTestUser = searchParams.get("isTestUser") === "true";
 
-    // Get all matches for the user type
+    // Get all ALGORITHM matches for the user type (not cupid matches)
     const matches = await prisma.match.findMany({
       where: {
+        matchType: "algorithm",
         batchNumber: 1,
         user: {
           isTestUser,

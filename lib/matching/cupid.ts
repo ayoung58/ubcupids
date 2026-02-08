@@ -863,28 +863,49 @@ export async function makeTestCupidRandomSelections(): Promise<{
  */
 export async function createCupidSelectedMatches(
   batchNumber: number = CURRENT_BATCH,
+  onlyTestUsers: boolean = false,
 ): Promise<{
   created: number;
   skipped: number;
+  updated: number;
 }> {
   console.log(
-    `Creating matches from cupid selections for batch ${batchNumber}...`,
+    `Creating matches from cupid selections for batch ${batchNumber}${onlyTestUsers ? " (test users only)" : ""}...`,
   );
 
+  // Build the where clause based on whether we want only test users
+  const whereClause: any = {
+    batchNumber,
+    selectedMatchId: { not: null },
+  };
+
+  if (onlyTestUsers) {
+    whereClause.cupidUser = { isTestUser: true };
+    whereClause.candidate = { isTestUser: true };
+  } else {
+    whereClause.cupidUser = { isTestUser: false };
+    whereClause.candidate = { isTestUser: false };
+  }
+
   const completedAssignments = await prisma.cupidAssignment.findMany({
-    where: {
-      batchNumber,
-      selectedMatchId: { not: null },
-    },
+    where: whereClause,
     include: {
       cupidUser: {
-        select: { id: true },
+        select: { id: true, isTestUser: true },
+      },
+      candidate: {
+        select: { isTestUser: true },
       },
     },
   });
 
+  console.log(
+    `Found ${completedAssignments.length} cupid assignments to process`,
+  );
+
   let created = 0;
   let skipped = 0;
+  let updated = 0;
 
   const revealedAt = TEST_MODE_REVEAL ? new Date() : null;
 
@@ -930,6 +951,52 @@ export async function createCupidSelectedMatches(
     );
     const compatibilityScore = matchData?.score || 0;
 
+    // Get the cupid's rationale for this match
+    const cupidRationale = assignment.selectionReason || null;
+
+    // Check if matches already exist
+    const existingCupidSentMatch = await prisma.match.findFirst({
+      where: {
+        userId: candidateId,
+        matchedUserId: selectedMatchId,
+        batchNumber,
+        matchType: "cupid_sent",
+      },
+    });
+
+    const existingCupidReceivedMatch = await prisma.match.findFirst({
+      where: {
+        userId: selectedMatchId,
+        matchedUserId: candidateId,
+        batchNumber,
+        matchType: "cupid_received",
+      },
+    });
+
+    if (existingCupidSentMatch && existingCupidReceivedMatch) {
+      // Matches already exist - always update them with the current rationale from assignment
+      if (cupidRationale) {
+        await prisma.match.update({
+          where: { id: existingCupidSentMatch.id },
+          data: { cupidComment: cupidRationale },
+        });
+        await prisma.match.update({
+          where: { id: existingCupidReceivedMatch.id },
+          data: { cupidComment: cupidRationale },
+        });
+        console.log(
+          `Updated cupid comment for matches: ${candidateId} <-> ${selectedMatchId}`,
+        );
+        updated++;
+      } else {
+        console.log(
+          `No rationale for assignment: ${candidateId} <-> ${selectedMatchId}`,
+        );
+        skipped++;
+      }
+      continue;
+    }
+
     // Create matches (bidirectional)
     try {
       // Candidate -> Selected Match (cupid_sent from candidate's perspective)
@@ -941,7 +1008,7 @@ export async function createCupidSelectedMatches(
           matchType: "cupid_sent",
           compatibilityScore,
           cupidId: assignment.cupidUserId,
-          cupidComment: null, // Cupid can add comment later if needed
+          cupidComment: cupidRationale, // Include cupid's rationale
           batchNumber,
           status: "pending", // Cupid matches start as pending
           revealedAt,
@@ -957,7 +1024,7 @@ export async function createCupidSelectedMatches(
           matchType: "cupid_received",
           compatibilityScore,
           cupidId: assignment.cupidUserId,
-          cupidComment: null, // Cupid can add comment later if needed
+          cupidComment: cupidRationale, // Include same cupid's rationale
           batchNumber,
           status: "pending", // Cupid matches start as pending
           revealedAt,
@@ -981,9 +1048,11 @@ export async function createCupidSelectedMatches(
     }
   }
 
-  console.log(`Created ${created} cupid matches, skipped ${skipped}`);
+  console.log(
+    `Created ${created} cupid matches, updated ${updated}, skipped ${skipped}`,
+  );
 
-  return { created, skipped };
+  return { created, skipped, updated };
 }
 
 // Keep old function name for backwards compatibility

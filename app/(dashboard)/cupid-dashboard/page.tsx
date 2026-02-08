@@ -133,8 +133,8 @@ export default async function CupidDashboardPage() {
               </h3>
               <p className="text-purple-600 text-sm">
                 {matchesRevealed
-                  ? "Help us improve the experience by providing feedback! You'll have a chance to win 1 of 2 $20 Amazon gift cards!"
-                  : "Feedback forms open when matches are revealed on Feb 8th"}
+                  ? "Help us improve the experience by providing feedback! Fill this out by Feb. 21st, and you'll have a chance to win 1 of 3 $10 Amazon gift cards!"
+                  : "Feedback forms open when matches are revealed on Feb 8th. Fill this out by Feb. 21st and you'll have a chance to win 1 of 3 $10 Amazon gift cards!"}
               </p>
             </div>
             {matchesRevealed ? (
@@ -143,7 +143,7 @@ export default async function CupidDashboardPage() {
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
               >
                 <a
-                  href="https://syk3gprmktl.typeform.com/to/GhBJoEjn"
+                  href="https://forms.gle/AFEKuToXGNMtqeKJ7"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

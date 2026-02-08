@@ -147,6 +147,18 @@ function QuestionResponseDisplay({
 
   const { answer, preference, importance, dealbreaker, isDealer } = response;
 
+  // For Q4 (age), extract the preference from the answer object if preference is not set separately
+  let displayPreference = preference;
+  if (question.id === "q4" && typeof answer === "object" && answer !== null) {
+    // Extract minAge and maxAge from the answer object for Q4
+    if ("minAge" in answer && "maxAge" in answer) {
+      displayPreference = {
+        minAge: answer.minAge,
+        maxAge: answer.maxAge,
+      };
+    }
+  }
+
   // Format answer for display
   const formatAnswer = (value: any): string => {
     if (value === undefined || value === null) return "Not answered";
@@ -155,19 +167,17 @@ function QuestionResponseDisplay({
       return value.join(", ");
     }
     if (typeof value === "object") {
+      // For Q4 (age), display the userAge from questionnaire, not profile age
+      if (
+        "userAge" in value &&
+        value.userAge !== undefined &&
+        value.userAge !== null
+      ) {
+        return `${value.userAge} years`;
+      }
       if (
         ("minAge" in value && "maxAge" in value) ||
         ("min" in value && "max" in value)
-      ) {
-        const min = value.minAge || value.min;
-        const max = value.maxAge || value.max;
-        return `${min} - ${max} years`;
-      }
-      // Handle age range objects that might be null/doesn't matter
-      if (
-        "userAge" in value &&
-        (("minAge" in value && "maxAge" in value) ||
-          ("min" in value && "max" in value))
       ) {
         const min = value.minAge || value.min;
         const max = value.maxAge || value.max;
@@ -252,10 +262,13 @@ function QuestionResponseDisplay({
 
   // Check if preference is "doesn't matter" or null
   const isNoPreference =
-    preference === null ||
-    preference === undefined ||
-    preference === "doesnt_matter" ||
-    (Array.isArray(preference) && preference.length === 0);
+    displayPreference === null ||
+    displayPreference === undefined ||
+    displayPreference === "doesnt_matter" ||
+    (Array.isArray(displayPreference) && displayPreference.length === 0);
+
+  // Check if this is a filtering question (Q1, Q2) that should NOT show preference
+  const isFilteringQuestion = question.id === "q1" || question.id === "q2";
 
   return (
     <div className="border border-slate-200 rounded-lg p-4 bg-white">
@@ -268,7 +281,9 @@ function QuestionResponseDisplay({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        className={`grid grid-cols-1 ${isFilteringQuestion ? "" : "md:grid-cols-2"} gap-4`}
+      >
         {/* Left: User's Answer */}
         <div className="space-y-1">
           <p className="text-xs font-medium text-slate-500 uppercase">
@@ -277,27 +292,29 @@ function QuestionResponseDisplay({
           <p className="text-sm text-slate-900">{formatAnswer(answer)}</p>
         </div>
 
-        {/* Right: User's Preference + Importance */}
-        <div className="space-y-2 md:border-l md:pl-4 border-slate-200">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-slate-500 uppercase">
-              What They&apos;re Looking For
-            </p>
-            {isNoPreference ? (
-              <p className="text-sm text-slate-400 italic flex items-center gap-1">
-                <X className="h-3 w-3" />
-                Doesn&apos;t matter / No preference
+        {/* Right: User's Preference + Importance (only for non-filtering questions) */}
+        {!isFilteringQuestion && (
+          <div className="space-y-2 md:border-l md:pl-4 border-slate-200">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-slate-500 uppercase">
+                What They&apos;re Looking For
               </p>
-            ) : (
-              <p className="text-sm text-slate-900">
-                {formatPreference(preference)}
-              </p>
-            )}
-          </div>
+              {isNoPreference ? (
+                <p className="text-sm text-slate-400 italic flex items-center gap-1">
+                  <X className="h-3 w-3" />
+                  Doesn&apos;t matter / No preference
+                </p>
+              ) : (
+                <p className="text-sm text-slate-900">
+                  {formatPreference(displayPreference)}
+                </p>
+              )}
+            </div>
 
-          {/* Importance Badge */}
-          <div>{getImportanceBadge()}</div>
-        </div>
+            {/* Importance Badge */}
+            <div>{getImportanceBadge()}</div>
+          </div>
+        )}
       </div>
     </div>
   );

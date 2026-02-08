@@ -40,19 +40,20 @@ export async function POST() {
     if (matchCount === 0) {
       return NextResponse.json(
         { error: "No matches found for test users. Create matches first." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Step 1: Automatically make random selections for test cupids
-    const autoSelectionResult = await cupidLib.makeTestCupidRandomSelections();
+    // Step 1: Create Match records from cupid selections (only those already made)
+    const cupidMatchResult = await cupidLib.createCupidSelectedMatches(
+      batchNumber,
+      true,
+    ); // true = test users only
     console.log(
-      `Auto-selected ${autoSelectionResult.successful} matches for test cupids before reveal`
+      `Created ${cupidMatchResult.created} cupid-initiated matches, updated ${cupidMatchResult.updated}, skipped ${cupidMatchResult.skipped}`,
     );
 
-    // Step 2: Create cupid-initiated matches will be handled by existing cupid system
-
-    // Step 3: Update all matches for test users to set revealedAt timestamp
+    // Step 2: Update all matches for test users to set revealedAt timestamp
     const result = await prisma.match.updateMany({
       where: {
         batchNumber,
@@ -67,17 +68,17 @@ export async function POST() {
     return NextResponse.json({
       message: `Revealed ${result.count} matches to test candidates`,
       revealed: result.count,
-      testCupidSelections: {
-        processed: autoSelectionResult.processed,
-        successful: autoSelectionResult.successful,
-        skipped: autoSelectionResult.skipped,
+      cupidMatches: {
+        created: cupidMatchResult.created,
+        updated: cupidMatchResult.updated,
+        skipped: cupidMatchResult.skipped,
       },
     });
   } catch (error) {
     console.error("Error revealing matches for test users:", error);
     return NextResponse.json(
       { error: "Failed to reveal matches to test candidates" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
